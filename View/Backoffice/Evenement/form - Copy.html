@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Créer / Modifier Événement</title>
+  <style>
+    body {font-family: Arial, sans-serif; margin:30px; background:#f5f5f5;}
+    form {background:white; padding:20px; border-radius:10px; max-width:500px; margin:auto; box-shadow:0 0 10px rgba(0,0,0,0.1);}
+    label {display:block; margin-top:10px;}
+    input, textarea {width:100%; padding:8px; margin-top:5px;}
+    button {margin-top:15px; background:#0066cc; color:white; border:none; padding:10px 15px; border-radius:6px;}
+    nav a {margin-right:15px; color:#0066cc; text-decoration:none;}
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="../../index.php">Accueil</a>
+    <a href="../../Frontoffice/Evenement/calendar.html">Calendrier</a>
+  </nav>
+
+  <h2 style="text-align:center;">Créer / Modifier Événement</h2>
+
+  <form action="#" method="post">
+    <label>Titre :</label>
+    <input type="text" name="titre" required>
+
+    <label>Description :</label>
+    <textarea name="description" rows="5"></textarea>
+
+    <label>Date :</label>
+    <input type="date" name="date" required>
+
+    <label>Lieu :</label>
+    <input type="text" name="lieu">
+
+    <button type="submit">Enregistrer (simulation)</button>
+  </form>
+</body>
+</html>
