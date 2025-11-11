@@ -1,0 +1,151 @@
+
+:root {
+  --bg: #001c1f;
+  --section-bg: #012a2f;
+  --accent: #00e0b8;
+  --text: #f2f2f2;
+  --muted: #9bb6b3;
+  --white: #ffffff;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: "Poppins", sans-serif;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+}
+
+
+header {
+  background: var(--section-bg);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  box-shadow: 0 2px 10px rgba(0, 224, 184, 0.15);
+}
+
+header h1 {
+  color: var(--accent);
+  font-size: 1.4rem;
+}
+
+nav a {
+  color: var(--text);
+  margin-left: 1.2rem;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.3s;
+}
+
+nav a:hover {
+  color: var(--accent);
+}
+
+/* === HERO SECTION === */
+.hero {
+  text-align: center;
+  padding: 4rem 2rem;
+  background: linear-gradient(180deg, #002a2f, #001c1f);
+}
+
+.hero h2 {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  color: var(--accent);
+}
+
+.hero p {
+  color: var(--muted);
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+
+.partners {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+  padding: 3rem 2rem;
+}
+
+.partner-card {
+  background: var(--section-bg);
+  border-radius: 12px;
+  padding: 1.5rem;
+  text-align: center;
+  box-shadow: 0 0 15px rgba(0, 224, 184, 0.1);
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.partner-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 0 25px rgba(0, 224, 184, 0.2);
+}
+
+.partner-card img {
+  max-width: 120px;
+  margin-bottom: 1rem;
+}
+
+.partner-card h3 {
+  color: var(--accent);
+  margin-bottom: 0.5rem;
+}
+
+.partner-card p {
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+
+.event-list {
+  padding: 3rem 2rem;
+}
+
+.event-card {
+  background: var(--section-bg);
+  margin-bottom: 1.5rem;
+  padding: 1.5rem;
+  border-radius: 10px;
+  transition: transform 0.3s, background 0.3s;
+}
+
+.event-card:hover {
+  transform: translateY(-3px);
+  background: #01383e;
+}
+
+.event-card h3 {
+  color: var(--accent);
+  margin-bottom: 0.5rem;
+}
+
+.event-card p {
+  color: var(--muted);
+  margin-bottom: 0.8rem;
+}
+
+.event-card .date {
+  font-size: 0.9rem;
+  color: var(--white);
+}
+
+
+footer {
+  background: var(--section-bg);
+  text-align: center;
+  padding: 1rem;
+  color: var(--muted);
+  border-top: 1px solid rgba(0, 224, 184, 0.15);
+  margin-top: 2rem;
+}
