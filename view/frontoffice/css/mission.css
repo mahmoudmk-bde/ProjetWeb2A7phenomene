@@ -1,0 +1,317 @@
+/* ==============================
+   GENERAL COLORS (ENGAGE THEME)
+================================*/
+
+:root {
+    --engage-red: #ff004c;
+    --engage-red-hover: #ff2d6f;
+    --dark-bg: #0f0f0f;
+    --dark-card: #171717;
+    --dark-light: #1f1f1f;
+    --text-light: #e4e4e4;
+}
+
+/* ==============================
+    MISSION CARDS (LIST)
+================================*/
+
+.mission-card {
+    background: var(--dark-card);
+    border: 1px solid rgba(255, 0, 76, 0.4);
+    padding: 25px;
+    border-radius: 12px;
+    color: var(--text-light);
+    box-shadow: 0px 4px 12px rgba(255, 0, 76, 0.25);
+    transition: 0.3s ease-out;
+    position: relative;
+    overflow: hidden;
+}
+
+.mission-card:hover {
+    transform: translateY(-5px) scale(1.02);
+    box-shadow: 0px 0px 18px rgba(255, 0, 76, 0.65);
+}
+
+.mission-card h4 {
+    color: var(--engage-red);
+    font-weight: 700;
+    margin-bottom: 15px;
+}
+
+.mission-theme {
+    font-weight: bold;
+    color: #ff9db9;
+}
+
+.mission-info {
+    font-size: 14px;
+    opacity: 0.85;
+}
+
+/* CTA Button */
+.mission-card .btn {
+    background: var(--engage-red);
+    border: none;
+    padding: 10px;
+    font-weight: bold;
+    border-radius: 8px;
+}
+
+.mission-card .btn:hover {
+    background: var(--engage-red-hover);
+}
+
+/* ==============================
+   MISSION DETAILS PAGE
+================================*/
+
+.mission-details-box {
+    background: var(--dark-card);
+    padding: 40px;
+    border-radius: 15px;
+    border: 2px solid rgba(255, 0, 76, 0.4);
+    color: var(--text-light);
+    box-shadow: 0px 0px 20px rgba(255, 0, 76, 0.5);
+}
+
+.mission-details-box h2 {
+    color: var(--engage-red);
+    font-weight: 800;
+    margin-bottom: 20px;
+}
+
+.mission-details-box h4 {
+    color: #ffb4c9;
+    margin-top: 25px;
+}
+
+.mission-details-box p {
+    line-height: 1.8;
+    opacity: 0.95;
+}
+
+.mission-details-box .btn {
+    background: var(--engage-red);
+    padding: 12px 30px;
+    border-radius: 10px;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.mission-details-box .btn:hover {
+    background: var(--engage-red-hover);
+}
+
+/* ==============================
+   FORMULAIRE CANDIDATURE
+================================*/
+
+.form-container {
+    background: var(--dark-card);
+    padding: 35px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 0, 76, 0.3);
+    box-shadow: 0px 0px 15px rgba(255, 0, 76, 0.5);
+    color: var(--text-light);
+}
+
+.form-container input,
+.form-container textarea,
+.form-container select {
+    background: var(--dark-light) !important;
+    color: white !important;
+    border: 1px solid #444 !important;
+    border-radius: 6px;
+}
+
+.form-container input:focus,
+.form-container textarea:focus {
+    border-color: var(--engage-red) !important;
+    box-shadow: 0 0 10px rgba(255,0,76,0.6);
+}
+
+/* ==============================
+   ANIMATIONS
+================================*/
+
+.fade-in {
+    animation: fadeIn 0.8s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px);}
+    to   { opacity: 1; transform: translateY(0);}
+}
+/* ==== FORMULAIRE DE POSTULATION : STYLE ENGAGE ==== */
+
+.apply-card {
+    background: #1b1b1b;
+    padding: 35px;
+    border-radius: 20px;
+    border: 1px solid #ff0066;
+    box-shadow: 0 0 20px rgba(255, 0, 100, 0.25);
+    animation: fadeIn 0.4s ease;
+}
+
+.apply-title {
+    text-align: center;
+    color: #ff0066;
+    font-size: 26px;
+    font-weight: bold;
+    margin-bottom: 25px;
+}
+
+/* Champ moderne */
+.form-modern {
+    position: relative;
+    margin-bottom: 25px;
+}
+
+.form-modern input,
+.form-modern textarea,
+.form-modern select {
+    width: 100%;
+    padding: 14px 15px 12px;
+    background: #111;
+    border: 1px solid #333;
+    border-radius: 12px;
+    color: #fff;
+    font-size: 15px;
+    transition: 0.2s;
+}
+
+.form-modern input:focus,
+.form-modern textarea:focus,
+.form-modern select:focus {
+    border-color: #ff0066;
+    box-shadow: 0 0 12px rgba(255, 0, 100, 0.5);
+}
+
+/* Label flottant */
+.form-modern label {
+    position: absolute;
+    left: 15px;
+    top: 13px;
+    color: #aaa;
+    font-size: 14px;
+    pointer-events: none;
+    transition: 0.2s;
+}
+
+.form-modern input:focus ~ label,
+.form-modern textarea:focus ~ label,
+.form-modern select:focus ~ label,
+.form-modern input:not(:placeholder-shown) ~ label,
+.form-modern textarea:not(:placeholder-shown) ~ label {
+    top: -10px;
+    left: 12px;
+    font-size: 12px;
+    background: #1b1b1b;
+    padding: 0 5px;
+    color: #ff66b3;
+}
+
+/* Bouton */
+.btn-apply {
+    width: 100%;
+    padding: 12px;
+    font-size: 17px;
+    font-weight: bold;
+    border-radius: 12px;
+    border: none;
+    background: linear-gradient(135deg, #ff0066, #b300ff);
+    color: white;
+    transition: 0.2s;
+}
+
+.btn-apply:hover {
+    cursor: pointer;
+    transform: scale(1.03);
+    box-shadow: 0 0 18px rgba(255, 0, 150, 0.5);
+}
+
+/* Animation */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+body, html {
+    background-color: #000 !important;
+    color: #fff !important;
+}
+
+.body_bg {
+    background: #000 !important;
+}
+
+section, header, footer, .container, .row {
+    background: transparent !important;
+}
+#chatbot-button {
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+    background: #ff0066;
+    color: white;
+    font-size: 28px;
+    padding: 12px 18px;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 0 12px rgba(255, 0, 120, 0.6);
+    z-index: 999999;
+    transition: 0.2s;
+}
+
+#chatbot-button:hover {
+    transform: scale(1.1);
+}
+
+#chatbot-box {
+    position: fixed;
+    bottom: 80px;
+    right: 25px;
+    width: 300px;
+    height: 380px;
+    background: #111;
+    border: 1px solid #ff0066;
+    border-radius: 13px;
+    display: none;
+    flex-direction: column;
+    box-shadow: 0 0 14px rgba(255, 0, 120, 0.4);
+    z-index: 999999;
+}
+
+#chatbot-header {
+    background: #ff0066;
+    padding: 10px;
+    color: white;
+    font-size: 17px;
+    font-weight: bold;
+    text-align: center;
+    border-radius: 13px 13px 0 0;
+}
+
+#chatbot-messages {
+    flex: 1;
+    padding: 10px;
+    overflow-y: auto;
+    color: white;
+    font-size: 14px;
+}
+
+.chat-msg {
+    background: #222;
+    padding: 8px;
+    margin: 5px 0;
+    border-radius: 8px;
+}
+
+#chatbot-input {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    background: #000;
+    color: white;
+    border-top: 1px solid #ff0066;
+    outline: none;
+}
