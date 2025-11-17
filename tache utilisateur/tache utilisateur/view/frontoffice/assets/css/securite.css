@@ -1,0 +1,308 @@
+:root {
+    --primary-color: #ff4a57;
+    --secondary-color: #1f2235;
+    --accent-color: #24263b;
+    --text-color: #ffffff;
+}
+
+body {
+    background-color: #1f2235;
+    color: var(--text-color);
+    font-family: 'Arial', sans-serif;
+}
+
+.security-container {
+    max-width: 900px;
+    margin: 50px auto;
+    padding: 30px;
+    background: var(--secondary-color);
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    border: 1px solid #2d3047;
+}
+
+.security-header {
+    text-align: center;
+    margin-bottom: 40px;
+    border-bottom: 2px solid var(--primary-color);
+    padding-bottom: 20px;
+}
+
+.security-section {
+    padding: 25px;
+    background: var(--accent-color);
+    border-radius: 10px;
+    margin-bottom: 25px;
+    border: 1px solid #2d3047;
+}
+
+.section-title {
+    color: var(--text-color);
+    margin-bottom: 20px;
+    font-weight: 600;
+    border-bottom: 1px solid #2d3047;
+    padding-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.section-title i {
+    color: var(--primary-color);
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-label {
+    font-weight: 600;
+    color: var(--text-color);
+    margin-bottom: 8px;
+}
+
+.form-control {
+    border: 1px solid #2d3047;
+    border-radius: 8px;
+    padding: 12px 15px;
+    background: var(--secondary-color);
+    color: var(--text-color);
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(255, 74, 87, 0.25);
+    background: var(--secondary-color);
+    color: var(--text-color);
+}
+
+.form-select {
+    border: 1px solid #2d3047;
+    border-radius: 8px;
+    padding: 12px 15px;
+    background: var(--secondary-color);
+    color: var(--text-color);
+}
+
+.form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(255, 74, 87, 0.25);
+}
+
+.btn-save {
+    background: linear-gradient(45deg, var(--primary-color), #ff6b7a);
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 25px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+.btn-save:hover {
+    background: linear-gradient(45deg, #ff6b7a, var(--primary-color));
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(255, 74, 87, 0.4);
+    color: white;
+}
+
+.back-home {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 500;
+    border: 1px solid var(--primary-color);
+    padding: 10px 25px;
+    border-radius: 25px;
+    transition: all 0.3s ease;
+}
+
+.back-home:hover {
+    background: var(--primary-color);
+    color: white;
+    text-decoration: none;
+}
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 34px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #2d3047;
+    transition: .4s;
+    border-radius: 34px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background-color: var(--primary-color);
+}
+
+input:checked + .slider:before {
+    transform: translateX(26px);
+}
+
+/* Styles pour les messages d'alerte */
+.alert-message {
+    padding: 12px 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-weight: 500;
+}
+
+.alert-success {
+    background: rgba(40, 167, 69, 0.2);
+    border: 1px solid #28a745;
+    color: #28a745;
+}
+
+.alert-error {
+    background: rgba(220, 53, 69, 0.2);
+    border: 1px solid #dc3545;
+    color: #dc3545;
+}
+
+.security-feature {
+    display: flex;
+    justify-content: between;
+    align-items: center;
+    padding: 15px;
+    background: var(--secondary-color);
+    border-radius: 8px;
+    margin-bottom: 15px;
+    border: 1px solid #2d3047;
+}
+
+.feature-info {
+    flex: 1;
+}
+
+.feature-title {
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.feature-description {
+    color: #b0b3c1;
+    font-size: 14px;
+}
+
+/* Styles pour le menu utilisateur */
+.user-menu {
+    position: relative;
+    display: inline-block;
+}
+
+.user-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    color: var(--text-color);
+    padding: 8px 15px;
+    border-radius: 25px;
+    background: var(--accent-color);
+    border: 1px solid #2d3047;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.user-wrapper:hover {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.user-name {
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(45deg, var(--primary-color), #ff6b7a);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid rgba(255, 255, 255, 0.8);
+}
+
+.user-avatar i {
+    color: white;
+    font-size: 16px;
+}
+
+.user-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: var(--secondary-color);
+    min-width: 220px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    border-radius: 10px;
+    z-index: 1000;
+    margin-top: 10px;
+    border: 1px solid var(--primary-color);
+}
+
+.user-dropdown.show {
+    display: block;
+}
+
+.user-dropdown a {
+    display: flex;
+    align-items: center;
+    padding: 15px 20px;
+    text-decoration: none;
+    color: var(--text-color);
+    border-bottom: 1px solid #2d3047;
+    transition: all 0.3s ease;
+}
+
+.user-dropdown a i {
+    width: 20px;
+    margin-right: 12px;
+    color: var(--primary-color);
+}
+
+.user-dropdown a:hover {
+    background: var(--accent-color);
+    color: var(--primary-color);
+}
+
+.main_menu {
+    background: var(--secondary-color) !important;
+    border-bottom: 2px solid var(--primary-color);
+}
+
+.navbar-brand img {
+    filter: brightness(0) invert(1);
+    height: 40px;
+}
