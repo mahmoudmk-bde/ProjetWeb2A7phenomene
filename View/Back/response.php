@@ -39,10 +39,10 @@ ob_start();
           <p style="margin: 0;"><strong>Email client:</strong> <?= htmlspecialchars($rec['email']) ?></p>
         </div>
 
-        <form method="POST">
+        <form id="responseForm" method="POST" novalidate>
           <div class="form-group">
             <label for="response"><strong>Votre réponse</strong></label>
-            <textarea class="form-control" id="response" name="response" rows="8" required style="background: var(--accent-color); border: 1px solid #2d3047; color: var(--text-color); resize: vertical;"></textarea>
+            <textarea class="form-control" id="response" name="response" rows="8" style="background: var(--accent-color); border: 1px solid #2d3047; color: var(--text-color); resize: vertical;"></textarea>
             <small style="color: #b0b3c1;">Soyez courtois et professionnel dans votre réponse</small>
           </div>
           <div style="margin-top: 20px;">

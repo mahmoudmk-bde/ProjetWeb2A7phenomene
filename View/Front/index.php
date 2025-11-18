@@ -71,7 +71,7 @@
                                     </li>
                                 </ul>
                             </div>
-                            <a href="#" class="btn_1 d-none d-sm-block">Install Now</a>
+                            
                         </nav>
                     </div>
                 </div>
@@ -135,12 +135,11 @@
                         </div>
                     </div>
                     <div class="col-md-7 col-lg-6 col-xl-5">
-                        <div class="about_us_text">
+                                <div class="about_us_text">
                             <h2>Find out about us in history</h2>
                             <p>Lorem ipsum dolor sit amet, consectetur adipiscing
                                 elit sed do eiusmod tempor incididunt ut labore et
                                 dolore magna aliqua. </p>
-                            <a href="#" class="btn_1">Install Now</a>
                             <a href="#" class="btn_1">Watch Tutorial</a>
                         </div>
                     </div>
@@ -151,9 +150,8 @@
             <div class="container-fluid">
                 <div class="row align-items-center justify-content-between">
                     <div class="col-md-2 offset-lg-2 offset-sm-1">
-                        <div class="live_stareams_text">
+                            <div class="live_stareams_text">
                             <h2>live <br> stareams</h2>
-                            <div class="btn_1">install now</div>
                         </div>
                     </div>
                     <div class="col-md-7 offset-sm-1">

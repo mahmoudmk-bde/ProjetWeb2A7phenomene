@@ -136,7 +136,7 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
                 <div class="row align-items-center">
                     <div class="col-lg-12">
                         <nav class="navbar navbar-expand-lg navbar-light">
-                            <a class="navbar-brand" href="index.html">
+                            <a class="navbar-brand" href="index.php">
                                 <img src="img/logo.png" alt="logo">
                             </a>
                             <button class="navbar-toggler" type="button" data-toggle="collapse"
@@ -148,7 +148,7 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
                             <div class="collapse navbar-collapse main-menu-item" id="navbarSupportedContent">
                                 <ul class="navbar-nav">
                                     <li class="nav-item">
-                                        <a class="nav-link" href="index.html">Home</a>
+                                        <a class="nav-link" href="index.php">Home</a>
                                     </li>
                                     <li class="nav-item">
                                         <a class="nav-link" href="fighter.html">Fighter</a>
@@ -164,7 +164,7 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
                                     </li>
                                 </ul>
                             </div>
-                            <a href="#" class="btn_1 d-none d-sm-block">Install Now</a>
+                            
                         </nav>
                     </div>
                 </div>
@@ -189,23 +189,23 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
                     </div>
                 <?php endif; ?>
 
-                <form method="POST" action="">
+                <form id="reclamationForm" method="POST" action="" novalidate>
                     <div class="form-group">
                         <label for="sujet">Sujet de la réclamation</label>
                         <input type="text" class="form-control" id="sujet" name="sujet" 
-                               placeholder="Entrez le sujet" required>
+                               placeholder="Entrez le sujet">
                     </div>
 
                     <div class="form-group">
                         <label for="email">Votre email</label>
                         <input type="email" class="form-control" id="email" name="email" 
-                               placeholder="Entrez votre email" required>
+                               placeholder="Entrez votre email">
                     </div>
 
                     <div class="form-group">
                         <label for="description">Description de la réclamation</label>
                         <textarea class="form-control" id="description" name="description" 
-                                  placeholder="Décrivez en détail votre réclamation..." required></textarea>
+                                  placeholder="Décrivez en détail votre réclamation..."></textarea>
                     </div>
 
                     <button type="submit" class="btn_submit">
@@ -214,7 +214,7 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
                 </form>
 
                 <div class="back_link">
-                    <a href="index.html">
+                    <a href="index.php">
                         <i class="fas fa-arrow-left"></i> Retour à l'accueil
                     </a>
                 </div>
@@ -225,6 +225,7 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
     <script src="js/popper.min.js"></script>
     <script src="js/bootstrap.min.js"></script>
     <script src="js/all.js"></script>
+    <script src="js/form-validation.js"></script>
 </body>
 
 </html>

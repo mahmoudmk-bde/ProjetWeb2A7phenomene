@@ -1,5 +1,5 @@
 <?php
-// View/Back/listReclamation.php
+
 require_once __DIR__ . '/../../Controller/ReclamationController.php';
 require_once __DIR__ . '/../../Controller/ResponseController.php';
 
@@ -7,11 +7,11 @@ $recCtrl = new ReclamationController();
 $respCtrl = new ResponseController();
 $list = $recCtrl->listReclamations();
 
-// Set page variables
+
 $pageTitle = 'Réclamations - Backoffice';
 $activePage = 'reclamations';
 
-// Build content using output buffering
+
 ob_start();
 ?>
 <div class="card">

@@ -28,16 +28,16 @@ ob_start();
   <div class="card-body">
     <div class="row mb-4">
       <div class="col-md-6">
-        <p><strong>Sujet:</strong> <?= htmlspecialchars($rec['sujet']) ?></p>
-        <p><strong>Email:</strong> <?= htmlspecialchars($rec['email']) ?></p>
-        <p><strong>Date de création:</strong>
+        <p>Sujet: <?= htmlspecialchars($rec['sujet']) ?></p>
+        <p>Email: <?= htmlspecialchars($rec['email']) ?></p>
+        <p>Date de création:
           <?php if (!empty($rec['date_creation'])): ?>
             <?= date('d/m/Y H:i', strtotime($rec['date_creation'])) ?>
           <?php else: ?>
             -
           <?php endif; ?>
         </p>
-        <p><strong>Statut:</strong> 
+        <p>Statut: 
           <?php
             $statusClass = 'badge-info';
             if ($rec['statut'] === 'Résolu') {
@@ -53,16 +53,16 @@ ob_start();
       </div>
       <div class="col-md-6">
         <?php if (!empty($rec['telephone'])): ?>
-          <p><strong>Téléphone:</strong> <?= htmlspecialchars($rec['telephone']) ?></p>
+          <p>Téléphone: <?= htmlspecialchars($rec['telephone']) ?></p>
         <?php endif; ?>
         <?php if (!empty($rec['autres'])): ?>
-          <p><strong>Autres infos:</strong><br><?= nl2br(htmlspecialchars($rec['autres'])) ?></p>
+          <p>Autres infos:<br><?= nl2br(htmlspecialchars($rec['autres'])) ?></p>
         <?php endif; ?>
       </div>
     </div>
 
     <div class="card-header" style="margin-top: 20px;">
-      <h5 class="card-title mb-0"><strong>Description</strong></h5>
+      <h5 class="card-title mb-0">Description</h5>
     </div>
     <div style="padding:15px; background:var(--accent-color); border-radius: 8px; margin-top: 10px;">
       <?= nl2br(htmlspecialchars($rec['description'])) ?>
@@ -81,7 +81,7 @@ ob_start();
         <?php endforeach; ?>
       </div>
     <?php else: ?>
-      <p style="margin-top: 15px;"><em>Aucune réponse pour le moment.</em></p>
+      <p style="margin-top: 15px;">Aucune réponse pour le moment.</p>
     <?php endif; ?>
 
     <div style="margin-top: 20px;">
