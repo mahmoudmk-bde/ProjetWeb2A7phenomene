@@ -122,16 +122,17 @@ class UtilisateurController {
         }
     }
     // Dans la classe UtilisateurController, ajoutez cette méthode :
-    public function getUtilisateursCount() {
-        $sql = "SELECT COUNT(*) as count FROM utilisateur";
-        $db = config::getConnexion();
-        try {
-            $query = $db->query($sql);
-            $result = $query->fetch();
-            return $result['count'];
-        } catch (Exception $e) {
-            die('Error:' . $e->getMessage());
-        }
+    // Dans utilisateurcontroller.php, ajoutez cette méthode :
+public function getUtilisateursCount() {
+    $sql = "SELECT COUNT(*) as count FROM utilisateur";
+    $db = config::getConnexion();
+    try {
+        $query = $db->query($sql);
+        $result = $query->fetch();
+        return $result['count'];
+    } catch (Exception $e) {
+        die('Error:' . $e->getMessage());
     }
+}
 }
 ?>

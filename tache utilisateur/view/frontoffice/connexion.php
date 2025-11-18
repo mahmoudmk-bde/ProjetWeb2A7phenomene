@@ -32,7 +32,7 @@ if (isset($_POST["username"]) && isset($_POST["password"])) {
             $error = "Veuillez entrer un email ou un numéro de téléphone valide";
         }
         
-        // Si une requête SQL est définie et pas d'erreur
+        // verification s'il nya pas d'erreur
         if (!empty($sql) && empty($error)) {
             $db = config::getConnexion();
             $stmt = $db->prepare($sql);

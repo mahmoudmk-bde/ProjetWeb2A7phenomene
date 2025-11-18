@@ -32,7 +32,7 @@ if (
                 $_POST['typee'],
             );
             $utilisateurc->addUtilisateur($utilisateur);
-            // AJOUT: Redirection vers connexion.php après inscription réussie
+            // AJOUT
             header('Location: connexion.php');
             exit;
         }
