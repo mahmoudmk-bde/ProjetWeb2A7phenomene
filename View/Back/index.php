@@ -239,12 +239,12 @@
     <!-- Sidebar -->
     <nav id="sidebar">
         <div class="sidebar-header">
-            <h3><img src="img/logo.png" alt="logo" style="height: 40px; margin-right: 10px;" />BACKOFFICE</h3>
+            <h3><i class="fas fa-cog"></i> BACKOFFICE</h3>
         </div>
 
         <ul class="list-unstyled components">
             <li class="active">
-                <a href="#"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+                <a href="index.php"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
             </li>
             <li>
                 <a href="#"><i class="fas fa-tasks"></i> Gestion des Missions</a>

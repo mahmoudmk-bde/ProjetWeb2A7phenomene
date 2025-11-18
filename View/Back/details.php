@@ -14,57 +14,83 @@ $rec = $recCtrl->getReclamation($id);
 if (!$rec) { echo "Réclamation introuvable."; exit; }
 $responses = $respCtrl->getResponses($id);
 
-ob_start();
-
+// Set page variables
 $pageTitle = 'Détails réclamation #' . $rec['id'];
+$activePage = 'reclamations';
+
+ob_start();
 ?>
 
 <div class="card">
-
- 
-
-  <p><strong>Sujet:</strong> <?= htmlspecialchars($rec['sujet']) ?></p>
-
-  <p><strong>Description:</strong><br><?= nl2br(htmlspecialchars($rec['description'])) ?></p>
-
-  <p><strong>Email:</strong> <?= htmlspecialchars($rec['email']) ?></p>
-
-  <p><strong>Date de création:</strong>
-    <?php if (!empty($rec['date_creation'])): ?>
-      <?= date('d/m/Y H:i', strtotime($rec['date_creation'])) ?>
-    <?php else: ?>
-      -
-    <?php endif; ?>
-  </p>
-
-  <p><strong>Statut:</strong> <span style="font-weight:600;"><?= htmlspecialchars($rec['statut']) ?></span></p>
-
-  <?php if (!empty($rec['autres']) || !empty($rec['telephone'])): ?>
-    <div style="margin-top:8px;padding:8px;background:#fafafa;border-radius:6px;">
-      <?php if (!empty($rec['telephone'])): ?>
-        <p><strong>Téléphone:</strong> <?= htmlspecialchars($rec['telephone']) ?></p>
-      <?php endif; ?>
-      <?php if (!empty($rec['autres'])): ?>
-        <p><strong>Autres infos:</strong> <?= nl2br(htmlspecialchars($rec['autres'])) ?></p>
-      <?php endif; ?>
-    </div>
-  <?php endif; ?>
-
-  <h3>Réponses</h3>
-  <?php if ($responses): ?>
-    <?php foreach ($responses as $r): ?>
-      <div style="padding:10px;background:#f9f9f9;margin-bottom:8px;border-radius:6px;">
-        <?= nl2br(htmlspecialchars($r['contenu'])) ?>
-        <div style="font-size:11px;color:#666; margin-top:6px;"><?= $r['date_response'] ?></div>
+  <div class="card-header">
+    <h5 class="card-title mb-0"><i class="fas fa-info-circle"></i> Réclamation #<?= htmlspecialchars($rec['id']) ?></h5>
+  </div>
+  <div class="card-body">
+    <div class="row mb-4">
+      <div class="col-md-6">
+        <p><strong>Sujet:</strong> <?= htmlspecialchars($rec['sujet']) ?></p>
+        <p><strong>Email:</strong> <?= htmlspecialchars($rec['email']) ?></p>
+        <p><strong>Date de création:</strong>
+          <?php if (!empty($rec['date_creation'])): ?>
+            <?= date('d/m/Y H:i', strtotime($rec['date_creation'])) ?>
+          <?php else: ?>
+            -
+          <?php endif; ?>
+        </p>
+        <p><strong>Statut:</strong> 
+          <?php
+            $statusClass = 'badge-info';
+            if ($rec['statut'] === 'Résolu') {
+              $statusClass = 'badge-success';
+            } elseif ($rec['statut'] === 'En attente') {
+              $statusClass = 'badge-warning';
+            } elseif ($rec['statut'] === 'Rejeté') {
+              $statusClass = 'badge-danger';
+            }
+          ?>
+          <span class="badge <?= $statusClass ?>"><?= htmlspecialchars($rec['statut']) ?></span>
+        </p>
       </div>
-    <?php endforeach; ?>
-  <?php else: ?>
-    <p><em>Aucune réponse pour le moment.</em></p>
-  <?php endif; ?>
+      <div class="col-md-6">
+        <?php if (!empty($rec['telephone'])): ?>
+          <p><strong>Téléphone:</strong> <?= htmlspecialchars($rec['telephone']) ?></p>
+        <?php endif; ?>
+        <?php if (!empty($rec['autres'])): ?>
+          <p><strong>Autres infos:</strong><br><?= nl2br(htmlspecialchars($rec['autres'])) ?></p>
+        <?php endif; ?>
+      </div>
+    </div>
 
-  <a class="btn" href="listReclamation.php">Retour</a>
-  <a class="btn" style="background:#2d89ef;color:#fff" href="response.php?id=<?= $rec['id'] ?>">Répondre</a>
+    <div class="card-header" style="margin-top: 20px;">
+      <h5 class="card-title mb-0"><strong>Description</strong></h5>
+    </div>
+    <div style="padding:15px; background:var(--accent-color); border-radius: 8px; margin-top: 10px;">
+      <?= nl2br(htmlspecialchars($rec['description'])) ?>
+    </div>
+
+    <div class="card-header" style="margin-top: 20px;">
+      <h5 class="card-title mb-0"><i class="fas fa-comments"></i> Réponses (<?= count($responses ?? []) ?>)</h5>
+    </div>
+    <?php if ($responses): ?>
+      <div style="margin-top: 15px;">
+        <?php foreach ($responses as $r): ?>
+          <div style="padding:15px; background:var(--accent-color); margin-bottom:12px; border-radius: 8px; border-left: 4px solid var(--primary-color);">
+            <p style="margin-bottom: 8px;"><?= nl2br(htmlspecialchars($r['contenu'])) ?></p>
+            <small style="color: #b0b3c1;"><i class="fas fa-calendar"></i> <?= $r['date_response'] ?></small>
+          </div>
+        <?php endforeach; ?>
+      </div>
+    <?php else: ?>
+      <p style="margin-top: 15px;"><em>Aucune réponse pour le moment.</em></p>
+    <?php endif; ?>
+
+    <div style="margin-top: 20px;">
+      <a class="btn btn-primary" href="listReclamation.php"><i class="fas fa-arrow-left"></i> Retour</a>
+      <a class="btn btn-primary" href="response.php?id=<?= $rec['id'] ?>" style="margin-left: 10px;"><i class="fas fa-reply"></i> Ajouter une réponse</a>
+    </div>
+  </div>
 </div>
+
 <?php
 $content = ob_get_clean();
 include __DIR__ . '/layout.php';
