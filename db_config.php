@@ -4,7 +4,7 @@ class config
     public static function getConnexion()
     {
         $host = "localhost";
-        $db   = "projetweb"; // change en "projetweb2" si besoin
+        $db   = "projetweb"; 
         $user = "root";
         $pass = "";
 

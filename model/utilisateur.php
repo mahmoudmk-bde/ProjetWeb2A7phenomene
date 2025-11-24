@@ -1,0 +1,158 @@
+<?php
+class Utilisateur {
+    private ?int $id_util;
+    private ?string $prenom;
+    private ?string $nom;
+    private ?DateTime $dt_naiss;
+    private ?string $mail;
+    private ?int $num;
+    private ?string $mdp;
+    private ?string $typee;
+    private ?string $q1;
+    private ?string $rp1;
+    private ?string $q2;
+    private ?string $rp2;
+    
+    // Constructor - AJOUT DES NOUVELLES PROPRIÉTÉS
+    public function __construct(?int $id_util, ?string $prenom, ?string $nom, ?DateTime $dt_naiss, ?string $mail, ?int $num, ?string $mdp, ?string $typee, ?string $q1 = '', ?string $rp1 = '', ?string $q2 = '', ?string $rp2 = '') {
+        $this->id_util = $id_util;
+        $this->prenom = $prenom;
+        $this->nom = $nom;
+        $this->dt_naiss = $dt_naiss;
+        $this->mail = $mail;
+        $this->num = $num;
+        $this->mdp = $mdp;
+        $this->typee = $typee;
+        $this->q1 = $q1;
+        $this->rp1 = $rp1;
+        $this->q2 = $q2;
+        $this->rp2 = $rp2;
+    }
+
+    // Méthode pour afficher les informations de l'utilisateur - CORRIGÉE
+    public function show() {
+        echo "<table border='1' cellpadding='5'>";
+        echo "<tr><th>ID</th><th>Prénom</th><th>Nom</th><th>Date de naissance</th><th>Email</th><th>Téléphone</th><th>Type</th></tr>";
+        echo "<tr>";
+        echo "<td>{$this->id_util}</td>";
+        echo "<td>{$this->prenom}</td>";
+        echo "<td>{$this->nom}</td>";
+        echo "<td>" . ($this->dt_naiss ? $this->dt_naiss->format('Y-m-d') : '') . "</td>";
+        echo "<td>{$this->mail}</td>";
+        echo "<td>{$this->num}</td>";
+        echo "<td>{$this->typee}</td>";
+        echo "</tr>";
+        echo "</table>";
+    }
+
+    // Méthode pour afficher sous forme de carte - CORRIGÉE (sans mot de passe)
+    public function showCard() {
+        echo "<div style='border: 1px solid #ddd; padding: 15px; margin: 10px; border-radius: 5px; background-color: #f9f9f9;'>";
+        echo "<h3>{$this->prenom} {$this->nom}</h3>";
+        echo "<p><strong>ID:</strong> {$this->id_util}</p>";
+        echo "<p><strong>Date de naissance:</strong> " . ($this->dt_naiss ? $this->dt_naiss->format('d/m/Y') : '') . "</p>";
+        echo "<p><strong>Email:</strong> {$this->mail}</p>";
+        echo "<p><strong>Téléphone:</strong> {$this->num}</p>";
+        echo "<p><strong>Type:</strong> {$this->typee}</p>";
+        echo "</div>";
+    }
+
+    // Getters and Setters - AJOUT DES GETTERS/SETTERS POUR LES NOUVELLES PROPRIÉTÉS
+    public function getIdUtil(): ?int {
+        return $this->id_util;
+    }
+
+    public function setIdUtil(?int $id_util): void {
+        $this->id_util = $id_util;
+    }
+
+    public function getPrenom(): ?string {
+        return $this->prenom;
+    }
+
+    public function setPrenom(?string $prenom): void {
+        $this->prenom = $prenom;
+    }
+
+    public function getNom(): ?string {
+        return $this->nom;
+    }
+
+    public function setNom(?string $nom): void {
+        $this->nom = $nom;
+    }
+
+    public function getDtNaiss(): ?DateTime {
+        return $this->dt_naiss;
+    }
+
+    public function setDtNaiss(?DateTime $dt_naiss): void {
+        $this->dt_naiss = $dt_naiss;
+    }
+
+    public function getMail(): ?string {
+        return $this->mail;
+    }
+
+    public function setMail(?string $mail): void {
+        $this->mail = $mail;
+    }
+
+    public function getNum(): ?int {
+        return $this->num;
+    }
+
+    public function setNum(?int $num): void {
+        $this->num = $num;
+    }
+
+    public function getMdp(): ?string {
+        return $this->mdp;
+    }
+
+    public function setMdp(?string $mdp): void {
+        $this->mdp = $mdp;
+    }
+
+    public function getType(): ?string {
+        return $this->typee;
+    }
+
+    public function setType(?string $typee): void {
+        $this->typee = $typee;
+    }
+
+    // NOUVEAUX GETTERS/SETTERS POUR LES QUESTIONS DE SÉCURITÉ
+    public function getQ1(): ?string {
+        return $this->q1;
+    }
+
+    public function setQ1(?string $q1): void {
+        $this->q1 = $q1;
+    }
+
+    public function getRp1(): ?string {
+        return $this->rp1;
+    }
+
+    public function setRp1(?string $rp1): void {
+        $this->rp1 = $rp1;
+    }
+
+    public function getQ2(): ?string {
+        return $this->q2;
+    }
+
+    public function setQ2(?string $q2): void {
+        $this->q2 = $q2;
+    }
+
+    public function getRp2(): ?string {
+        return $this->rp2;
+    }
+
+    public function setRp2(?string $rp2): void {
+        $this->rp2 = $rp2;
+    }
+}
+?>

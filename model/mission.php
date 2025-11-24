@@ -35,4 +35,13 @@ class Mission
     public function getNiveauDifficulte(): string { return $this->niveau_difficulte; }
     public function getDescription(): ?string   { return $this->description; }
     public function getCompetencesRequises(): ?string { return $this->competences_requises; }
+    public function getMissionById($id)
+{
+    $sql = "SELECT * FROM missions WHERE id = ?";
+    $db = config::getConnexion();
+    $query = $db->prepare($sql);
+    $query->execute([$id]);
+    return $query->fetch();
+}
+
 }

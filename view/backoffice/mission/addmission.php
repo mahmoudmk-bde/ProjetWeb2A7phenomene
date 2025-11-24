@@ -1,13 +1,21 @@
 <?php
+session_start();   // 🔥 AJOUT OBLIGATOIRE
+
 require_once __DIR__ . '/../../../controller/missioncontroller.php';
 $missionC = new missioncontroller();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
     $missionC->addMission($_POST);
+
+    // 🔥 Message de succès
+    $_SESSION['success'] = "🎉 Mission ajoutée avec succès !";
+
     header('Location: missionliste.php');
     exit;
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="fr">
 
@@ -15,31 +23,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <title>Ajouter une mission</title>
 
-    <link rel="stylesheet" href="../assets/css/back.css">
+    <!--<link rel="stylesheet" href="../assets/css/back.css">-->
+    <link rel="stylesheet" href="../assets/css/custom-backoffice.css">
     <link rel="stylesheet" href="../frontoffice/css/bootstrap.min.css">
 
     <link rel="stylesheet" href="../../frontoffice/css/all.css">
 </head>
 
 <body>
-
-<nav id="sidebar">
-    <div class="sidebar-header">
-        <h3><img src="../../img/logo.png" style="height:40px;"> ENGAGE Admin</h3>
-    </div>
-    <ul class="list-unstyled components">
-        <li><a href="../dashboard.php"><i class="fas fa-home"></i> Dashboard</a></li>
-        <li class="active"><a href="missionliste.php"><i class="fas fa-tasks"></i> Missions</a></li>
-        <li><a href="../condidature/listecondidature.php"><i class="fas fa-users"></i> Candidatures</a></li>
-    </ul>
-</nav>
-
-<div id="content">
-
-<nav class="navbar navbar-expand-lg topbar">
-    <button id="sidebarCollapse" class="btn btn-dark"><i class="fas fa-bars"></i></button>
-</nav>
-
 <div class="container">
 
 <div class="form-card">
@@ -57,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <input type="text" name="jeu" placeholder=" " required>
             <label>Jeu utilisé</label>
         </div>
-
+        
         <div class="form-group-modern">
             <input type="text" name="theme" placeholder=" " required>
             <label>Thème</label>
@@ -72,6 +63,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <option value="moyen">Moyen</option>
         <option value="difficile">Difficile</option>
     </select>
+    <input type="date" name="date_debut" required>
+<input type="date" name="date_fin" required>
+
 </div>
 
 

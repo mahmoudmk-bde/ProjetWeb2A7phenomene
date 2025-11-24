@@ -1,74 +1,94 @@
 <?php
 require_once __DIR__ . '/../db_config.php';
 
-require_once __DIR__ . '/../model/mission.php';
 
 class missioncontroller
 {
-    public function missionliste(): array
+    private $db;
+
+    public function __construct()
     {
-        $sql = "SELECT * FROM missions ORDER BY id DESC";
-        $db  = config::getConnexion();
-        $req = $db->prepare($sql);
-        $req->execute();
-        return $req->fetchAll(PDO::FETCH_ASSOC);
+        $this->db = config::getConnexion();
     }
 
-    public function getMissionById($id): ?Mission
+    // liste des missions
+    public function missionliste()
     {
-        $sql = "SELECT * FROM missions WHERE id = :id";
-        $db  = config::getConnexion();
-        $req = $db->prepare($sql);
-        $req->execute([':id' => $id]);
-        $row = $req->fetch(PDO::FETCH_ASSOC);
-
-        if (!$row) {
-            return null;
-        }
-
-        return new Mission(
-            $row['id'],
-            $row['titre'],
-            $row['jeu'],
-            $row['theme'],
-            $row['niveau_difficulte'],
-            $row['description'] ?? null,
-            $row['competences_requises'] ?? null
-        );
+        $sql = "SELECT * FROM missions ORDER BY created_at DESC";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function addMission(array $data): void
+    public function getMissions()
     {
-        $sql = "INSERT INTO missions (titre, jeu, theme, niveau_difficulte, description, competences_requises)
-                VALUES (:titre, :jeu, :theme, :niveau_difficulte, :description, :competences_requises)";
+        return $this->missionliste();
+    }
 
-        $db  = config::getConnexion();
-        $req = $db->prepare($sql);
+    public function getMissionById($id)
+    {
+        $sql = "SELECT * FROM missions WHERE id = ?";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$id]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
 
-        $req->execute([
-            ':titre'               => $data['titre'],
-            ':jeu'                 => $data['jeu'],
-            ':theme'               => $data['theme'],
-            ':niveau_difficulte'   => $data['niveau_difficulte'],
-            ':description'         => $data['description'] ?? null,
-            ':competences_requises'=> $data['competences_requises'] ?? null,
+    // modif  une mission
+    public function updateMission($data)
+    {
+        $sql = "UPDATE missions 
+                SET titre = ?, 
+                    theme = ?, 
+                    jeu = ?, 
+                    niveau_difficulte = ?, 
+                    date_debut = ?, 
+                    date_fin = ?, 
+                    description = ?
+                WHERE id = ?";
+
+        $stmt = $this->db->prepare($sql);
+
+        $stmt->execute([
+            $data['titre'],
+            $data['theme'],
+            $data['jeu'],
+            $data['niveau_difficulte'],
+            $data['date_debut'],
+            $data['date_fin'],
+            $data['description'],
+            $data['id']
         ]);
     }
 
-    public function deletemission(int $id): void
-    {
-        $sql = "DELETE FROM missions WHERE id = :id";
-        $db  = config::getConnexion();
-        $req = $db->prepare($sql);
-        $req->execute([':id' => $id]);
-    }
-    public function getMissions()
+    // Ajoute  mission 
+    public function addMission($data)
 {
-    $sql = "SELECT * FROM missions ORDER BY id DESC";
-    $db = config::getConnexion();
-    $req = $db->prepare($sql);
-    $req->execute();
-    return $req->fetchAll();
+    $sql = "INSERT INTO missions 
+            (titre, theme, jeu, niveau_difficulte, date_debut, date_fin, description, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, NOW())";
+
+    $stmt = $this->db->prepare($sql);
+
+    $stmt->execute([
+        $data['titre'],
+        $data['theme'],
+        $data['jeu'],
+        $data['niveau_difficulte'],
+        $data['date_debut'],
+        $data['date_fin'],
+        $data['description']
+    ]);
+
 }
 
+
+    // Supp une mission
+    public function deleteMission($id)
+    {
+        $sql = "DELETE FROM missions WHERE id = ?";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$id]);
+        $historiqueC->ajouterHistorique("Admin", "A supprimé la mission ID : " . $id);
+
+    }
 }
