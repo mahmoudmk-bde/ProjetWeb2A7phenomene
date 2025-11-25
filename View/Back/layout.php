@@ -3,250 +3,38 @@
 $pageTitle = isset($pageTitle) ? $pageTitle : 'Backoffice - Engage';
 $content = isset($content) ? $content : '';
 $activePage = isset($activePage) ? $activePage : '';
+
+// Compute a BASE_URL pointing to the app root and make it available to templates
+$scriptName = isset($_SERVER['PHP_SELF']) ? $_SERVER['PHP_SELF'] : '';
+$host = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : 'localhost';
+$base = 'http://' . $host . dirname($scriptName);
+$base = str_replace('/View/Back', '', $base);
+$base = rtrim($base, '/\\') . '/';
+define('BASE_URL', $base);
+
+require_once __DIR__ . '/helpers.php';
 ?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-    <title><?= $pageTitle ?></title>
-    <link rel="icon" href="img/favicon.png" />
-    <link rel="stylesheet" href="css/bootstrap.min.css" />
-    <link rel="stylesheet" href="css/all.css" />
+    <title><?= htmlspecialchars($pageTitle, ENT_QUOTES, 'UTF-8') ?></title>
+    <link rel="icon" href="<?= BASE_URL ?>View/Back/assets/img/favicon.png" />
+    <!-- Local backoffice CSS (copied from partenaire template) -->
+    <link rel="stylesheet" href="<?= BASE_URL ?>View/Back/assets/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="<?= BASE_URL ?>View/Back/assets/css/all.css" />
+    <link rel="stylesheet" href="<?= BASE_URL ?>View/Back/assets/css/custom-backoffice.css" />
+    <link rel="stylesheet" href="<?= BASE_URL ?>View/Back/assets/css/flaticon.css" />
+    <link rel="stylesheet" href="<?= BASE_URL ?>View/Back/assets/css/font-awesome.min.css" />
     <style>
-        :root {
-            --primary-color: #ff4a57;
-            --secondary-color: #1f2235;
-            --accent-color: #24263b;
-            --text-color: #ffffff;
-            --sidebar-width: 250px;
-        }
-        
-        body {
-            background-color: #1f2235;
-            color: var(--text-color);
-            overflow-x: hidden;
-            font-family: 'Arial', sans-serif;
-        }
-        
-        #sidebar {
-            min-height: 100vh;
-            width: var(--sidebar-width);
-            position: fixed;
-            top: 0;
-            left: 0;
-            background: var(--secondary-color);
-            color: white;
-            transition: all 0.3s;
-            z-index: 1000;
-            border-right: 2px solid var(--primary-color);
-        }
-        
-        #sidebar .sidebar-header {
-            padding: 20px;
-            background: var(--accent-color);
-            text-align: center;
-        }
-        
-        #sidebar .sidebar-header h3 {
-            margin: 0;
-            font-weight: bold;
-        }
-        
-        #sidebar ul.components {
-            padding: 20px 0;
-        }
-        
-        #sidebar ul li a {
-            padding: 15px 20px;
-            color: var(--text-color);
-            display: block;
-            text-decoration: none;
-            border-left: 4px solid transparent;
-            transition: all 0.3s;
-            font-size: 14px;
-        }
-        
-        #sidebar ul li a i {
-            margin-right: 10px;
-            width: 20px;
-            text-align: center;
-        }
-        
-        #sidebar ul li a:hover {
-            background: var(--accent-color);
-            border-left: 4px solid var(--primary-color);
-            color: var(--primary-color);
-        }
-        
-        #sidebar ul li.active > a {
-            background: var(--accent-color);
-            border-left: 4px solid var(--primary-color);
-            color: var(--primary-color);
-        }
-        
-        #content {
-            width: calc(100% - var(--sidebar-width));
-            margin-left: var(--sidebar-width);
-            padding: 20px;
-            transition: all 0.3s;
-            background: #1f2235;
-        }
-        
-        .card {
-            border: none;
-            border-radius: 10px;
-            background: var(--secondary-color);
-            margin-bottom: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-            border: 1px solid #2d3047;
-        }
-        
-        .card-header {
-            background: var(--accent-color);
-            border-bottom: 2px solid var(--primary-color);
-            color: var(--text-color);
-            font-weight: bold;
-        }
-        
-        .stat-card {
-            text-align: center;
-            padding: 25px 15px;
-            transition: transform 0.3s;
-        }
-        
-        .stat-card:hover {
-            transform: translateY(-5px);
-        }
-        
-        .stat-card i {
-            font-size: 2.5rem;
-            margin-bottom: 15px;
-            color: var(--primary-color);
-        }
-        
-        .stat-card h3 {
-            font-size: 2rem;
-            margin: 10px 0;
-            color: var(--text-color);
-        }
-        
-        .stat-card p {
-            color: #b0b3c1;
-            margin: 0;
-        }
-        
-        .table-responsive {
-            background: var(--secondary-color);
-            border-radius: 10px;
-            padding: 20px;
-        }
-        
-        .table {
-            color: var(--text-color);
-            margin: 0;
-        }
-        
-        .table thead th {
-            border-bottom: 2px solid var(--primary-color);
-            color: var(--primary-color);
-            font-weight: bold;
-        }
-        
-        .table tbody tr:hover {
-            background: var(--accent-color);
-        }
-        
-        .btn-primary {
-            background: linear-gradient(45deg, var(--primary-color), #ff6b7a);
-            border: none;
-            border-radius: 25px;
-            padding: 10px 25px;
-            font-weight: bold;
-            transition: all 0.3s;
-            color: white !important;
-            text-decoration: none !important;
-        }
-        
-        .btn-primary:hover {
-            background: linear-gradient(45deg, #ff6b7a, var(--primary-color));
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(255, 74, 87, 0.4);
-            color: white !important;
-        }
-        
-        .navbar {
-            background: var(--secondary-color) !important;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-            border-radius: 10px;
-            margin-bottom: 20px;
-        }
-        
-        .badge {
-            border-radius: 15px;
-            padding: 5px 12px;
-            font-weight: normal;
-        }
-        
-        .badge-success {
-            background: #28a745;
-        }
-        
-        .badge-warning {
-            background: #ffc107;
-            color: #212529;
-        }
-        
-        .badge-info {
-            background: #17a2b8;
-        }
-        
-        .badge-danger {
-            background: #dc3545;
-        }
-        
-        .list-group-item {
-            background: var(--accent-color);
-            border: 1px solid #2d3047;
-            color: var(--text-color);
-            margin-bottom: 10px;
-            border-radius: 8px !important;
-        }
-        
-        .list-group-item:hover {
-            background: var(--secondary-color);
-            border-color: var(--primary-color);
-        }
-        
-        .dropdown-menu {
-            background: var(--secondary-color);
-            border: 1px solid var(--primary-color);
-        }
-        
-        .dropdown-item {
-            color: var(--text-color);
-        }
-        
-        .dropdown-item:hover {
-            background: var(--accent-color);
-            color: var(--primary-color);
-        }
-        
-        #sidebarCollapse {
-            background: var(--primary-color);
-            border: none;
-            border-radius: 5px;
-        }
-        
-        .text-primary { color: var(--primary-color) !important; }
-        .text-success { color: #28a745 !important; }
-        .text-warning { color: #ffc107 !important; }
-        .text-info { color: #17a2b8 !important; }
-        .text-danger { color: #dc3545 !important; }
+        /* small compatibility tweaks kept locally */
+        body { background:#f5f6fa; }
+        #content { padding:20px; }
     </style>
 </head>
-
 <body>
+    <?php /* Sidebar + nav markup kept from original layout */ ?>
     <nav id="sidebar">
         <div class="sidebar-header">
             <h3><i class="fas fa-cog"></i> BACKOFFICE</h3>
@@ -256,28 +44,13 @@ $activePage = isset($activePage) ? $activePage : '';
             <li <?= $activePage === 'dashboard' ? 'class="active"' : '' ?>>
                 <a href="index.php"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
             </li>
-            <li <?= $activePage === 'missions' ? 'class="active"' : '' ?>>
-                <a href="#"><i class="fas fa-tasks"></i> Gestion des Missions</a>
-            </li>
-            <li <?= $activePage === 'gamification' ? 'class="active"' : '' ?>>
-                <a href="#"><i class="fas fa-gamepad"></i> Système de Gamification</a>
-            </li>
             <li <?= $activePage === 'reclamations' ? 'class="active"' : '' ?>>
                 <a href="listReclamation.php"><i class="fas fa-exclamation-circle"></i> Réclamations</a>
             </li>
-            <li <?= $activePage === 'events' ? 'class="active"' : '' ?>>
-                <a href="#"><i class="fas fa-calendar-alt"></i> Événements</a>
-            </li>
-            <li <?= $activePage === 'education' ? 'class="active"' : '' ?>>
-                <a href="#"><i class="fas fa-graduation-cap"></i> Contenu Éducatif</a>
-            </li>
-            <li <?= $activePage === 'users' ? 'class="active"' : '' ?>>
+            <li>
                 <a href="#"><i class="fas fa-users"></i> Utilisateurs</a>
             </li>
-            <li <?= $activePage === 'analytics' ? 'class="active"' : '' ?>>
-                <a href="#"><i class="fas fa-chart-bar"></i> Analytics</a>
-            </li>
-            <li <?= $activePage === 'settings' ? 'class="active"' : '' ?>>
+            <li>
                 <a href="#"><i class="fas fa-cog"></i> Paramètres</a>
             </li>
         </ul>
@@ -289,12 +62,12 @@ $activePage = isset($activePage) ? $activePage : '';
                 <button type="button" id="sidebarCollapse" class="btn">
                     <i class="fas fa-bars"></i>
                 </button>
-                
+
                 <div class="collapse navbar-collapse">
                     <ul class="navbar-nav ml-auto">
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" style="color: var(--text-color);">
-                                <i class="fas fa-user-circle" style="color: var(--primary-color);"></i> Administrateur
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown">
+                                <i class="fas fa-user-circle"></i> Administrateur
                             </a>
                             <div class="dropdown-menu">
                                 <a class="dropdown-item" href="#"><i class="fas fa-user"></i> Mon Profil</a>
@@ -308,24 +81,27 @@ $activePage = isset($activePage) ? $activePage : '';
             </div>
         </nav>
 
-
         <div class="container-fluid">
             <?= $content ?>
         </div>
     </div>
-    <script src="js/jquery-1.12.1.min.js"></script>
-    <script src="js/popper.min.js"></script>
-    <script src="js/bootstrap.min.js"></script>
-    <script src="js/all.js"></script>
-    <script>
-        $(document).ready(function () {
-            $('#sidebarCollapse').on('click', function () {
-                $('#sidebar').toggleClass('active');
-                $('#content').toggleClass('active');
-            });
-        });
-    </script>
 
-    <script src="js/form-validation.js"></script>
+    <!-- JavaScript (local copies) -->
+    <script src="<?= BASE_URL ?>View/Back/assets/js/jquery-1.12.1.min.js"></script>
+    <script src="<?= BASE_URL ?>View/Back/assets/js/popper.min.js"></script>
+    <script src="<?= BASE_URL ?>View/Back/assets/js/bootstrap.min.js"></script>
+    <script>
+        (function(){
+            var btn = document.getElementById('sidebarCollapse');
+            if (btn) {
+                btn.addEventListener('click', function(){
+                    var sb = document.getElementById('sidebar');
+                    var ct = document.getElementById('content');
+                    if (sb) sb.classList.toggle('active');
+                    if (ct) ct.classList.toggle('active');
+                });
+            }
+        })();
+    </script>
 </body>
 </html>
