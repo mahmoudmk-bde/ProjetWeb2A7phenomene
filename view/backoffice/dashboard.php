@@ -342,6 +342,29 @@ ksort($feedbackRatings);
                 <li><a href="#" onclick="showDashboard(); document.getElementById('stats').scrollIntoView({behavior: 'smooth'});">📊 Statistiques</a></li>
             </ul>
         </li>
+
+        <li>
+            <a href="#gestionReclamationMenu" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
+                <i class="fas fa-exclamation-triangle"></i> Gestion des réclamations
+            </a>
+
+            <ul class="collapse list-unstyled" id="gestionReclamationMenu">
+                <li><a href="#" onclick="openPage('reclamation/listReclamation.php')">⚠️ Réclamations</a></li>
+                <li><a href="#" onclick="openPage('reclamation/statistiques.php')">📊 Statistiques</a></li>
+            </ul>
+        </li>
+
+        <li>
+            <a href="#gestionStoreMenu" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
+                <i class="fas fa-store"></i> Gestion Store & Partenaires
+            </a>
+
+            <ul class="collapse list-unstyled" id="gestionStoreMenu">
+                <li><a href="#" onclick="openPage('store/items-list.php')">🕹️ Store</a></li>
+                <li><a href="#" onclick="openPage('partenaire/list.php')">🤝 Partenaires</a></li>
+                <li><a href="#" onclick="openPage('orders/orders-list.php')">📦 Commandes</a></li>
+            </ul>
+        </li>
     </ul>
 </nav>
 

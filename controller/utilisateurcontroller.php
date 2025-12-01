@@ -1,6 +1,6 @@
 <?php
-include(__DIR__ . '/../db_config.php');
-include(__DIR__ . '/../model/Utilisateur.php');
+require_once __DIR__ . '/../db_config.php';
+require_once __DIR__ . '/../model/utilisateur.php';
 
 class UtilisateurController {
 
@@ -29,44 +29,35 @@ class UtilisateurController {
         }
     }
 
-    public function addUtilisateur(Utilisateur $utilisateur) {
-        $sql = "INSERT INTO utilisateur 
-                (prenom, nom, dt_naiss, mail, num, mdp, typee, q1, rp1, q2, rp2) 
-                VALUES 
-                (:prenom, :nom, :dt_naiss, :mail, :num, :mdp, :typee, :q1, :rp1, :q2, :rp2)";
-        
-        $db = config::getConnexion();
-        try {
-            $query = $db->prepare($sql);
-            
-            // Gestion de la date de naissance
-            $dt_naiss = $utilisateur->getDtNaiss();
-            if ($dt_naiss instanceof DateTime) {
-                $dt_naiss = $dt_naiss->format('Y-m-d');
-            } else {
-                $dt_naiss = null;
-            }
-            
-            $query->execute([
-                'prenom' => $utilisateur->getPrenom(),
-                'nom' => $utilisateur->getNom(),
-                'dt_naiss' => $dt_naiss,
-                'mail' => $utilisateur->getMail(),
-                'num' => $utilisateur->getNum(),
-                'mdp' => $utilisateur->getMdp(),
-                'typee' => $utilisateur->getType(), // CORRIGÉ: getType() au lieu de getTypee()
-                'q1' => $utilisateur->getQ1(),
-                'rp1' => $utilisateur->getRp1(),
-                'q2' => $utilisateur->getQ2(),
-                'rp2' => $utilisateur->getRp2()
-            ]);
-            
-            return true;
-        } catch (Exception $e) {
-            error_log('Error adding user: ' . $e->getMessage());
-            return false;
-        }
+   public function addUtilisateur(Utilisateur $u)
+{
+    $sql = "INSERT INTO utilisateur 
+        (prenom, nom, dt_naiss, mail, num, mdp, typee, q1, rp1, q2, rp2)
+        VALUES 
+        (:prenom, :nom, :dt_naiss, :mail, :num, :mdp, :typee, :q1, :rp1, :q2, :rp2)";
+
+    $db = config::getConnexion();
+
+    try {
+        $query = $db->prepare($sql);
+        $query->execute([
+            ':prenom' => $u->getPrenom(),
+            ':nom' => $u->getNom(),
+            ':dt_naiss' => $u->getDtNaiss(),
+            ':mail' => $u->getMail(),
+            ':num' => $u->getNum(),
+            ':mdp' => $u->getMdp(),
+            ':typee' => $u->getTypee(),
+            ':q1' => $u->getQ1(),
+            ':rp1' => $u->getRp1(),
+            ':q2' => $u->getQ2(),
+            ':rp2' => $u->getRp2()
+        ]);
+    } catch (Exception $e) {
+        die("Erreur lors de l'ajout : " . $e->getMessage());
     }
+}
+
 
     public function updateUtilisateur(Utilisateur $utilisateur, $id_util) {
         try {
@@ -80,10 +71,6 @@ class UtilisateurController {
                     num = :num,
                     mdp = :mdp,
                     typee = :typee,
-                    q1 = :q1,
-                    rp1 = :rp1,
-                    q2 = :q2,
-                    rp2 = :rp2
                 WHERE id_util = :id_util'
             );
             
@@ -104,10 +91,7 @@ class UtilisateurController {
                 'num' => $utilisateur->getNum(),
                 'mdp' => $utilisateur->getMdp(),
                 'typee' => $utilisateur->getType(), // CORRIGÉ: getType() au lieu de getTypee()
-                'q1' => $utilisateur->getQ1(),
-                'rp1' => $utilisateur->getRp1(),
-                'q2' => $utilisateur->getQ2(),
-                'rp2' => $utilisateur->getRp2()
+                
             ]);
             
             return true;

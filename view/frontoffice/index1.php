@@ -9,15 +9,35 @@ if (!isset($_SESSION['user_id'])) {
 // Inclure les controllers
 include '../../controller/utilisateurcontroller.php';
 include '../../controller/condidaturecontroller.php';
+include '../../controller/ReclamationController.php';
 
 $utilisateurController = new UtilisateurController();
 $condidatureController = new CondidatureController();
+$reclamationController = new ReclamationController();
 
 $user_id = $_SESSION['user_id'];
 $current_user = $utilisateurController->showUtilisateur($user_id);
 
+// S'assurer que les infos de session de base existent même si la session est ancienne
+if ($current_user) {
+    if (!isset($_SESSION['user_name'])) {
+        $_SESSION['user_name'] = ($current_user['prenom'] ?? '') . ' ' . ($current_user['nom'] ?? '');
+    }
+    if (!isset($_SESSION['user_type'])) {
+        // Valeur par défaut "user" si le type n'est pas défini
+        $_SESSION['user_type'] = $current_user['typee'] ?? 'user';
+    }
+}
+
+// Variables pratiques pour éviter les "undefined array key"
+$sessionUserName = $_SESSION['user_name'] ?? (($current_user['prenom'] ?? '') . ' ' . ($current_user['nom'] ?? ''));
+$sessionUserName = trim($sessionUserName) !== '' ? $sessionUserName : 'Utilisateur';
+$sessionUserType = $_SESSION['user_type'] ?? ($current_user['typee'] ?? 'user');
+
 // Récupérer les candidatures de l'utilisateur
 $candidatures = $condidatureController->getCandidaturesByUser($user_id);
+// Récupérer les réclamations de l'utilisateur
+$reclamations = $reclamationController->getReclamationsByUser($user_id);
 
 // Compter les statuts
 $stats = [
@@ -28,7 +48,26 @@ $stats = [
 ];
 
 foreach ($candidatures as $candidature) {
-    $stats[$candidature['statut']]++;
+    $statut = $candidature['statut'] ?? 'en_attente';
+    
+    // Mapper les valeurs de la base de données aux clés du tableau stats
+    switch ($statut) {
+        case 'en_attente':
+            $stats['en_attente']++;
+            break;
+        case 'acceptee':
+        case 'accepte':
+            $stats['accepte']++;
+            break;
+        case 'rejetee':
+        case 'refuse':
+        case 'refusee':
+            $stats['refuse']++;
+            break;
+        default:
+            // Pour les autres statuts (annulee, etc.), on peut les ignorer ou les compter séparément
+            break;
+    }
 }
 ?>
 <!DOCTYPE html>
@@ -541,68 +580,17 @@ foreach ($candidatures as $candidature) {
 <body>
 <div class="body_bg">
     
-    <!-- Header -->
-    <header class="main_menu single_page_menu">
-        <div class="container">
-            <div class="row align-items-center">
-                <div class="col-lg-12">
-                    <nav class="navbar navbar-expand-lg navbar-light">
-                        <a class="navbar-brand" href="index1.php">
-                            <img src="assets/img/logo.png" alt="logo" style="height: 45px;" />
-                        </a>
-                        <button class="navbar-toggler" type="button" data-toggle="collapse" 
-                                data-target="#navbarSupportedContent">
-                            <span class="menu_icon"><i class="fas fa-bars"></i></span>
-                        </button>
-
-                        <div class="collapse navbar-collapse main-menu-item" id="navbarSupportedContent">
-                            <ul class="navbar-nav ml-auto">
-                                <li class="nav-item"><a class="nav-link" href="index.php">Accueil Public</a></li>
-                                <li class="nav-item"><a class="nav-link" href="missionlist.php">Missions</a></li>
-                                <li class="nav-item"><a class="nav-link" href="#">Gamification</a></li>
-                                <li class="nav-item"><a class="nav-link" href="#">Réclamations</a></li>
-                                <li class="nav-item"><a class="nav-link" href="#">Événements</a></li>
-                            </ul>
-                        </div>
-
-                        <!-- Menu utilisateur -->
-                        <div class="user-menu d-none d-sm-block">
-                            <div class="user-wrapper" onclick="toggleUserMenu()">
-                                <span class="user-name"><?php echo htmlspecialchars($_SESSION['user_name']); ?></span>
-                                <div class="user-avatar">
-                                    <i class="fas fa-user"></i>
-                                </div>
-                            </div>
-                            <div class="user-dropdown" id="userDropdown">
-                                <a href="profile.php">
-                                    <i class="fas fa-user me-2"></i>Mon Profil
-                                </a>
-                                <a href="settings.php">
-                                    <i class="fas fa-cog me-2"></i>Paramètres
-                                </a>
-                                <a href="securite.php">
-                                    <i class="fas fa-shield-alt me-2"></i>Sécurité
-                                </a>
-                                <a href="logout.php">
-                                    <i class="fas fa-sign-out-alt me-2"></i>Déconnexion
-                                </a>
-                            </div>
-                        </div>
-                    </nav>
-                </div>
-            </div>
-        </div>
-    </header>
+    <?php $headerShowUserMenu = true; include 'header_common.php'; ?>
 
     <!-- Section de bienvenue -->
     <section class="welcome-section fade-in">
         <div class="container">
-            <h1 class="welcome-title">Bon retour, <?php echo htmlspecialchars($_SESSION['user_name']); ?> ! 🎮</h1>
+            <h1 class="welcome-title">Bon retour, <?php echo htmlspecialchars($sessionUserName); ?> ! 🎮</h1>
             <p class="welcome-subtitle">
                 <?php 
-                if ($_SESSION['user_type'] === 'volontaire') {
+                if ($sessionUserType === 'volontaire') {
                     echo "Suivez vos candidatures et découvrez de nouvelles missions passionnantes";
-                } elseif ($_SESSION['user_type'] === 'organisation') {
+                } elseif ($sessionUserType === 'organisation') {
                     echo "Gérez vos missions et connectez-vous avec des volontaires talentueux";
                 } else {
                     echo "Votre hub central pour l'aventure ENGAGE";
@@ -611,7 +599,7 @@ foreach ($candidatures as $candidature) {
             </p>
             <div class="user-badge">
                 <i class="fas fa-star me-2"></i>
-                <?php echo ucfirst(htmlspecialchars($_SESSION['user_type'])); ?> ENGAGE
+                <?php echo ucfirst(htmlspecialchars($sessionUserType)); ?> ENGAGE
             </div>
         </div>
     </section>
@@ -643,7 +631,7 @@ foreach ($candidatures as $candidature) {
 
         <!-- Actions rapides -->
         <div class="quick-actions">
-            <?php if ($_SESSION['user_type'] === 'volontaire'): ?>
+            <?php if ($sessionUserType === 'volontaire'): ?>
                 <a href="missionlist.php" class="action-btn">
                     <i class="fas fa-search me-2"></i>Explorer les Missions
                 </a>
@@ -653,7 +641,7 @@ foreach ($candidatures as $candidature) {
                 <a href="#historique" class="action-btn secondary">
                     <i class="fas fa-history me-2"></i>Mon Historique
                 </a>
-            <?php elseif ($_SESSION['user_type'] === 'organisation'): ?>
+            <?php elseif ($sessionUserType === 'organisation'): ?>
                 <a href="#" class="action-btn">
                     <i class="fas fa-plus me-2"></i>Créer une Mission
                 </a>
@@ -699,8 +687,11 @@ foreach ($candidatures as $candidature) {
                                 <?php 
                                 switch($candidature['statut']) {
                                     case 'en_attente': echo '⏳ En Attente'; break;
+                                    case 'acceptee':
                                     case 'accepte': echo '✅ Acceptée'; break;
-                                    case 'refuse': echo '❌ Refusée'; break;
+                                    case 'rejetee':
+                                    case 'refuse':
+                                    case 'refusee': echo '❌ Refusée'; break;
                                     default: echo htmlspecialchars($candidature['statut']);
                                 }
                                 ?>
@@ -728,7 +719,7 @@ foreach ($candidatures as $candidature) {
 
                         <div class="candidature-date">
                             <i class="fas fa-calendar me-2"></i>
-                            Postulée le <?php echo date('d/m/Y à H:i', strtotime($candidature['date_soumission'])); ?>
+                            Postulée le <?php echo date('d/m/Y à H:i', strtotime($candidature['date_candidature'] ?? 'now')); ?>
                         </div>
                     </div>
                 <?php endforeach; ?>
@@ -760,7 +751,7 @@ foreach ($candidatures as $candidature) {
                             <div class="timeline-marker"></div>
                             <div class="timeline-content">
                                 <div class="timeline-date">
-                                    <?php echo date('d/m/Y à H:i', strtotime($candidature['date_soumission'])); ?>
+                                    <?php echo date('d/m/Y à H:i', strtotime($candidature['date_candidature'] ?? 'now')); ?>
                                 </div>
                                 <div class="timeline-title">
                                     <?php echo htmlspecialchars($candidature['titre_mission'] ?? 'Mission #' . $candidature['id_mission']); ?>
@@ -771,8 +762,11 @@ foreach ($candidatures as $candidature) {
                                             <?php 
                                             switch($candidature['statut']) {
                                                 case 'en_attente': echo '⏳ En Attente'; break;
+                                                case 'acceptee':
                                                 case 'accepte': echo '✅ Acceptée'; break;
-                                                case 'refuse': echo '❌ Refusée'; break;
+                                                case 'rejetee':
+                                                case 'refuse':
+                                                case 'refusee': echo '❌ Refusée'; break;
                                                 default: echo htmlspecialchars($candidature['statut']);
                                             }
                                             ?>
@@ -797,6 +791,52 @@ foreach ($candidatures as $candidature) {
                     <i class="fas fa-history"></i>
                     <h3>Aucun historique de candidature</h3>
                     <p>Votre historique apparaîtra ici après vos premières candidatures.</p>
+                </div>
+            <?php endif; ?>
+        </div>
+    </section>
+
+    <!-- Section Historique des Réclamations -->
+    <section id="historique-reclamations" class="container fade-in" style="margin-top: 80px;">
+        <div class="section-title">
+            <h2>📝 Historique de mes Réclamations</h2>
+            <p>Suivez les réclamations que vous avez envoyées à la plateforme</p>
+        </div>
+
+        <div class="candidatures-container">
+            <?php if (!empty($reclamations)): ?>
+                <div class="timeline">
+                    <?php foreach ($reclamations as $reclamation): ?>
+                        <div class="timeline-item">
+                            <div class="timeline-marker"></div>
+                            <div class="timeline-content">
+                                <div class="timeline-date">
+                                    <?php echo date('d/m/Y à H:i', strtotime($reclamation['date_creation'])); ?>
+                                </div>
+                                <div class="timeline-title">
+                                    <?php echo htmlspecialchars($reclamation['sujet']); ?>
+                                </div>
+                                <div class="timeline-description">
+                                    <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 10px;">
+                                        <span class="statut-badge statut-<?php echo strtolower(str_replace(' ', '_', $reclamation['statut'])); ?>" style="font-size: 0.8rem;">
+                                            <?php echo htmlspecialchars($reclamation['statut']); ?>
+                                        </span>
+                                        <span style="color: var(--text-light);">
+                                            <i class="fas fa-flag me-1"></i>
+                                            Priorité : <?php echo htmlspecialchars($reclamation['priorite']); ?>
+                                        </span>
+                                    </div>
+                                    <p><?php echo nl2br(htmlspecialchars($reclamation['description'])); ?></p>
+                                </div>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            <?php else: ?>
+                <div class="no-candidatures">
+                    <i class="fas fa-history"></i>
+                    <h3>Aucune réclamation pour le moment</h3>
+                    <p>Vos réclamations apparaîtront ici après vos premiers envois depuis la page Réclamation.</p>
                 </div>
             <?php endif; ?>
         </div>

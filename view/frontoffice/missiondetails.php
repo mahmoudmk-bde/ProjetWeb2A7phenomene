@@ -1,15 +1,17 @@
 <?php
 session_start();
-?>
-<?php
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
 require_once __DIR__ . '/../../controller/missioncontroller.php';
 require_once __DIR__ . '/../../controller/feedbackcontroller.php';
+require_once __DIR__ . '/../../controller/condidaturecontroller.php';
+require_once __DIR__ . '/../../controller/utilisateurcontroller.php';
 
 $missionC = new missioncontroller();
 $feedbackcontroller = new feedbackcontroller();
+$condidatureController = new condidaturecontroller();
+$utilisateurController = new UtilisateurController();
 
 if (!isset($_GET['id']) || empty($_GET['id'])) {
     die("<h2 style='color:white;text-align:center;margin-top:50px;'>❌ ID de mission manquant</h2>");
@@ -34,6 +36,64 @@ $feedbacks = $feedbackcontroller->getFeedbacksByMission($id);
 $userFeedback = null;
 if (isset($_SESSION['user_id'])) {
     $userFeedback = $feedbackcontroller->getUserFeedback($id, $_SESSION['user_id']);
+}
+
+// Vérifier si l'utilisateur a déjà postulé
+$hasApplied = false;
+$applicationMessage = '';
+if (isset($_SESSION['user_id'])) {
+    $hasApplied = $condidatureController->checkExistingApplication($_SESSION['user_id'], $id);
+    if ($hasApplied) {
+        $applicationMessage = "Vous êtes déjà inscrit pour cette mission.";
+    }
+}
+
+// Traitement de la candidature directe
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['apply_mission'])) {
+    if (!isset($_SESSION['user_id'])) {
+        header("Location: connexion.php?redirect=" . urlencode("missiondetails.php?id=$id"));
+        exit();
+    }
+    
+    // Vérifier si déjà postulé
+    if ($condidatureController->checkExistingApplication($_SESSION['user_id'], $id)) {
+        $applicationMessage = "Vous êtes déjà inscrit pour cette mission.";
+        $hasApplied = true;
+    } else {
+        // Récupérer les infos de l'utilisateur
+        $user = $utilisateurController->showUtilisateur($_SESSION['user_id']);
+        
+        if ($user) {
+            // Préparer les données de candidature avec les infos par défaut
+            $candidatureData = [
+                'utilisateur_id' => $_SESSION['user_id'],
+                'mission_id' => $id,
+                'pseudo_gaming' => $user['gamer_tag'] ?? 'Gamer_' . $_SESSION['user_id'],
+                'niveau_experience' => 'intermédiaire', // Valeur par défaut
+                'disponibilites' => 'À définir',
+                'email' => $user['mail'] ?? ''
+            ];
+            
+            try {
+                if ($condidatureController->addCondidature($candidatureData)) {
+                    header("Location: missiondetails.php?id=$id&applied=1");
+                    exit();
+                } else {
+                    $applicationMessage = "Erreur lors de l'inscription. Veuillez réessayer.";
+                }
+            } catch (Exception $e) {
+                $applicationMessage = "Erreur: " . $e->getMessage();
+            }
+        } else {
+            $applicationMessage = "Erreur: Impossible de récupérer vos informations.";
+        }
+    }
+}
+
+// Vérifier les messages de succès
+if (isset($_GET['applied']) && $_GET['applied'] == 1) {
+    $applicationMessage = "✅ Votre candidature a été envoyée avec succès !";
+    $hasApplied = true;
 }
 
 // Traitement du formulaire de feedback
@@ -78,17 +138,129 @@ $imagePath = "assets/img/" . $image;
 ?>
 <!DOCTYPE html>
 <html lang="fr">
-
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= htmlspecialchars($mission['titre']) ?> – ENGAGE</title>
-
+    <link rel="icon" href="assets/img/favicon.png">
     <link rel="stylesheet" href="assets/css/bootstrap.min.css">
-    <link rel="stylesheet" href="assets/css/style.css">
     <link rel="stylesheet" href="assets/css/all.css">
+    <link rel="stylesheet" href="assets/css/style.css">
     <link rel="stylesheet" href="assets/css/mission.css">
     <link rel="stylesheet" href="assets/css/custom-frontoffice.css">
-    
+    <style>
+        :root {
+            --primary: #ff4a57;
+            --primary-light: #ff6b6b;
+            --dark: #1f2235;
+            --dark-light: #2d325a;
+            --text: #ffffff;
+            --text-light: rgba(255,255,255,0.8);
+        }
+
+        .body_bg {
+            background: linear-gradient(135deg, var(--dark) 0%, var(--dark-light) 100%);
+            min-height: 100vh;
+        }
+
+        .user-menu {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .user-dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            min-width: 220px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            border-radius: 12px;
+            z-index: 1000;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+        
+        .user-dropdown.show {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .user-dropdown a {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            text-decoration: none;
+            color: #333;
+            border-bottom: 1px solid #f0f0f0;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+        
+        .user-dropdown a:hover {
+            background: #f8f9fa;
+            color: var(--primary);
+            transform: translateX(5px);
+        }
+        
+        .user-dropdown a:last-child {
+            border-bottom: none;
+            color: #dc3545;
+        }
+        
+        .user-dropdown a:last-child:hover {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .user-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: white;
+            cursor: pointer;
+            padding: 8px 16px;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+        }
+        
+        .user-wrapper:hover {
+            background: rgba(255,255,255,0.1);
+        }
+        
+        .user-name {
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .user-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 3px solid rgba(255,255,255,0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .user-avatar:hover {
+            border-color: rgba(255,255,255,0.6);
+            transform: scale(1.05);
+        }
+        
+        .user-avatar i {
+            color: white;
+            font-size: 20px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
     <style>
         .star-rating {
             display: flex;
@@ -184,39 +356,7 @@ $imagePath = "assets/img/" . $image;
         </div>
     </div>
 
-    <!-- Header -->
-    <header class="main_menu single_page_menu">
-        <div class="container">
-            <nav class="navbar navbar-expand-lg navbar-light">
-                <a class="navbar-brand" href="index.php">
-                    <img src="assets/img/logo.png" alt="logo" style="height:45px;">
-                </a>
-                
-                <button class="navbar-toggler" type="button" data-toggle="collapse" 
-                        data-target="#navbarSupportedContent">
-                    <span class="menu_icon"><i class="fas fa-bars"></i></span>
-                </button>
-
-                <div class="collapse navbar-collapse main-menu-item" id="navbarSupportedContent">
-                    <ul class="navbar-nav ml-auto">
-                        <li class="nav-item"><a class="nav-link" href="index.php">Accueil</a></li>
-                        <li class="nav-item"><a class="nav-link active" href="missionlist.php">Missions</a></li>
-                        <li class="nav-item"><a class="nav-link" href="#">Gamification</a></li>
-                        <li class="nav-item"><a class="nav-link" href="#">Réclamations</a></li>
-                        <li class="nav-item"><a class="nav-link" href="#">Événements</a></li>
-                        <li class="nav-item"><a class="nav-link" href="#">Quizzes</a></li>
-                        <li class="nav-item"><a class="nav-link" href="contact.php">Contact</a></li>
-                    </ul>
-                </div>
-
-                <?php if (!isset($_SESSION['user_id'])): ?>
-                    <a href="connexion.php" class="btn_1 d-none d-sm-block">Se connecter</a>
-                <?php else: ?>
-                    <a href="index1.php" class="btn_1 d-none d-sm-block">Mon Espace</a>
-                <?php endif; ?>
-            </nav>
-        </div>
-    </header>
+    <?php include 'header_mission.php'; ?>
 
     <!-- Breadcrumb -->
     <section class="breadcrumb_bg">
@@ -441,23 +581,56 @@ $imagePath = "assets/img/" . $image;
 
                         <!-- CTA Button -->
                         <div style="text-align: center; margin-top: 50px; padding: 40px; background: linear-gradient(135deg, rgba(255,74,87,0.1) 0%, rgba(77,138,255,0.05) 100%); border-radius: 15px; border: 2px solid #ff4a57;">
-                            <h4 style="color: #ff4a57; margin-bottom: 20px; font-size: 1.5rem;">
-                                🚀 Prêt à Relever le Défi ?
+                            <h4 style="color: #ff4a57; margin-bottom: 20px; font-size: 1.5rem; display: flex; align-items: center; justify-content: center; gap: 10px;">
+                                <span>🚀</span> Prêt à Relever le Défi ?
                             </h4>
                             <p style="color: rgba(255,255,255,0.8); margin-bottom: 30px; font-size: 1.1rem;">
                                 Rejoignez cette mission unique et transformez votre passion en impact social.
                             </p>
                             
-                            <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; align-items: center;">
-                                <a href="addcondidature.php?mission_id=<?= $mission['id'] ?>" 
-                                   class="btn-enhanced">
-                                   <i class="fas fa-paper-plane me-2"></i>Postuler Maintenant
-                                </a>
-                                
-                                <a href="missionlist.php" class="btn-enhanced btn-enhanced-secondary">
-                                    <i class="fas fa-arrow-left me-2"></i>Retour aux Missions
-                                </a>
-                            </div>
+                            <?php if (isset($_SESSION['user_id'])): ?>
+                                <?php if ($hasApplied): ?>
+                                    <!-- Message si déjà inscrit -->
+                                    <div style="background: rgba(40, 167, 69, 0.2); border: 2px solid #28a745; color: #28a745; padding: 20px; border-radius: 10px; margin-bottom: 20px; font-weight: 600; font-size: 1.1rem;">
+                                        <i class="fas fa-check-circle me-2"></i>
+                                        <?= htmlspecialchars($applicationMessage) ?>
+                                    </div>
+                                    <a href="missionlist.php" class="btn-enhanced btn-enhanced-secondary">
+                                        <i class="fas fa-arrow-left me-2"></i>Retour aux Missions
+                                    </a>
+                                <?php else: ?>
+                                    <!-- Formulaire de candidature directe -->
+                                    <form method="POST" action="" style="display: inline-block;">
+                                        <input type="hidden" name="apply_mission" value="1">
+                                        <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; align-items: center;">
+                                            <button type="submit" class="btn-enhanced" style="cursor: pointer;">
+                                                <i class="fas fa-paper-plane me-2"></i>Postuler Maintenant
+                                            </button>
+                                            
+                                            <a href="missionlist.php" class="btn-enhanced btn-enhanced-secondary">
+                                                <i class="fas fa-arrow-left me-2"></i>Retour aux Missions
+                                            </a>
+                                        </div>
+                                    </form>
+                                    <?php if ($applicationMessage && !$hasApplied): ?>
+                                        <div style="background: rgba(220, 53, 69, 0.2); border: 2px solid #dc3545; color: #dc3545; padding: 15px; border-radius: 10px; margin-top: 20px; font-weight: 500;">
+                                            <i class="fas fa-exclamation-circle me-2"></i>
+                                            <?= htmlspecialchars($applicationMessage) ?>
+                                        </div>
+                                    <?php endif; ?>
+                                <?php endif; ?>
+                            <?php else: ?>
+                                <!-- Si non connecté -->
+                                <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; align-items: center;">
+                                    <a href="connexion.php?redirect=<?= urlencode('missiondetails.php?id=' . $id) ?>" class="btn-enhanced">
+                                        <i class="fas fa-sign-in-alt me-2"></i>Se connecter pour postuler
+                                    </a>
+                                    
+                                    <a href="missionlist.php" class="btn-enhanced btn-enhanced-secondary">
+                                        <i class="fas fa-arrow-left me-2"></i>Retour aux Missions
+                                    </a>
+                                </div>
+                            <?php endif; ?>
                         </div>
                     </div>
                 </div>

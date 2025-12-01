@@ -1,83 +1,142 @@
 <?php
 session_start();
-// Pour les pages qui nécessitent une connexion, ajoutez :
-// require_once 'auth_check.php';
-// checkAuth(); // Décommentez si la page nécessite une connexion
-?>
-<?php
 require_once __DIR__ . '/../../controller/missioncontroller.php';
 $missionC = new missioncontroller();
 $missions = $missionC->missionliste();
 ?>
 <!DOCTYPE html>
 <html lang="fr">
-
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Missions – ENGAGE</title>
-
+    <link rel="icon" href="assets/img/favicon.png">
     <link rel="stylesheet" href="assets/css/bootstrap.min.css">
-    <link rel="stylesheet" href="assets/css/style.css">
     <link rel="stylesheet" href="assets/css/all.css">
+    <link rel="stylesheet" href="assets/css/style.css">
     <link rel="stylesheet" href="assets/css/mission.css">
     <link rel="stylesheet" href="assets/css/custom-frontoffice.css">
-    
-</head>
+    <style>
+        :root {
+            --primary: #ff4a57;
+            --primary-light: #ff6b6b;
+            --dark: #1f2235;
+            --dark-light: #2d325a;
+            --text: #ffffff;
+            --text-light: rgba(255,255,255,0.8);
+            --success: #28a745;
+            --warning: #ffc107;
+            --danger: #dc3545;
+        }
 
+        .body_bg {
+            background: linear-gradient(135deg, var(--dark) 0%, var(--dark-light) 100%);
+            min-height: 100vh;
+        }
+
+        /* Header Styles */
+        .user-menu {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .user-dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            min-width: 220px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            border-radius: 12px;
+            z-index: 1000;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+        
+        .user-dropdown.show {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .user-dropdown a {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            text-decoration: none;
+            color: #333;
+            border-bottom: 1px solid #f0f0f0;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+        
+        .user-dropdown a:hover {
+            background: #f8f9fa;
+            color: var(--primary);
+            transform: translateX(5px);
+        }
+        
+        .user-dropdown a:last-child {
+            border-bottom: none;
+            color: var(--danger);
+        }
+        
+        .user-dropdown a:last-child:hover {
+            background: var(--danger);
+            color: white;
+        }
+        
+        .user-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: white;
+            cursor: pointer;
+            padding: 8px 16px;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+        }
+        
+        .user-wrapper:hover {
+            background: rgba(255,255,255,0.1);
+        }
+        
+        .user-name {
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .user-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 3px solid rgba(255,255,255,0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .user-avatar:hover {
+            border-color: rgba(255,255,255,0.6);
+            transform: scale(1.05);
+        }
+        
+        .user-avatar i {
+            color: white;
+            font-size: 20px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
 <body>
 <div class="body_bg">
-
-    <!-- Chatbot -->
-<!-- Chatbot - Version simplifiée -->
-<div id="chatbot-button">💬</div>
-<div id="chatbot-box">
-    <div id="chatbot-header">
-        ENGAGE Bot 
-        <span id="chatbot-close">×</span>
-    </div>
-    <div id="chatbot-messages">
-        <div class="chatbot-message bot-message">
-            👋 Salut ! Je suis ENGAGE Bot. Tape ton message et clique sur le bouton ou appuie sur Entrée !
-        </div>
-    </div>
-    <div id="chatbot-input-container">
-        <input type="text" id="chatbot-input" placeholder="Tape ton message ici...">
-        <button type="button" id="chatbot-send" style="cursor: pointer;">➤</button>
-    </div>
-</div>
-
-    <!-- Header -->
-    <header class="main_menu single_page_menu">
-        <div class="container">
-            <nav class="navbar navbar-expand-lg navbar-light">
-                <a class="navbar-brand" href="index.php">
-                    <img src="img/logo.png" alt="logo" style="height:45px;">
-                </a>
-
-                <button class="navbar-toggler" type="button" data-toggle="collapse" 
-                        data-target="#navbarSupportedContent">
-                    <span class="menu_icon"><i class="fas fa-bars"></i></span>
-                </button>
-                
-
-                <div class="collapse navbar-collapse main-menu-item" id="navbarSupportedContent">
-                    <ul class="navbar-nav ml-auto">
-                        <li class="nav-item"><a class="nav-link" href="index.php">Accueil</a></li>
-                        <li class="nav-item"><a class="nav-link active" href="missionlist.php">Missions</a></li>
-                        <li class="nav-item"><a class="nav-link" href="#">Gamification</a></li>
-                        <li class="nav-item"><a class="nav-link" href="#">Réclamations</a></li>
-                        <li class="nav-item"><a class="nav-link" href="#">Événements</a></li>
-                        <li class="nav-item"><a class="nav-link" href="#">Quizzes</a></li>
-                        <li class="nav-item"><a class="nav-link" href="contact.php">Contact</a></li>
-                    </ul>
-                </div>
-
-                <a href="login.php" class="btn_1 d-none d-sm-block">Se connecter</a>
-            </nav>
-            
-
-        </div>
-    </header>
+    <?php include 'header_mission.php'; ?>
 
     <!-- BREADCRUMB + HERO -->
     <section class="breadcrumb_bg">

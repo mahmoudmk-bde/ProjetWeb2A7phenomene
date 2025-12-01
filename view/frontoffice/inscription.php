@@ -1,6 +1,6 @@
 <?php
 include '../../controller/utilisateurcontroller.php';
-require_once __DIR__ . '/../../Model/utilisateur.php';
+require_once __DIR__ . '/../../model/utilisateur.php';
 
 $error = "";
 $utilisateurc = new utilisateurcontroller();
@@ -21,17 +21,23 @@ if (
             $error = "Ce numéro de téléphone est déjà utilisé";
         }
         else {
-            $utilisateur = new utilisateur(
-                null, // id
-                $_POST['prenom'],
-                $_POST['nom'],
-                new DateTime($_POST['dt_naiss']),
-                $_POST['mail'],
-                $_POST['num'],
-                $_POST['mdp'],
-                $_POST['typee'],
-            );
-            $utilisateurc->addUtilisateur($utilisateur);
+           $u = new utilisateur(
+    $_POST['prenom'],
+    $_POST['nom'],
+    $_POST['dt_naiss'],
+    $_POST['mail'],
+    $_POST['num'],
+    $_POST['mdp'],
+    $_POST['typee'],
+    $_POST['q1'],
+    $_POST['rp1'],
+    $_POST['q2'],
+    $_POST['rp2']
+
+);
+
+$utilisateurc->addUtilisateur($u);
+
             // AJOUT
             header('Location: connexion.php');
             exit;

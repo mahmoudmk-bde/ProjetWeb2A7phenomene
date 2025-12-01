@@ -7,27 +7,26 @@ class condidaturecontroller
         // Pas besoin d'instancier un modèle si vous ne l'utilisez pas
     }
 
-    // Ajout condidature (VERSION CORRIGÉE sans colonne message)
+    // Ajout condidature adapté à la structure de `candidatures` dans projetweb3.sql
     public function addCondidature(array $data): bool
     {
         try {
-            // Vérifier que id_util est présent mais autoriser la valeur 0
-            if (!isset($data['id_util']) || (empty($data['id_util']) && $data['id_util'] !== 0 && $data['id_util'] !== '0')) {
+            // Vérifier que utilisateur_id est présent mais autoriser la valeur 0
+            if (!isset($data['utilisateur_id']) || (empty($data['utilisateur_id']) && $data['utilisateur_id'] !== 0 && $data['utilisateur_id'] !== '0')) {
                 error_log("Erreur: ID utilisateur manquant dans les données: " . print_r($data, true));
                 throw new Exception("ID utilisateur manquant. Données reçues: " . print_r($data, true));
             }
 
-            // CORRECTION : Supprimer la colonne 'message' qui n'existe pas dans la table
             $sql = "INSERT INTO candidatures 
-                    (id_util, id_mission, pseudo_gaming, niveau_experience, disponibilites, email, statut)
-                    VALUES (:id_util, :id_mission, :pseudo_gaming, :niveau_experience, :disponibilites, :email, :statut)";
+                    (utilisateur_id, mission_id, pseudo_gaming, niveau_experience, disponibilites, email, statut)
+                    VALUES (:utilisateur_id, :mission_id, :pseudo_gaming, :niveau_experience, :disponibilites, :email, :statut)";
 
             $db  = config::getConnexion();
             $req = $db->prepare($sql);
 
             $result = $req->execute([
-                ':id_util'            => $data['id_util'],
-                ':id_mission'         => $data['id_mission'],
+                ':utilisateur_id'     => $data['utilisateur_id'],
+                ':mission_id'         => $data['mission_id'],
                 ':pseudo_gaming'     => $data['pseudo_gaming'],
                 ':niveau_experience' => $data['niveau_experience'],
                 ':disponibilites'    => $data['disponibilites'],
@@ -55,7 +54,7 @@ class condidaturecontroller
     {
         $sql = "SELECT c.*, m.titre AS mission_titre
                 FROM candidatures c
-                JOIN missions m ON m.id = c.id_mission
+                JOIN missions m ON m.id = c.mission_id
                 ORDER BY c.id DESC";
 
         $db  = config::getConnexion();
@@ -70,8 +69,8 @@ class condidaturecontroller
     {
         $sql = "SELECT c.*, m.titre AS mission_titre
                 FROM candidatures c
-                JOIN missions m ON m.id = c.id_mission
-                WHERE c.id_mission = :mission_id
+                JOIN missions m ON m.id = c.mission_id
+                WHERE c.mission_id = :mission_id
                 ORDER BY c.id DESC";
 
         $db = config::getConnexion();
@@ -119,7 +118,7 @@ class condidaturecontroller
     {
         $sql = "SELECT c.*, m.titre AS mission_titre
                 FROM candidatures c
-                JOIN missions m ON m.id = c.id_mission
+                JOIN missions m ON m.id = c.mission_id
                 WHERE c.id = :id";
         $db = config::getConnexion();
         $query = $db->prepare($sql);
@@ -132,9 +131,9 @@ class condidaturecontroller
         try {
             $sql = "SELECT c.*, m.titre as titre_mission 
                     FROM candidatures c 
-                    LEFT JOIN missions m ON c.id_mission = m.id 
-                    WHERE c.id_util = :user_id 
-                    ORDER BY c.date_soumission DESC";
+                    LEFT JOIN missions m ON c.mission_id = m.id 
+                    WHERE c.utilisateur_id = :user_id 
+                    ORDER BY c.date_candidature DESC";
             $db = config::getConnexion();
             $query = $db->prepare($sql);
             $query->execute(['user_id' => $user_id]);
@@ -150,7 +149,7 @@ class condidaturecontroller
     // Vérifier si l'utilisateur a déjà postulé à une mission
     public function checkExistingApplication($user_id, $mission_id) {
         try {
-            $sql = "SELECT COUNT(*) FROM candidatures WHERE id_util = :user_id AND id_mission = :mission_id";
+            $sql = "SELECT COUNT(*) FROM candidatures WHERE utilisateur_id = :user_id AND mission_id = :mission_id";
             $db = config::getConnexion();
             $query = $db->prepare($sql);
             $query->execute([
@@ -178,9 +177,9 @@ public function getHistoriqueCandidatures($user_id) {
                            ELSE 'Statut inconnu'
                        END as action_description
                 FROM candidatures c 
-                LEFT JOIN missions m ON c.id_mission = m.id 
-                WHERE c.id_util = :user_id 
-                ORDER BY c.date_soumission DESC";
+                LEFT JOIN missions m ON c.mission_id = m.id 
+                WHERE c.utilisateur_id = :user_id 
+                ORDER BY c.date_candidature DESC";
         $db = config::getConnexion();
         $query = $db->prepare($sql);
         $query->execute(['user_id' => $user_id]);

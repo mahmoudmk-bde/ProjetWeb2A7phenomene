@@ -266,7 +266,7 @@ if (isset($_GET['delete_id'])) {
     <div class="feedbacks-header">
         <h2 class="text-white">💬 Gestion des Feedback</h2>
         <div>
-            <a href="missionliste.php" class="btn btn-primary" style="margin-right: 10px;">
+            <a href="../mission/missionliste.php" class="btn btn-primary" style="margin-right: 10px;">
                 <i class="fas fa-arrow-left me-2"></i>Retour aux Missions
             </a>
         </div>
