@@ -58,8 +58,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             } else {
                 // CORRECTION : S'assurer que l'ID utilisateur est bien passé
                 $candidatureData = [
-                    'id_util' => $user_id, // CORRECTION ICI
-                    'id_mission' => $mission_id,
+                    'utilisateur_id' => $user_id, // Utiliser utilisateur_id pour correspondre au controller
+                    'mission_id' => $mission_id,
                     'pseudo_gaming' => $pseudo_gaming,
                     'niveau_experience' => $niveau_experience,
                     'disponibilites' => $disponibilites,
@@ -94,16 +94,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <!DOCTYPE html>
 <html lang="fr">
-
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Postuler – ENGAGE</title>
+    <link rel="icon" href="assets/img/favicon.png">
     <link rel="stylesheet" href="assets/css/bootstrap.min.css">
-    <link rel="stylesheet" href="assets/css/style.css">
     <link rel="stylesheet" href="assets/css/all.css">
+    <link rel="stylesheet" href="assets/css/style.css">
     <link rel="stylesheet" href="assets/css/mission.css">
     <link rel="stylesheet" href="assets/css/custom-frontoffice.css">
     <style>
+        :root {
+            --primary: #ff4a57;
+            --primary-light: #ff6b6b;
+            --dark: #1f2235;
+            --dark-light: #2d325a;
+            --text: #ffffff;
+            --text-light: rgba(255,255,255,0.8);
+        }
+
+        .body_bg {
+            background: linear-gradient(135deg, var(--dark) 0%, var(--dark-light) 100%);
+            min-height: 100vh;
+        }
+
         .user-menu {
             position: relative;
             display: inline-block;
@@ -115,30 +130,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             top: 100%;
             right: 0;
             background: white;
-            min-width: 180px;
-            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
-            border-radius: 5px;
+            min-width: 220px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            border-radius: 12px;
             z-index: 1000;
             margin-top: 10px;
+            overflow: hidden;
         }
         
         .user-dropdown.show {
             display: block;
+            animation: fadeIn 0.3s ease;
         }
         
         .user-dropdown a {
-            display: block;
-            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
             text-decoration: none;
             color: #333;
-            border-bottom: 1px solid #eee;
-            transition: background 0.3s;
+            border-bottom: 1px solid #f0f0f0;
+            transition: all 0.3s ease;
             font-size: 14px;
         }
         
         .user-dropdown a:hover {
             background: #f8f9fa;
-            color: #007bff;
+            color: var(--primary);
+            transform: translateX(5px);
         }
         
         .user-dropdown a:last-child {
@@ -154,24 +173,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .user-wrapper {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
             color: white;
             cursor: pointer;
+            padding: 8px 16px;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+        }
+        
+        .user-wrapper:hover {
+            background: rgba(255,255,255,0.1);
         }
         
         .user-name {
-            font-weight: bold;
+            font-weight: 600;
+            font-size: 14px;
         }
         
         .user-avatar {
-            width: 40px;
-            height: 40px;
+            width: 45px;
+            height: 45px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
             display: flex;
             align-items: center;
             justify-content: center;
-            border: 2px solid rgba(255,255,255,0.3);
+            border: 3px solid rgba(255,255,255,0.3);
             transition: all 0.3s ease;
         }
         
@@ -182,7 +209,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         .user-avatar i {
             color: white;
-            font-size: 18px;
+            font-size: 20px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         
         .apply-form-container {
@@ -288,64 +320,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <body>
 <div class="body_bg">
     
-    <!-- Header avec menu utilisateur -->
-    <header class="main_menu single_page_menu">
-        <div class="container">
-            <div class="row align-items-center">
-                <div class="col-lg-12">
-                    <nav class="navbar navbar-expand-lg navbar-light">
-                        <a class="navbar-brand" href="index.php">
-                            <img src="assets/img/logo.png" alt="logo" />
-                        </a>
-                        <button class="navbar-toggler" type="button" data-toggle="collapse" 
-                                data-target="#navbarSupportedContent">
-                            <span class="menu_icon"><i class="fas fa-bars"></i></span>
-                        </button>
-
-                        <div class="collapse navbar-collapse main-menu-item" id="navbarSupportedContent">
-                            <ul class="navbar-nav ml-auto">
-                                <li class="nav-item"><a class="nav-link" href="index.php">Accueil</a></li>
-                                <li class="nav-item"><a class="nav-link active" href="missionlist.php">Missions</a></li>
-                                <li class="nav-item"><a class="nav-link" href="#">Gamification</a></li>
-                                <li class="nav-item"><a class="nav-link" href="#">Réclamations</a></li>
-                                <li class="nav-item"><a class="nav-link" href="#">Événements</a></li>
-                                <li class="nav-item"><a class="nav-link" href="#">Quizzes</a></li>
-                                <li class="nav-item"><a class="nav-link" href="contact.php">Contact</a></li>
-                            </ul>
-                        </div>
-
-                        <!-- Menu utilisateur -->
-                        <?php if (isset($_SESSION['user_id']) && isset($_SESSION['user_name'])): ?>
-                            <div class="user-menu d-none d-sm-block">
-                                <div class="user-wrapper" onclick="toggleUserMenu()">
-                                    <span class="user-name"><?php echo htmlspecialchars($_SESSION['user_name']); ?></span>
-                                    <div class="user-avatar">
-                                        <i class="fas fa-user"></i>
-                                    </div>
-                                </div>
-                                <div class="user-dropdown" id="userDropdown">
-                                    <a href="profile.php">
-                                        <i class="fas fa-user me-2"></i>Mon Profil
-                                    </a>
-                                    <a href="settings.php">
-                                        <i class="fas fa-cog me-2"></i>Paramètres
-                                    </a>
-                                    <a href="securite.php">
-                                        <i class="fas fa-shield-alt me-2"></i>Sécurité
-                                    </a>
-                                    <a href="logout.php">
-                                        <i class="fas fa-sign-out-alt me-2"></i>Déconnexion
-                                    </a>
-                                </div>
-                            </div>
-                        <?php else: ?>
-                            <a href="connexion.php" class="btn_1 d-none d-sm-block">Se connecter</a>
-                        <?php endif; ?>
-                    </nav>
-                </div>
-            </div>
-        </div>
-    </header>
+    <?php include 'header_mission.php'; ?>
 
     <!-- Breadcrumb -->
     <section class="breadcrumb_bg">

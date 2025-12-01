@@ -14,7 +14,8 @@ class missioncontroller
     // liste des missions
     public function missionliste()
     {
-        $sql = "SELECT * FROM missions ORDER BY created_at DESC";
+        // In projetweb3.sql, the missions table uses `date_creation` (not `created_at`)
+        $sql = "SELECT * FROM missions ORDER BY date_creation DESC";
         $stmt = $this->db->prepare($sql);
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -63,9 +64,10 @@ class missioncontroller
     // Ajoute  mission 
     public function addMission($data)
 {
+    // Let MySQL handle `date_creation` default (CURRENT_TIMESTAMP) defined in projetweb3.sql
     $sql = "INSERT INTO missions 
-            (titre, theme, jeu, niveau_difficulte, date_debut, date_fin, description, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, NOW())";
+            (titre, theme, jeu, niveau_difficulte, date_debut, date_fin, description)
+            VALUES (?, ?, ?, ?, ?, ?, ?)";
 
     $stmt = $this->db->prepare($sql);
 
@@ -88,7 +90,6 @@ class missioncontroller
         $sql = "DELETE FROM missions WHERE id = ?";
         $stmt = $this->db->prepare($sql);
         $stmt->execute([$id]);
-        $historiqueC->ajouterHistorique("Admin", "A supprimé la mission ID : " . $id);
-
+        // TODO: ajouter un système d'historique si nécessaire
     }
 }

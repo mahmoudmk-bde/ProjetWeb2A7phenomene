@@ -11,56 +11,129 @@ if (!isset($_SESSION['user_id'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mon Profil - Engage</title>
+    <link rel="icon" href="assets/img/favicon.png">
     <link rel="stylesheet" href="assets/css/bootstrap.min.css">
     <link rel="stylesheet" href="assets/css/all.css">
     <link rel="stylesheet" href="assets/css/style.css">
     <link rel="stylesheet" href="assets/css/profile.css">
+    <style>
+        :root {
+            --primary: #ff4a57;
+            --primary-light: #ff6b6b;
+            --dark: #1f2235;
+            --dark-light: #2d325a;
+            --text: #ffffff;
+            --text-light: rgba(255,255,255,0.8);
+        }
+
+        .body_bg {
+            background: linear-gradient(135deg, var(--dark) 0%, var(--dark-light) 100%);
+            min-height: 100vh;
+        }
+
+        .user-menu {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .user-dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            min-width: 220px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            border-radius: 12px;
+            z-index: 1000;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+        
+        .user-dropdown.show {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .user-dropdown a {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            text-decoration: none;
+            color: #333;
+            border-bottom: 1px solid #f0f0f0;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+        
+        .user-dropdown a:hover {
+            background: #f8f9fa;
+            color: var(--primary);
+            transform: translateX(5px);
+        }
+        
+        .user-dropdown a:last-child {
+            border-bottom: none;
+            color: #dc3545;
+        }
+        
+        .user-dropdown a:last-child:hover {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .user-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: white;
+            cursor: pointer;
+            padding: 8px 16px;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+        }
+        
+        .user-wrapper:hover {
+            background: rgba(255,255,255,0.1);
+        }
+        
+        .user-name {
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .user-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 3px solid rgba(255,255,255,0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .user-avatar:hover {
+            border-color: rgba(255,255,255,0.6);
+            transform: scale(1.05);
+        }
+        
+        .user-avatar i {
+            color: white;
+            font-size: 20px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
     <script src="assets/js/profile.js"></script>
 </head>
 <body>
-    <div class="body_bg" style="background: #1f2235;">
-        <!-- Header -->
-        <header class="main_menu single_page_menu">
-            <div class="container">
-                <div class="row align-items-center">
-                    <div class="col-lg-12">
-                        <nav class="navbar navbar-expand-lg navbar-light">
-                            <a class="navbar-brand" href="index1.php">
-                                <img src="assets/img/logo.png" alt="logo" />
-                            </a>
-                            <div class="collapse navbar-collapse main-menu-item">
-                                <ul class="navbar-nav">
-                                    <li class="nav-item">
-                                        
-                                    </li>
-                                </ul>
-                            </div>
-                            <?php if (isset($_SESSION['user_id'])): ?>
-                                <div class="user-menu d-none d-sm-block">
-                                    <div class="user-wrapper" onclick="toggleUserMenu()">
-                                        <span class="user-name"><?php echo htmlspecialchars($_SESSION['user_name']); ?></span>
-                                        <div class="user-avatar">
-                                            <i class="fas fa-user"></i>
-                                        </div>
-                                    </div>
-                                    <div class="user-dropdown" id="userDropdown">
-                                        <a href="index1.php">
-                                            <i class="fas fa-user"></i>accueil
-                                        </a>
-                                        <a href="settings.php">
-                                            <i class="fas fa-cog"></i>Paramètres
-                                        </a>
-                                        <a href="logout.php">
-                                            <i class="fas fa-sign-out-alt"></i>Déconnexion
-                                        </a>
-                                    </div>
-                                </div>
-                            <?php endif; ?>
-                        </nav>
-                    </div>
-                </div>
-            </div>
-        </header>
+    <div class="body_bg">
+        <?php include 'header_common.php'; ?>
 
         <!-- Profile Content -->
         <section class="profile-section" style="padding: 100px 0;">

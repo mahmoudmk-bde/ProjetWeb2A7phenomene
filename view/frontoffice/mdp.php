@@ -1,7 +1,7 @@
 <?php
 session_start();
 include '../../controller/utilisateurcontroller.php';
-require_once __DIR__ . '/../../Model/utilisateur.php';
+require_once __DIR__ . '/../../model/utilisateur.php';
 
 $utilisateurController = new UtilisateurController();
 $error = "";

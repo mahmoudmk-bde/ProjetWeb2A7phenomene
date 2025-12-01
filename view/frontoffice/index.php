@@ -30,49 +30,7 @@ session_start();
 <!-- WRAPPER -->
 <div class="body_bg">
 
-    <!-- HEADER PUBLIC -->
-    <header class="main_menu single_page_menu">
-        <div class="container">
-            <nav class="navbar navbar-expand-lg navbar-light">
-
-                <!-- LOGO -->
-                <a class="navbar-brand" href="index.php">
-                    <img src="../img/client_logo/logo.png" alt="logo" style="height:45px;">
-                </a>
-
-                <!-- TOGGLER (mobile menu) -->
-                <button class="navbar-toggler" type="button" data-toggle="collapse"
-                    data-target="#navbarSupportedContent">
-                    <span class="menu_icon"><i class="fas fa-bars"></i></span>
-                </button>
-
-                <!-- NAVIGATION -->
-                <div class="collapse navbar-collapse main-menu-item" id="navbarSupportedContent">
-                    <ul class="navbar-nav ml-auto">
-                        <li class="nav-item"><a class="nav-link" href="index.php">Accueil</a></li>
-                        <li class="nav-item"><a class="nav-link" href="missionlist.php">Missions</a></li>
-                        <li class="nav-item"><a class="nav-link" href="#">Gamification</a></li>
-                        <li class="nav-item"><a class="nav-link" href="#">Réclamations</a></li>
-                        <li class="nav-item"><a class="nav-link" href="#">Événements</a></li>
-                        <li class="nav-item"><a class="nav-link" href="#">Quizzes</a></li>
-                        <li class="nav-item"><a class="nav-link" href="contact.php">Contact</a></li>
-                    </ul>
-                </div>
-
-                <!-- BOUTONS CONNEXION/INSCRIPTION (visible seulement si non connecté) -->
-                <?php if (!isset($_SESSION['user_id'])): ?>
-                    <div class="d-none d-sm-block">
-                        <a href="connexion.php" class="btn_1">Se connecter</a>
-                        <a href="inscription.php" class="btn_1" style="margin-left: 10px;">S'inscrire</a>
-                    </div>
-                <?php else: ?>
-                    <!-- Si connecté, lien vers l'espace membre -->
-                    <a href="index1.php" class="btn_1 d-none d-sm-block">Mon Espace</a>
-                <?php endif; ?>
-
-            </nav>
-        </div>
-    </header>
+    <?php include 'header_common.php'; ?>
 
     <!-- HERO SECTION -->
     <section class="banner_part">
