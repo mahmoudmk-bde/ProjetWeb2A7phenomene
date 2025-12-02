@@ -129,6 +129,33 @@
                 </div>
             </div>
         </section>
+        <?php
+        require_once __DIR__ . '/../../model/evenementModel.php';
+        require_once __DIR__ . '/../../model/participationModel.php';
+
+        $eventModel = new EvenementModel();
+        $participationModel = new ParticipationModel();
+
+        function normalize_event_image($img) {
+            $default = 'img/favicon.png';
+            if (empty($img)) return $default;
+            $img = trim($img);
+            // absolute URLs
+            if (stripos($img, 'http://') === 0 || stripos($img, 'https://') === 0) return $img;
+            // already web-root absolute for this project
+            if (strpos($img, '/gamingroom/uploads/events/') === 0) return $img;
+            // server-relative uploads
+            if (strpos($img, '/uploads/events/') === 0) return '/gamingroom' . $img;
+            // legacy stored relative path
+            if (strpos($img, 'uploads/events/') === 0) return '/gamingroom/' . $img;
+            // other absolute path
+            if (strpos($img, '/') === 0) return $img;
+            return $img;
+        }
+
+        $events = $eventModel->getAllEvents();
+        ?>
+
         <section class="about_us section_padding">
             <div class="container">
                 <div class="row align-items-center justify-content-between">
@@ -147,6 +174,51 @@
                             <a href="#" class="btn_1">Watch Tutorial</a>
                         </div>
                     </div>
+                </div>
+            </div>
+        </section>
+        <!-- Events List -->
+        <section class="upcomming_war">
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="col-lg-8">
+                        <div class="section_tittle text-center">
+                            <h2>Tous les événements</h2>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <?php if (!empty($events)): ?>
+                        <?php foreach ($events as $ev): ?>
+                            <?php $count = (int) $eventModel->countParticipants($ev['id_evenement']); ?>
+                            <div class="col-md-6 col-lg-4 mb-4">
+                                <div class="card event-card" style="min-height:220px;">
+                                    <?php
+                                        $img = 'img/favicon.png';
+                                        if (!empty($ev['image'])) {
+                                            $img = $ev['image'];
+                                            // If older records stored a relative uploads path, normalize it to web-root path
+                                            if (strpos($img, 'uploads/events/') === 0) {
+                                                $img = '/gamingroom/' . $img;
+                                            }
+                                        }
+                                    ?>
+                                    <img src="<?= htmlspecialchars($img) ?>" class="card-img-top" alt="<?= htmlspecialchars($ev['titre']) ?>" style="height:120px; object-fit:cover;">
+                                    <div class="card-body">
+                                        <h5 class="card-title"><?= htmlspecialchars($ev['titre']) ?></h5>
+                                        <p class="card-text text-muted"><?= !empty($ev['date_evenement']) ? date('d/m/Y', strtotime($ev['date_evenement'])) : '' ?> — <?= htmlspecialchars($ev['lieu']) ?></p>
+                                        <p class="card-text">Participants: <span class="badge participants-badge"><?= $count ?></span></p>
+                                        <a href="event_details.php?id=<?= $ev['id_evenement'] ?>" class="btn btn-sm btn-outline-light">Show details</a>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <div class="col-12">
+                            <div class="alert alert-info">Aucun événement disponible pour le moment.</div>
+                        </div>
+                    <?php endif; ?>
                 </div>
             </div>
         </section>

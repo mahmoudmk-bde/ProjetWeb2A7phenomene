@@ -42,117 +42,105 @@ if (isset($_POST['action']) && $_POST['action'] == 'update_status' && isset($_PO
 // Get all participations for this event
 $participations = $participationModel->getEventParticipations($event_id);
 ?>
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestion des Participations - ENGAGE</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-</head>
-<body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container">
-            <a class="navbar-brand" href="index.php">ENGAGE - Administration</a>
-        </div>
-    </nav>
+<?php include 'assets/layout_top.php'; ?>
 
-    <div class="container mt-4">
-        <h1 class="mb-4">Gestion des Participations</h1>
-        
-        <?php if (isset($_SESSION['success'])): ?>
-            <div class="alert alert-success"><?= $_SESSION['success']; unset($_SESSION['success']); ?></div>
-        <?php endif; ?>
-        
-        <?php if (isset($_SESSION['error'])): ?>
-            <div class="alert alert-danger"><?= $_SESSION['error']; unset($_SESSION['error']); ?></div>
-        <?php endif; ?>
-        
-        <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">Participations pour : <?= htmlspecialchars($event['titre']) ?></h5>
-                <a href="evenement.php" class="btn btn-secondary btn-sm">
-                    <i class="fas fa-arrow-left"></i> Retour aux événements
-                </a>
-            </div>
-            <div class="card-body">
-                <?php if (!empty($participations)): ?>
-                <div class="table-responsive">
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>Volontaire</th>
-                                <th>Email</th>
-                                <th>Date Participation</th>
-                                <th>Statut</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach ($participations as $participation): ?>
-                            <tr>
-                                <td><?= htmlspecialchars($participation['prenom'] . ' ' . $participation['nom']) ?></td>
-                                <td><?= htmlspecialchars($participation['email']) ?></td>
-                                <td><?= date('d/m/Y', strtotime($participation['date_participation'])) ?></td>
-                                <td>
-                                    <span class="badge bg-<?= 
-                                        $participation['statut'] == 'acceptée' ? 'success' : 
-                                        ($participation['statut'] == 'en attente' ? 'warning' : 'danger') 
-                                    ?>">
-                                        <?= $participation['statut'] ?>
-                                    </span>
-                                </td>
-                                <td>
-                                    <?php if ($participation['statut'] == 'en attente'): ?>
-                                        <form method="POST" style="display: inline;">
-                                            <input type="hidden" name="action" value="update_status">
-                                            <input type="hidden" name="participation_id" value="<?= $participation['id_participation'] ?>">
-                                            <input type="hidden" name="status" value="acceptée">
-                                            <button type="submit" class="btn btn-success btn-sm">
-                                                <i class="fas fa-check"></i> Accepter
-                                            </button>
-                                        </form>
-                                        <form method="POST" style="display: inline;">
-                                            <input type="hidden" name="action" value="update_status">
-                                            <input type="hidden" name="participation_id" value="<?= $participation['id_participation'] ?>">
-                                            <input type="hidden" name="status" value="refusée">
-                                            <button type="submit" class="btn btn-danger btn-sm">
-                                                <i class="fas fa-times"></i> Refuser
-                                            </button>
-                                        </form>
-                                    <?php elseif ($participation['statut'] == 'acceptée'): ?>
-                                        <form method="POST" style="display: inline;">
-                                            <input type="hidden" name="action" value="update_status">
-                                            <input type="hidden" name="participation_id" value="<?= $participation['id_participation'] ?>">
-                                            <input type="hidden" name="status" value="refusée">
-                                            <button type="submit" class="btn btn-danger btn-sm">
-                                                <i class="fas fa-times"></i> Refuser
-                                            </button>
-                                        </form>
-                                    <?php else: ?>
-                                        <form method="POST" style="display: inline;">
-                                            <input type="hidden" name="action" value="update_status">
-                                            <input type="hidden" name="participation_id" value="<?= $participation['id_participation'] ?>">
-                                            <input type="hidden" name="status" value="acceptée">
-                                            <button type="submit" class="btn btn-success btn-sm">
-                                                <i class="fas fa-check"></i> Accepter
-                                            </button>
-                                        </form>
-                                    <?php endif; ?>
-                                </td>
-                            </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
+            <div class="row mt-3">
+                <div class="col-12">
+                    <h1 class="mb-4">Gestion des Participations</h1>
+
+                    <?php if (isset($_SESSION['success'])): ?>
+                        <div class="alert alert-success"><?= $_SESSION['success']; unset($_SESSION['success']); ?></div>
+                    <?php endif; ?>
+
+                    <?php if (isset($_SESSION['error'])): ?>
+                        <div class="alert alert-danger"><?= $_SESSION['error']; unset($_SESSION['error']); ?></div>
+                    <?php endif; ?>
+
+                    <div class="card dashboard-card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">Participations pour : <?= htmlspecialchars($event['titre']) ?></h5>
+                            <a href="evenement.php" class="btn btn-secondary btn-sm">
+                                <i class="fas fa-arrow-left"></i> Retour aux événements
+                            </a>
+                        </div>
+                        <div class="card-body">
+                            <?php if (!empty($participations)): ?>
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Volontaire</th>
+                                            <th>Email</th>
+                                            <th>Date Participation</th>
+                                            <th>Statut</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php foreach ($participations as $participation): ?>
+                                        <tr>
+                                            <td><?= htmlspecialchars($participation['prenom'] . ' ' . $participation['nom']) ?></td>
+                                            <td><?= htmlspecialchars($participation['email']) ?></td>
+                                            <td><?= date('d/m/Y', strtotime($participation['date_participation'])) ?></td>
+                                            <td>
+                                                <span class="badge bg-<?= 
+                                                    $participation['statut'] == 'acceptée' ? 'success' : 
+                                                    ($participation['statut'] == 'en attente' ? 'warning' : 'danger') 
+                                                ?>">
+                                                    <?= $participation['statut'] ?>
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <?php if ($participation['statut'] == 'en attente'): ?>
+                                                    <form method="POST" style="display: inline;">
+                                                        <input type="hidden" name="action" value="update_status">
+                                                        <input type="hidden" name="participation_id" value="<?= $participation['id_participation'] ?>">
+                                                        <input type="hidden" name="status" value="acceptée">
+                                                        <button type="submit" class="btn btn-success btn-sm">
+                                                            <i class="fas fa-check"></i> Accepter
+                                                        </button>
+                                                    </form>
+                                                    <form method="POST" style="display: inline;">
+                                                        <input type="hidden" name="action" value="update_status">
+                                                        <input type="hidden" name="participation_id" value="<?= $participation['id_participation'] ?>">
+                                                        <input type="hidden" name="status" value="refusée">
+                                                        <button type="submit" class="btn btn-danger btn-sm">
+                                                            <i class="fas fa-times"></i> Refuser
+                                                        </button>
+                                                    </form>
+                                                <?php elseif ($participation['statut'] == 'acceptée'): ?>
+                                                    <form method="POST" style="display: inline;">
+                                                        <input type="hidden" name="action" value="update_status">
+                                                        <input type="hidden" name="participation_id" value="<?= $participation['id_participation'] ?>">
+                                                        <input type="hidden" name="status" value="refusée">
+                                                        <button type="submit" class="btn btn-danger btn-sm">
+                                                            <i class="fas fa-times"></i> Refuser
+                                                        </button>
+                                                    </form>
+                                                <?php else: ?>
+                                                    <form method="POST" style="display: inline;">
+                                                        <input type="hidden" name="action" value="update_status">
+                                                        <input type="hidden" name="participation_id" value="<?= $participation['id_participation'] ?>">
+                                                        <input type="hidden" name="status" value="acceptée">
+                                                        <button type="submit" class="btn btn-success btn-sm">
+                                                            <i class="fas fa-check"></i> Accepter
+                                                        </button>
+                                                    </form>
+                                                <?php endif; ?>
+                                            </td>
+                                        </tr>
+                                        <?php endforeach; ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <?php else: ?>
+                            <div class="alert alert-info">
+                                Aucune participation pour cet événement pour le moment.
+                            </div>
+                            <?php endif; ?>
+                        </div>
+                    </div>
                 </div>
-                <?php else: ?>
-                <div class="alert alert-info">
-                    Aucune participation pour cet événement pour le moment.
-                </div>
-                <?php endif; ?>
             </div>
-        </div>
-    </div>
-</body>
-</html>
+
+<?php include 'assets/layout_bottom.php'; ?>

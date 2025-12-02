@@ -3,6 +3,18 @@ require_once __DIR__ . '/../../model/evenementModel.php';
 if (session_status() === PHP_SESSION_NONE) session_start();
 $eventModel = new EvenementModel();
 $events = $eventModel->getAllEvents();
+
+function normalize_event_image($img) {
+    $default = 'img/favicon.png';
+    if (empty($img)) return $default;
+    $img = trim($img);
+    if (stripos($img, 'http://') === 0 || stripos($img, 'https://') === 0) return $img;
+    if (strpos($img, '/gamingroom/uploads/events/') === 0) return $img;
+    if (strpos($img, '/uploads/events/') === 0) return '/gamingroom' . $img;
+    if (strpos($img, 'uploads/events/') === 0) return '/gamingroom/' . $img;
+    if (strpos($img, '/') === 0) return $img;
+    return $img;
+}
 ?>
 <!doctype html>
 <html lang="zxx">
@@ -121,17 +133,24 @@ $events = $eventModel->getAllEvents();
             $date = !empty($ev['date_evenement']) ? date('F j, Y', strtotime($ev['date_evenement'])) : '';
             $lieu = htmlspecialchars($ev['lieu']);
             $img = !empty($ev['image']) ? $ev['image'] : 'img/favicon.png';
-            $participants = $eventModel->countParticipants($ev['id_evenement']);
+            // Normalize older relative image paths
+            if (strpos($img, 'uploads/events/') === 0) { $img = '/gamingroom/' . $img; }
+            $participants = (int)$eventModel->countParticipants($ev['id_evenement']);
         ?>
-        <div class="col-lg-4 col-md-6">
-            <div class="single_war_text text-center mb-4">
-                <img src="<?php echo $img; ?>" alt="<?php echo $title; ?>" style="max-width:100%; height:200px; object-fit:cover;">
-                <h4><?php echo $title; ?></h4>
-                <p class="text-muted"><?php echo $date; ?> - <?php echo $lieu; ?></p>
-                <p><?php echo (strlen($desc) > 150) ? substr($desc,0,150).'...' : $desc; ?></p>
-                <a href="event_details.php?id=<?php echo $ev['id_evenement']; ?>" class="btn_2">View Details</a>
-                <div class="war_text_item d-flex justify-content-around align-items-center mt-3">
-                    <span><strong><?php echo (int)$participants; ?></strong> Participants</span>
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card event-card h-100">
+                <img src="<?= htmlspecialchars($img) ?>" class="card-img-top" alt="<?= $title ?>">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title"><?= $title ?></h5>
+                    <p class="text-muted small mb-2"><?= $date ?> • <?= $lieu ?></p>
+                    <p class="card-text mb-3" style="flex:1; color:#444;"><?= (strlen($desc) > 160) ? substr($desc,0,160).'...' : $desc; ?></p>
+                    <div class="d-flex justify-content-between align-items-center mt-2">
+                        <a href="event_details.php?id=<?= $ev['id_evenement']; ?>" class="btn_2">Details</a>
+                        <div class="text-right">
+                            <span class="participants-badge"><?= $participants ?></span>
+                            <div class="small text-muted">accepted</div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

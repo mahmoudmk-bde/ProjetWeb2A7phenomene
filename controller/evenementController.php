@@ -41,7 +41,8 @@ class EvenementController {
                 $uploadFile = $uploadDir . $fileName;
                 
                 if (move_uploaded_file($_FILES['image']['tmp_name'], $uploadFile)) {
-                    $image = $uploadFile;
+                    // store web-root-relative path for use in front views
+                    $image = '/gamingroom/' . $uploadFile;
                 }
             }
             
@@ -88,7 +89,7 @@ public function editEvent($id) {
             $uploadFile = $uploadDir . $fileName;
             
             if (move_uploaded_file($_FILES['image']['tmp_name'], $uploadFile)) {
-                $image = $uploadFile;
+                $image = '/gamingroom/' . $uploadFile;
             }
         }
         

@@ -19,7 +19,54 @@ if ($event_id <= 0) {
 }
 
 // Handle participation POST
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['participate']) && isset($event) && $event) {
+// Handle guest participation POST (form with name/email)
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'guest_participate' && isset($event) && $event) {
+    require_once __DIR__ . '/../../config.php';
+    $prenom = isset($_POST['prenom']) ? secure_data($_POST['prenom']) : '';
+    $nom = isset($_POST['nom']) ? secure_data($_POST['nom']) : '';
+    $email = isset($_POST['email']) ? filter_var($_POST['email'], FILTER_SANITIZE_EMAIL) : '';
+
+    // Basic server-side validation
+    if (empty($prenom) || empty($nom) || empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $message = 'Please provide a valid first name, last name and email.';
+    } else {
+        // Find or create user by email
+        $db = (new Database())->getConnection();
+        try {
+            $stmt = $db->prepare('SELECT id_utilisateur FROM utilisateur WHERE email = :email LIMIT 1');
+            $stmt->execute([':email' => $email]);
+            $row = $stmt->fetch();
+            if ($row && isset($row['id_utilisateur'])) {
+                $user_id = (int)$row['id_utilisateur'];
+            } else {
+                $ins = $db->prepare('INSERT INTO utilisateur (nom, prenom, email) VALUES (:nom, :prenom, :email)');
+                $ins->execute([':nom' => $nom, ':prenom' => $prenom, ':email' => $email]);
+                $user_id = (int)$db->lastInsertId();
+            }
+
+            // Check registration and create participation
+            if ($participationModel->isUserRegistered($user_id, $event_id)) {
+                $message = 'You are already registered for this event.';
+            } else {
+                $created = $participationModel->create($event_id, $user_id, date('Y-m-d'), 'en attente');
+                if ($created) {
+                    $message = 'Your participation was recorded and is pending approval.';
+                    // Optionally set session user to help UX
+                    $_SESSION['user_id'] = $user_id;
+                } else {
+                    $message = 'Could not register for the event (maybe already registered).';
+                }
+            }
+        } catch (Exception $e) {
+            $message = 'An error occurred while registering: ' . $e->getMessage();
+        }
+    }
+
+    // Refresh participants/isRegistered info after POST (guest flow)
+    $isRegistered = isset($user_id) ? $participationModel->isUserRegistered($user_id, $event_id) : false;
+    $participants = $participationModel->getEventParticipants($event_id);
+
+} elseif ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['participate']) && isset($event) && $event) {
     if (!isset($_SESSION['user_id'])) {
         $_SESSION['user_id'] = 1; // simulate user
     }
@@ -145,7 +192,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['participate']) && iss
             </div>
         </section>
 
-        <section class="about_us section_padding">
+        <section class="about_us section_padding event-page">
             <div class="container">
                 <?php if ($message): ?>
                     <div class="row mb-3">
@@ -157,35 +204,76 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['participate']) && iss
 
                 <?php if (isset($event) && $event): ?>
                 <div class="row">
+                    <?php
+                        function normalize_event_image($img) {
+                            $default = 'img/favicon.png';
+                            if (empty($img)) return $default;
+                            $img = trim($img);
+                            if (stripos($img, 'http://') === 0 || stripos($img, 'https://') === 0) return $img;
+                            if (strpos($img, '/gamingroom/uploads/events/') === 0) return $img;
+                            if (strpos($img, '/uploads/events/') === 0) return '/gamingroom' . $img;
+                            if (strpos($img, 'uploads/events/') === 0) return '/gamingroom/' . $img;
+                            if (strpos($img, '/') === 0) return $img;
+                            return $img;
+                        }
+                        $img = normalize_event_image(!empty($event['image']) ? $event['image'] : null);
+                    ?>
                     <div class="col-md-6">
-                        <?php $img = !empty($event['image']) ? $event['image'] : 'img/favicon.png'; ?>
-                        <img src="<?php echo $img; ?>" alt="<?php echo htmlspecialchars($event['titre']); ?>" class="img-fluid" style="max-height:400px; object-fit:cover;">
+                        <div class="event-hero">
+                            <img src="<?= htmlspecialchars($img) ?>" alt="<?= htmlspecialchars($event['titre']) ?>" class="event-hero-img">
+                            <div class="event-hero-overlay">
+                                <div class="event-hero-text">
+                                    <h1><?= htmlspecialchars($event['titre']) ?></h1>
+                                    <p class="text-light small"><?= !empty($event['date_evenement']) ? date('F j, Y', strtotime($event['date_evenement'])) : ''; ?> • <?= htmlspecialchars($event['lieu']) ?></p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div class="col-md-6">
-                        <h2><?php echo htmlspecialchars($event['titre']); ?></h2>
-                        <p class="text-muted"><?php echo !empty($event['date_evenement']) ? date('F j, Y', strtotime($event['date_evenement'])) : ''; ?> — <?php echo htmlspecialchars($event['lieu']); ?></p>
-                        <p><?php echo nl2br(htmlspecialchars($event['description'])); ?></p>
-
-                        <?php if (isset($isRegistered) && $isRegistered): ?>
-                            <div class="alert alert-success">You are registered for this event.</div>
-                        <?php else: ?>
-                            <form method="post" class="mb-3">
-                                <button type="submit" name="participate" class="btn_1">Participate</button>
-                            </form>
-                        <?php endif; ?>
-
-                        <div>
-                            <strong>Participants (accepted):</strong>
-                            <ul class="list-unstyled mt-2">
-                                <?php if (!empty($participants)): ?>
-                                    <?php foreach ($participants as $p): ?>
-                                        <li><?php echo htmlspecialchars($p['prenom'] . ' ' . $p['nom']); ?> <?php if (!empty($p['gamer_tag'])) echo '(' . htmlspecialchars($p['gamer_tag']) . ')'; ?></li>
-                                    <?php endforeach; ?>
+                        <div class="event-details card event-card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <div>
+                                        <h3 class="mb-1"><?= htmlspecialchars($event['titre']); ?></h3>
+                                        <p class="text-muted mb-0 small"><?= !empty($event['date_evenement']) ? date('F j, Y', strtotime($event['date_evenement'])) : ''; ?> — <?= htmlspecialchars($event['lieu']); ?></p>
+                                    </div>
+                                    <div class="text-right">
+                                        <?php $accepted_count = (int) $eventModel->countParticipants($event_id); ?>
+                                        <div class="participants-big"><span class="participants-badge"><?= $accepted_count ?></span><div class="small text-muted">accepted</div></div>
+                                    </div>
+                                </div>
+                                <?php if (isset($isRegistered) && $isRegistered): ?>
+                                    <div class="alert alert-success">You are registered for this event.</div>
                                 <?php else: ?>
-                                    <li>No participants yet.</li>
+                                    <div id="participant-errors"></div>
+                                    <div class="mb-3">
+                                        <button type="button" class="btn_1 register-btn" data-toggle="modal" data-target="#participateModal" style="font-size:1.05rem; padding:12px 24px;">Participate</button>
+                                        <small class="text-muted d-block mt-2">You will receive a confirmation email after approval.</small>
+                                    </div>
                                 <?php endif; ?>
-                            </ul>
-                        </div>
+
+                                <div class="mb-3 description-text" style="margin-top:6px;"><?= nl2br(htmlspecialchars($event['description'])); ?></div>
+
+                                <div class="mt-3">
+                                    <strong>Participants (accepted):</strong>
+                                    <?php if (!empty($participants)): ?>
+                                        <div class="list-group list-group-flush mt-2">
+                                            <?php foreach ($participants as $p): ?>
+                                            <div class="list-group-item bg-transparent text-light px-0 py-2">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <div>
+                                                        <div class="font-weight-bold"><?php echo htmlspecialchars($p['prenom'] . ' ' . $p['nom']); ?></div>
+                                                        <div class="small text-muted"><?php echo htmlspecialchars($p['email']); ?></div>
+                                                    </div>
+                                                    <div class="small text-muted"><?php echo !empty($p['gamer_tag']) ? htmlspecialchars($p['gamer_tag']) : '-'; ?></div>
+                                                </div>
+                                            </div>
+                                            <?php endforeach; ?>
+                                        </div>
+                                    <?php else: ?>
+                                        <div class="mt-2 text-muted">Aucun participant pour le moment.</div>
+                                    <?php endif; ?>
+                                </div>
                     </div>
                 </div>
                 <?php else: ?>
@@ -294,8 +382,43 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['participate']) && iss
     <script src="js/jquery.form.js"></script>
     <script src="js/jquery.validate.min.js"></script>
     <script src="js/mail-script.js"></script>
+    <script src="js/participant_validate.js"></script>
     <!-- custom js -->
     <script src="js/custom.js"></script>
+        <!-- Participation Modal -->
+        <div class="modal fade" id="participateModal" tabindex="-1" role="dialog" aria-labelledby="participateModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="participateModalLabel">Participate to <?= htmlspecialchars($event['titre'] ?? 'this event') ?></h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <form method="post" id="participant-modal-form" novalidate>
+                            <input type="hidden" name="action" value="guest_participate">
+                            <div id="participant-errors-modal"></div>
+                            <div class="form-group">
+                                <label for="modal_prenom">Prénom</label>
+                                <input type="text" name="prenom" id="modal_prenom" class="form-control" placeholder="Prénom" style="font-size:1.05rem;">
+                            </div>
+                            <div class="form-group">
+                                <label for="modal_nom">Nom</label>
+                                <input type="text" name="nom" id="modal_nom" class="form-control" placeholder="Nom" style="font-size:1.05rem;">
+                            </div>
+                            <div class="form-group">
+                                <label for="modal_email">Email</label>
+                                <input type="email" name="email" id="modal_email" class="form-control" placeholder="email@example.com" style="font-size:1.05rem;">
+                            </div>
+                            <div class="text-right">
+                                <button type="submit" class="btn_1 register-btn">Submit</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
 </body>
 
 </html>
