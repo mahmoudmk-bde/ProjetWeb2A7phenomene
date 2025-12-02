@@ -24,12 +24,10 @@ if (!$mission) {
     die("<h2 style='color:white;text-align:center;margin-top:50px;'>❌ Mission introuvable</h2>");
 }
 
-// Récupérer les statistiques de feedback
 $feedbackStats = $feedbackcontroller->getFeedbackStats($id);
 $averageRating = $feedbackStats['avg_rating'] ? round($feedbackStats['avg_rating'], 1) : 0;
 $totalFeedbacks = $feedbackStats['total_feedbacks'] ?? 0;
 
-// Récupérer les feedbacks
 $feedbacks = $feedbackcontroller->getFeedbacksByMission($id);
 
 // Vérifier si l'utilisateur a déjà donné son feedback
@@ -41,9 +39,7 @@ if (isset($_SESSION['user_id'])) {
 // Vérifier si l'utilisateur a déjà postulé
 $hasApplied = false;
 $applicationMessage = '';
-<<<<<<< HEAD
 // On ne masque plus le bouton "Postuler" - on laisse l'utilisateur accéder au formulaire toujours
-=======
 if (isset($_SESSION['user_id'])) {
     $hasApplied = $condidatureController->checkExistingApplication($_SESSION['user_id'], $id);
     if ($hasApplied) {
@@ -98,7 +94,6 @@ if (isset($_GET['applied']) && $_GET['applied'] == 1) {
     $applicationMessage = "✅ Votre candidature a été envoyée avec succès !";
     $hasApplied = true;
 }
->>>>>>> f017e9e428e3b9cf04b0e7fbea8e2094a445a151
 
 // Traitement du formulaire de feedback
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_feedback'])) {
