@@ -41,7 +41,64 @@ if (isset($_SESSION['user_id'])) {
 // Vérifier si l'utilisateur a déjà postulé
 $hasApplied = false;
 $applicationMessage = '';
+<<<<<<< HEAD
 // On ne masque plus le bouton "Postuler" - on laisse l'utilisateur accéder au formulaire toujours
+=======
+if (isset($_SESSION['user_id'])) {
+    $hasApplied = $condidatureController->checkExistingApplication($_SESSION['user_id'], $id);
+    if ($hasApplied) {
+        $applicationMessage = "Vous êtes déjà inscrit pour cette mission.";
+    }
+}
+
+// Traitement de la candidature directe
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['apply_mission'])) {
+    if (!isset($_SESSION['user_id'])) {
+        header("Location: connexion.php?redirect=" . urlencode("missiondetails.php?id=$id"));
+        exit();
+    }
+    
+    // Vérifier si déjà postulé
+    if ($condidatureController->checkExistingApplication($_SESSION['user_id'], $id)) {
+        $applicationMessage = "Vous êtes déjà inscrit pour cette mission.";
+        $hasApplied = true;
+    } else {
+        // Récupérer les infos de l'utilisateur
+        $user = $utilisateurController->showUtilisateur($_SESSION['user_id']);
+        
+        if ($user) {
+            // Préparer les données de candidature avec les infos par défaut
+            $candidatureData = [
+                'utilisateur_id' => $_SESSION['user_id'],
+                'mission_id' => $id,
+                'pseudo_gaming' => $user['gamer_tag'] ?? 'Gamer_' . $_SESSION['user_id'],
+                'niveau_experience' => 'intermédiaire', // Valeur par défaut
+                'disponibilites' => 'À définir',
+                'email' => $user['mail'] ?? ''
+            ];
+            
+            try {
+                if ($condidatureController->addCondidature($candidatureData)) {
+                    header("Location: missiondetails.php?id=$id&applied=1");
+                    exit();
+                } else {
+                    $applicationMessage = "Erreur lors de l'inscription. Veuillez réessayer.";
+                }
+            } catch (Exception $e) {
+                $applicationMessage = "Erreur: " . $e->getMessage();
+            }
+        } else {
+            $applicationMessage = "Erreur: Impossible de récupérer vos informations.";
+        }
+    }
+}
+
+// Vérifier les messages de succès
+if (isset($_GET['applied']) && $_GET['applied'] == 1) {
+    $applicationMessage = "✅ Votre candidature a été envoyée avec succès !";
+    $hasApplied = true;
+}
+>>>>>>> f017e9e428e3b9cf04b0e7fbea8e2094a445a151
 
 // Traitement du formulaire de feedback
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_feedback'])) {
@@ -536,6 +593,7 @@ $imagePath = "assets/img/" . $image;
                             </p>
                             
                             <?php if (isset($_SESSION['user_id'])): ?>
+<<<<<<< HEAD
                                     <!-- Redirection vers le formulaire de candidature -->
                                     <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; align-items: center;">
                                         <button type="button" onclick="window.location.href='<?php echo htmlspecialchars('addcondidature.php?mission_id=' . $id); ?>'" class="btn-enhanced" style="cursor: pointer; border: none; background-color: #ff4a57; padding: 12px 24px; font-size: 1rem;">
@@ -546,6 +604,38 @@ $imagePath = "assets/img/" . $image;
                                             <i class="fas fa-arrow-left me-2"></i>Retour aux Missions
                                         </a>
                                     </div>
+=======
+                                <?php if ($hasApplied): ?>
+                                    <!-- Message si déjà inscrit -->
+                                    <div style="background: rgba(40, 167, 69, 0.2); border: 2px solid #28a745; color: #28a745; padding: 20px; border-radius: 10px; margin-bottom: 20px; font-weight: 600; font-size: 1.1rem;">
+                                        <i class="fas fa-check-circle me-2"></i>
+                                        <?= htmlspecialchars($applicationMessage) ?>
+                                    </div>
+                                    <a href="missionlist.php" class="btn-enhanced btn-enhanced-secondary">
+                                        <i class="fas fa-arrow-left me-2"></i>Retour aux Missions
+                                    </a>
+                                <?php else: ?>
+                                    <!-- Formulaire de candidature directe -->
+                                    <form method="POST" action="" style="display: inline-block;">
+                                        <input type="hidden" name="apply_mission" value="1">
+                                        <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; align-items: center;">
+                                            <button type="submit" class="btn-enhanced" style="cursor: pointer;">
+                                                <i class="fas fa-paper-plane me-2"></i>Postuler Maintenant
+                                            </button>
+                                            
+                                            <a href="missionlist.php" class="btn-enhanced btn-enhanced-secondary">
+                                                <i class="fas fa-arrow-left me-2"></i>Retour aux Missions
+                                            </a>
+                                        </div>
+                                    </form>
+                                    <?php if ($applicationMessage && !$hasApplied): ?>
+                                        <div style="background: rgba(220, 53, 69, 0.2); border: 2px solid #dc3545; color: #dc3545; padding: 15px; border-radius: 10px; margin-top: 20px; font-weight: 500;">
+                                            <i class="fas fa-exclamation-circle me-2"></i>
+                                            <?= htmlspecialchars($applicationMessage) ?>
+                                        </div>
+                                    <?php endif; ?>
+                                <?php endif; ?>
+>>>>>>> f017e9e428e3b9cf04b0e7fbea8e2094a445a151
                             <?php else: ?>
                                 <!-- Si non connecté -->
                                 <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; align-items: center;">
