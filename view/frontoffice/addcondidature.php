@@ -11,16 +11,13 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
-<<<<<<< HEAD
 // Vérifier si l'utilisateur est un volontaire (pas admin)
 $userType = strtolower(trim($_SESSION['user_type'] ?? ''));
 if ($userType === 'admin') {
     header('Location: missionlist.php?error=Les administrateurs ne peuvent pas postuler aux missions');
-=======
 // Vérifier si l'utilisateur est un volontaire
 if ($_SESSION['user_type'] !== 'volontaire') {
     header('Location: missionlist.php?error=Seuls les volontaires peuvent postuler aux missions');
->>>>>>> f017e9e428e3b9cf04b0e7fbea8e2094a445a151
     exit();
 }
 
