@@ -58,13 +58,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             } else {
                 // CORRECTION : S'assurer que l'ID utilisateur est bien passé
                 $candidatureData = [
-<<<<<<< HEAD
                     'id_util' => $user_id, // CORRECTION ICI
                     'id_mission' => $mission_id,
-=======
-                    'utilisateur_id' => $user_id, // Utiliser utilisateur_id pour correspondre au controller
-                    'mission_id' => $mission_id,
->>>>>>> f017e9e428e3b9cf04b0e7fbea8e2094a445a151
                     'pseudo_gaming' => $pseudo_gaming,
                     'niveau_experience' => $niveau_experience,
                     'disponibilites' => $disponibilites,
@@ -99,7 +94,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <!DOCTYPE html>
 <html lang="fr">
-<<<<<<< HEAD
 
 <head>
     <meta charset="UTF-8">
@@ -110,33 +104,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link rel="stylesheet" href="assets/css/mission.css">
     <link rel="stylesheet" href="assets/css/custom-frontoffice.css">
     <style>
-=======
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Postuler – ENGAGE</title>
-    <link rel="icon" href="assets/img/favicon.png">
-    <link rel="stylesheet" href="assets/css/bootstrap.min.css">
-    <link rel="stylesheet" href="assets/css/all.css">
-    <link rel="stylesheet" href="assets/css/style.css">
-    <link rel="stylesheet" href="assets/css/mission.css">
-    <link rel="stylesheet" href="assets/css/custom-frontoffice.css">
-    <style>
-        :root {
-            --primary: #ff4a57;
-            --primary-light: #ff6b6b;
-            --dark: #1f2235;
-            --dark-light: #2d325a;
-            --text: #ffffff;
-            --text-light: rgba(255,255,255,0.8);
-        }
-
-        .body_bg {
-            background: linear-gradient(135deg, var(--dark) 0%, var(--dark-light) 100%);
-            min-height: 100vh;
-        }
-
->>>>>>> f017e9e428e3b9cf04b0e7fbea8e2094a445a151
         .user-menu {
             position: relative;
             display: inline-block;
@@ -148,25 +115,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             top: 100%;
             right: 0;
             background: white;
-<<<<<<< HEAD
             min-width: 180px;
             box-shadow: 0 8px 16px rgba(0,0,0,0.1);
             border-radius: 5px;
             z-index: 1000;
             margin-top: 10px;
-=======
-            min-width: 220px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            border-radius: 12px;
-            z-index: 1000;
-            margin-top: 10px;
-            overflow: hidden;
->>>>>>> f017e9e428e3b9cf04b0e7fbea8e2094a445a151
         }
         
         .user-dropdown.show {
             display: block;
-<<<<<<< HEAD
         }
         
         .user-dropdown a {
@@ -176,30 +133,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             color: #333;
             border-bottom: 1px solid #eee;
             transition: background 0.3s;
-=======
-            animation: fadeIn 0.3s ease;
-        }
-        
-        .user-dropdown a {
-            display: flex;
-            align-items: center;
-            padding: 12px 20px;
-            text-decoration: none;
-            color: #333;
-            border-bottom: 1px solid #f0f0f0;
-            transition: all 0.3s ease;
->>>>>>> f017e9e428e3b9cf04b0e7fbea8e2094a445a151
             font-size: 14px;
         }
         
         .user-dropdown a:hover {
             background: #f8f9fa;
-<<<<<<< HEAD
             color: #007bff;
-=======
-            color: var(--primary);
-            transform: translateX(5px);
->>>>>>> f017e9e428e3b9cf04b0e7fbea8e2094a445a151
         }
         
         .user-dropdown a:last-child {
@@ -215,7 +154,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .user-wrapper {
             display: flex;
             align-items: center;
-<<<<<<< HEAD
             gap: 10px;
             color: white;
             cursor: pointer;
@@ -234,34 +172,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             align-items: center;
             justify-content: center;
             border: 2px solid rgba(255,255,255,0.3);
-=======
-            gap: 12px;
-            color: white;
-            cursor: pointer;
-            padding: 8px 16px;
-            border-radius: 25px;
-            transition: all 0.3s ease;
-        }
-        
-        .user-wrapper:hover {
-            background: rgba(255,255,255,0.1);
-        }
-        
-        .user-name {
-            font-weight: 600;
-            font-size: 14px;
-        }
-        
-        .user-avatar {
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 3px solid rgba(255,255,255,0.3);
->>>>>>> f017e9e428e3b9cf04b0e7fbea8e2094a445a151
             transition: all 0.3s ease;
         }
         
@@ -272,16 +182,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         .user-avatar i {
             color: white;
-<<<<<<< HEAD
             font-size: 18px;
-=======
-            font-size: 20px;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
->>>>>>> f017e9e428e3b9cf04b0e7fbea8e2094a445a151
         }
         
         .apply-form-container {
@@ -387,7 +288,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <body>
 <div class="body_bg">
     
-<<<<<<< HEAD
     <!-- Header avec menu utilisateur -->
     <header class="main_menu single_page_menu">
         <div class="container">
@@ -446,9 +346,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
         </div>
     </header>
-=======
-    <?php include 'header_mission.php'; ?>
->>>>>>> f017e9e428e3b9cf04b0e7fbea8e2094a445a151
 
     <!-- Breadcrumb -->
     <section class="breadcrumb_bg">
