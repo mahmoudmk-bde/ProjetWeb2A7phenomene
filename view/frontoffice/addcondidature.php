@@ -50,15 +50,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $message = "Vous avez déjà postulé à cette mission.";
                 $message_type = 'error';
             } else {
-                // CORRECTION : S'assurer que l'ID utilisateur est bien passé
+                // Préparer les données attendues par condidaturecontroller::addCondidature()
                 $candidatureData = [
-                    'id_util' => $user_id, // CORRECTION ICI
-                    'id_mission' => $mission_id,
+                    'utilisateur_id' => $user_id,
+                    'mission_id' => $mission_id,
                     'pseudo_gaming' => $pseudo_gaming,
                     'niveau_experience' => $niveau_experience,
                     'disponibilites' => $disponibilites,
                     'email' => $email,
-                    
                 ];
 
                 // DEBUG : Afficher les données pour vérification
