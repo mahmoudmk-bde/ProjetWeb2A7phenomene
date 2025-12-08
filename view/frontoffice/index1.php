@@ -796,49 +796,12 @@ foreach ($candidatures as $candidature) {
         </div>
     </section>
 
-    <!-- Section Historique des Réclamations -->
+    <!-- Historique des Réclamations moved to separate page -->
     <section id="historique-reclamations" class="container fade-in" style="margin-top: 80px;">
         <div class="section-title">
             <h2>📝 Historique de mes Réclamations</h2>
-            <p>Suivez les réclamations que vous avez envoyées à la plateforme</p>
-        </div>
-
-        <div class="candidatures-container">
-            <?php if (!empty($reclamations)): ?>
-                <div class="timeline">
-                    <?php foreach ($reclamations as $reclamation): ?>
-                        <div class="timeline-item">
-                            <div class="timeline-marker"></div>
-                            <div class="timeline-content">
-                                <div class="timeline-date">
-                                    <?php echo date('d/m/Y à H:i', strtotime($reclamation['date_creation'])); ?>
-                                </div>
-                                <div class="timeline-title">
-                                    <?php echo htmlspecialchars($reclamation['sujet']); ?>
-                                </div>
-                                <div class="timeline-description">
-                                    <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 10px;">
-                                        <span class="statut-badge statut-<?php echo strtolower(str_replace(' ', '_', $reclamation['statut'])); ?>" style="font-size: 0.8rem;">
-                                            <?php echo htmlspecialchars($reclamation['statut']); ?>
-                                        </span>
-                                        <span style="color: var(--text-light);">
-                                            <i class="fas fa-flag me-1"></i>
-                                            Priorité : <?php echo htmlspecialchars($reclamation['priorite']); ?>
-                                        </span>
-                                    </div>
-                                    <p><?php echo nl2br(htmlspecialchars($reclamation['description'])); ?></p>
-                                </div>
-                            </div>
-                        </div>
-                    <?php endforeach; ?>
-                </div>
-            <?php else: ?>
-                <div class="no-candidatures">
-                    <i class="fas fa-history"></i>
-                    <h3>Aucune réclamation pour le moment</h3>
-                    <p>Vos réclamations apparaîtront ici après vos premiers envois depuis la page Réclamation.</p>
-                </div>
-            <?php endif; ?>
+            <p>La section Historique des réclamations a été déplacée vers une page dédiée.</p>
+            <p><a href="historique_reclamations.php" class="action-btn">Voir mon historique des réclamations</a></p>
         </div>
     </section>
 

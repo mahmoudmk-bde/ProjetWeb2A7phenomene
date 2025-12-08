@@ -2,6 +2,16 @@
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// Ensure only admin can access dashboard
+if (!isset($_SESSION['user_id']) || !isset($_SESSION['user_type']) || strtolower($_SESSION['user_type']) !== 'admin') {
+    header('Location: login.php');
+    exit();
+}
+
 $base_dir = __DIR__ . '/../../';
 require_once $base_dir . 'controller/missioncontroller.php';
 require_once $base_dir . 'controller/condidaturecontroller.php';

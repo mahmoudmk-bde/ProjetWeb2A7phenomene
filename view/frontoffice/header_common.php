@@ -41,11 +41,32 @@ $headerShowUserMenu = isset($headerShowUserMenu) ? (bool)$headerShowUserMenu : f
                     <!-- Button / User dropdown -->
                     <?php if (isset($_SESSION['user_id'])): ?>
                         <?php if ($headerShowUserMenu): ?>
+                            <?php
+                            // Compute number of distinct reclamations that have responses for current user
+                            $responseCount = 0;
+                            try {
+                                require_once __DIR__ . '/../../db_config.php';
+                                $pdo = config::getConnexion();
+                                $stmt = $pdo->prepare("SELECT COUNT(DISTINCT r.reclamation_id) AS cnt
+                                    FROM response r
+                                    JOIN reclamation rec ON rec.id = r.reclamation_id
+                                    WHERE rec.utilisateur_id = :uid");
+                                $stmt->execute(['uid' => $_SESSION['user_id']]);
+                                $row = $stmt->fetch(PDO::FETCH_ASSOC);
+                                $responseCount = $row && isset($row['cnt']) ? (int)$row['cnt'] : 0;
+                            } catch (Exception $e) {
+                                $responseCount = 0;
+                            }
+                            ?>
+
                             <div class="user-menu d-none d-sm-block">
                                 <div class="user-wrapper">
                                     <span class="user-name"><?= htmlspecialchars($sessionUserName) ?></span>
-                                    <div class="user-avatar">
+                                    <div class="user-avatar" style="position:relative;">
                                         <i class="fas fa-user"></i>
+                                        <?php if ($responseCount > 0): ?>
+                                            <span class="response-badge"><?= $responseCount ?></span>
+                                        <?php endif; ?>
                                     </div>
                                 </div>
                                 <div class="user-dropdown">
@@ -57,6 +78,9 @@ $headerShowUserMenu = isset($headerShowUserMenu) ? (bool)$headerShowUserMenu : f
                                     </a>
                                     <a href="securite.php">
                                         <i class="fas fa-shield-alt me-2"></i>Sécurité
+                                    </a>
+                                    <a href="historique_reclamations.php">
+                                        <i class="fas fa-history me-2"></i>Historique
                                     </a>
                                     <a href="addreclamation.php">
                                         <i class="fas fa-exclamation-circle me-2"></i>Réclamation
@@ -77,6 +101,29 @@ $headerShowUserMenu = isset($headerShowUserMenu) ? (bool)$headerShowUserMenu : f
         </div>
     </div>
 </header>
+
+<style>
+    .response-badge {
+        position: absolute;
+        top: -6px;
+        right: -6px;
+        background: #ff4a57;
+        color: #fff;
+        font-size: 0.7rem;
+        padding: 2px 6px;
+        border-radius: 999px;
+        border: 2px solid #fff;
+        line-height: 1;
+        min-width: 20px;
+        text-align: center;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+    }
+    .user-dropdown a { display:block; padding:10px 16px; color:#333; border-bottom:1px solid #eee; }
+    .user-dropdown a:last-child { border-bottom: none; }
+    .user-dropdown a:hover { background:#f8f8f8; }
+    .user-wrapper .user-name { margin-right:10px; color: #fff; }
+    .user-menu .user-dropdown { right:0; left:auto; }
+</style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
