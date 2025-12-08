@@ -588,49 +588,16 @@ $imagePath = "assets/img/" . $image;
                             </p>
                             
                             <?php if (isset($_SESSION['user_id'])): ?>
-<<<<<<< HEAD
-                                    <!-- Redirection vers le formulaire de candidature -->
-                                    <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; align-items: center;">
-                                        <button type="button" onclick="window.location.href='<?php echo htmlspecialchars('addcondidature.php?mission_id=' . $id); ?>'" class="btn-enhanced" style="cursor: pointer; border: none; background-color: #ff4a57; padding: 12px 24px; font-size: 1rem;">
-                                            <i class="fas fa-paper-plane me-2"></i>Postuler Maintenant
-                                        </button>
-                                        
-                                        <a href="missionlist.php" class="btn-enhanced btn-enhanced-secondary">
-                                            <i class="fas fa-arrow-left me-2"></i>Retour aux Missions
-                                        </a>
-                                    </div>
-=======
-                                <?php if ($hasApplied): ?>
-                                    <!-- Message si déjà inscrit -->
-                                    <div style="background: rgba(40, 167, 69, 0.2); border: 2px solid #28a745; color: #28a745; padding: 20px; border-radius: 10px; margin-bottom: 20px; font-weight: 600; font-size: 1.1rem;">
-                                        <i class="fas fa-check-circle me-2"></i>
-                                        <?= htmlspecialchars($applicationMessage) ?>
-                                    </div>
+                                <!-- Redirection vers le formulaire de candidature -->
+                                <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; align-items: center;">
+                                    <button type="button" onclick="window.location.href='<?php echo htmlspecialchars('addcondidature.php?mission_id=' . $id); ?>'" class="btn-enhanced" style="cursor: pointer; border: none; background-color: #ff4a57; padding: 12px 24px; font-size: 1rem;">
+                                        <i class="fas fa-paper-plane me-2"></i>Postuler Maintenant
+                                    </button>
+                                    
                                     <a href="missionlist.php" class="btn-enhanced btn-enhanced-secondary">
                                         <i class="fas fa-arrow-left me-2"></i>Retour aux Missions
                                     </a>
-                                <?php else: ?>
-                                    <!-- Formulaire de candidature directe -->
-                                    <form method="POST" action="" style="display: inline-block;">
-                                        <input type="hidden" name="apply_mission" value="1">
-                                        <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; align-items: center;">
-                                            <button type="submit" class="btn-enhanced" style="cursor: pointer;">
-                                                <i class="fas fa-paper-plane me-2"></i>Postuler Maintenant
-                                            </button>
-                                            
-                                            <a href="missionlist.php" class="btn-enhanced btn-enhanced-secondary">
-                                                <i class="fas fa-arrow-left me-2"></i>Retour aux Missions
-                                            </a>
-                                        </div>
-                                    </form>
-                                    <?php if ($applicationMessage && !$hasApplied): ?>
-                                        <div style="background: rgba(220, 53, 69, 0.2); border: 2px solid #dc3545; color: #dc3545; padding: 15px; border-radius: 10px; margin-top: 20px; font-weight: 500;">
-                                            <i class="fas fa-exclamation-circle me-2"></i>
-                                            <?= htmlspecialchars($applicationMessage) ?>
-                                        </div>
-                                    <?php endif; ?>
-                                <?php endif; ?>
->>>>>>> f017e9e428e3b9cf04b0e7fbea8e2094a445a151
+                                </div>
                             <?php else: ?>
                                 <!-- Si non connecté -->
                                 <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; align-items: center;">

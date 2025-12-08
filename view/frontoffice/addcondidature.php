@@ -11,12 +11,6 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
-// Vérifier si l'utilisateur est un volontaire
-if ($_SESSION['user_type'] !== 'volontaire') {
-    header('Location: missionlist.php?error=Seuls les volontaires peuvent postuler aux missions');
-    exit();
-}
-
 $mission_id = $_GET['mission_id'] ?? null;
 if (!$mission_id) {
     header('Location: missionlist.php');
