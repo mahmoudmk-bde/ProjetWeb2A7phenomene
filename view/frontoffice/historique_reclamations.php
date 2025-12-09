@@ -152,6 +152,22 @@ $headerShowUserMenu = true; // instruct header to show dropdown
         .timeline-description { margin-top:10px; color: var(--text-light); }
             .responses { margin-top: 8px; }
             .response-card { background: rgba(255,255,255,0.02); padding:10px; border-left:3px solid var(--primary); margin-bottom:8px; border-radius:6px; }
+
+        /* Highlight / focus styles for a specific reclamation */
+        .reclamation-highlight {
+            box-shadow: 0 8px 30px rgba(255,74,87,0.12), 0 0 0 4px rgba(255,74,87,0.06) inset;
+            transform: translateY(-4px);
+            border-radius: 10px;
+            transition: box-shadow 300ms ease, transform 300ms ease;
+        }
+        @keyframes highlightPulse {
+            0% { box-shadow: 0 8px 30px rgba(255,74,87,0.12); }
+            50% { box-shadow: 0 12px 40px rgba(255,74,87,0.18); }
+            100% { box-shadow: 0 8px 30px rgba(255,74,87,0.12); }
+        }
+        .reclamation-highlight.animate {
+            animation: highlightPulse 1.8s ease-in-out 0s 2;
+        }
     </style>
 </head>
 <body class="body_bg">
@@ -169,7 +185,7 @@ $headerShowUserMenu = true; // instruct header to show dropdown
         <?php if (!empty($reclamations)): ?>
             <div class="timeline">
                 <?php foreach ($reclamations as $reclamation): ?>
-                    <div class="timeline-item">
+                    <div id="reclamation-<?php echo htmlspecialchars($reclamation['id']); ?>" class="timeline-item">
                         <div class="timeline-marker"></div>
                         <div class="timeline-content">
                             <div class="timeline-date">
@@ -243,5 +259,29 @@ $headerShowUserMenu = true; // instruct header to show dropdown
 
 <script src="assets/js/jquery-1.12.1.min.js"></script>
 <script src="assets/js/bootstrap.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // If reclamation_id provided in query string, scroll to and highlight it
+    function getQueryParam(name) {
+        const params = new URLSearchParams(window.location.search);
+        return params.get(name);
+    }
+
+    const rid = getQueryParam('reclamation_id');
+    if (rid) {
+        const el = document.getElementById('reclamation-' + rid);
+        if (el) {
+            // Smooth scroll to element, center it
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            // Add highlight class
+            el.classList.add('reclamation-highlight', 'animate');
+            // Remove animate after it finishes, but keep subtle highlight for a few seconds
+            setTimeout(() => el.classList.remove('animate'), 4000);
+            // Remove highlight after 8 seconds
+            setTimeout(() => el.classList.remove('reclamation-highlight'), 8000);
+        }
+    }
+});
+</script>
 </body>
 </html>
