@@ -22,7 +22,7 @@ $headerShowUserMenu = isset($headerShowUserMenu) ? (bool)$headerShowUserMenu : f
             <div class="col-lg-12">
                 <nav class="navbar navbar-expand-lg navbar-light">
                     <a class="navbar-brand" href="<?= isset($_SESSION['user_id']) ? 'index1.php' : 'index.php' ?>">
-                        <img src="assets/img/logo.png" alt="logo" style="height: 45px;" />
+                        <img src="../img/logo.png" alt="logo" style="height: 110px;" />
                     </a>
                     <button class="navbar-toggler" type="button" data-toggle="collapse" 
                             data-target="#navbarSupportedContent">
