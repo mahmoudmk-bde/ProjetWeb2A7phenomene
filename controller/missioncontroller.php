@@ -92,4 +92,63 @@ class missioncontroller
         $stmt->execute([$id]);
         // TODO: ajouter un système d'historique si nécessaire
     }
+
+    /**
+     * Get paginated missions for unauthenticated users
+     */
+    public function getMissionsPaginated($page = 1, $perPage = 10)
+    {
+        $page = max(1, intval($page));
+        $perPage = max(1, intval($perPage));
+        $offset = ($page - 1) * $perPage;
+
+        // Get total count
+        $countSql = "SELECT COUNT(*) as total FROM missions WHERE statut = 'Ouverte'";
+        $countStmt = $this->db->prepare($countSql);
+        $countStmt->execute();
+        $total = $countStmt->fetch(PDO::FETCH_ASSOC)['total'] ?? 0;
+
+        // Get paginated missions (use direct values in LIMIT/OFFSET, not parameters)
+        $sql = "SELECT * FROM missions WHERE statut = 'Ouverte' ORDER BY date_creation DESC LIMIT " . intval($perPage) . " OFFSET " . intval($offset);
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute();
+        $missions = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        return [
+            'data' => $missions,
+            'total' => $total,
+            'page' => $page,
+            'perPage' => $perPage
+        ];
+    }
+
+    /**
+     * Get missions with matching score for a specific user (based on skills/interests)
+     */
+    public function getMissionsWithMatching($userId, $page = 1, $perPage = 10)
+    {
+        $userId = intval($userId);
+        $page = max(1, intval($page));
+        $perPage = max(1, intval($perPage));
+        $offset = ($page - 1) * $perPage;
+
+        // Get total count
+        $countSql = "SELECT COUNT(*) as total FROM missions WHERE statut = 'Ouverte'";
+        $countStmt = $this->db->prepare($countSql);
+        $countStmt->execute();
+        $total = $countStmt->fetch(PDO::FETCH_ASSOC)['total'] ?? 0;
+
+        // Get paginated missions (use direct values in LIMIT/OFFSET, not parameters)
+        $sql = "SELECT * FROM missions WHERE statut = 'Ouverte' ORDER BY date_creation DESC LIMIT " . intval($perPage) . " OFFSET " . intval($offset);
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute();
+        $missions = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        return [
+            'data' => $missions,
+            'total' => $total,
+            'page' => $page,
+            'perPage' => $perPage
+        ];
+    }
 }
