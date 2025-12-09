@@ -1,0 +1,511 @@
+/* Reset et variables globales */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+  
+  :root {
+    --engage-red: #e74c3c;
+    --engage-blue: #3498db;
+    --engage-dark: #1a1a2e;
+    --engage-darker: #0f0f1a;
+    --engage-light: #ecf0f1;
+    --engage-secondary: #2c3e50;
+    --engage-gradient: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+    --blue-gradient: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+  }
+  
+  /* Styles de base */
+  body {
+    background: linear-gradient(135deg, var(--engage-darker) 0%, var(--engage-dark) 100%);
+    color: var(--engage-light);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+  }
+  
+  /* Arrière-plan animé avec particules */
+  body::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: 
+        radial-gradient(circle at 20% 80%, rgba(231, 76, 60, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(52, 152, 219, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 40% 40%, rgba(46, 204, 113, 0.1) 0%, transparent 50%);
+    z-index: -2;
+  }
+  
+  /* Conteneur principal de réinitialisation */
+  .reset-container {
+    width: 90%;
+    max-width: 500px;
+    background: rgba(26, 26, 46, 0.8);
+    border-radius: 20px;
+    padding: 50px 40px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+    animation: containerAppear 1s ease-out;
+  }
+  
+  /* Animation d'apparition du conteneur */
+  @keyframes containerAppear {
+    0% {
+        opacity: 0;
+        transform: translateY(30px) scale(0.95);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+  }
+  
+  /* Effet de brillance sur le conteneur */
+  .reset-container::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.03), transparent);
+    transform: rotate(45deg);
+    animation: shine 8s infinite linear;
+    z-index: -1;
+  }
+  
+  @keyframes shine {
+    0% {
+        transform: rotate(45deg) translateX(-100%);
+    }
+    100% {
+        transform: rotate(45deg) translateX(100%);
+    }
+  }
+  
+  /* En-tête */
+  .reset-header {
+    text-align: center;
+    margin-bottom: 30px;
+  }
+  
+  .reset-header h1 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin-bottom: 10px;
+    background: linear-gradient(45deg, var(--engage-red), #ff6b6b);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 5px 15px rgba(231, 76, 60, 0.3);
+  }
+  
+  .reset-header p {
+    color: #bdc3c7;
+    font-size: 1.1rem;
+    animation: subtitlePulse 2s infinite;
+  }
+  
+  @keyframes subtitlePulse {
+    0%, 100% {
+        opacity: 0.7;
+    }
+    50% {
+        opacity: 1;
+    }
+  }
+  
+  /* Indicateur d'étapes */
+  .step-indicator {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 30px;
+    position: relative;
+  }
+  
+  .step-indicator::before {
+    content: '';
+    position: absolute;
+    top: 15px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: rgba(255, 255, 255, 0.2);
+    z-index: 1;
+  }
+  
+  .step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    z-index: 2;
+  }
+  
+  .step-number {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    color: #bdc3c7;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    margin-bottom: 8px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+  }
+  
+  .step.active .step-number {
+    background: var(--engage-red);
+    color: white;
+    border-color: var(--engage-red);
+    box-shadow: 0 0 15px rgba(231, 76, 60, 0.5);
+  }
+  
+  .step.completed .step-number {
+    background: #27ae60;
+    color: white;
+    border-color: #27ae60;
+  }
+  
+  .step-label {
+    font-size: 0.8rem;
+    color: #bdc3c7;
+    text-align: center;
+    font-weight: 500;
+  }
+  
+  .step.active .step-label {
+    color: var(--engage-red);
+    font-weight: 600;
+  }
+  
+  .step.completed .step-label {
+    color: #27ae60;
+  }
+  
+  /* Groupes de formulaire */
+  .form-group {
+    position: relative;
+    margin-bottom: 25px;
+  }
+  
+  .form-label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--engage-light);
+    font-weight: 600;
+    font-size: 0.95rem;
+  }
+  
+  /* Champs de saisie */
+  .form-control {
+    width: 100%;
+    padding: 16px 20px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    color: var(--engage-light);
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    outline: none;
+  }
+  
+  .form-control::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+  }
+  
+  .form-control:focus {
+    border-color: var(--engage-red);
+    background: rgba(255, 255, 255, 0.12);
+    box-shadow: 0 0 0 4px rgba(231, 76, 60, 0.2);
+    transform: translateY(-2px);
+  }
+  
+  /* Section des questions */
+  .question-section {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    border-left: 4px solid var(--engage-blue);
+  }
+  
+  .question-text {
+    font-weight: 600;
+    color: var(--engage-light);
+    margin-bottom: 12px;
+    font-size: 1rem;
+  }
+  
+  /* Alertes */
+  .alert {
+    border-radius: 12px;
+    border: none;
+    padding: 15px 20px;
+    margin-bottom: 20px;
+    font-weight: 500;
+  }
+  
+  .alert-success {
+    background: rgba(39, 174, 96, 0.2);
+    color: #2ecc71;
+    border: 1px solid rgba(46, 204, 113, 0.3);
+  }
+  
+  .alert-error {
+    background: rgba(231, 76, 60, 0.2);
+    color: #e74c3c;
+    border: 1px solid rgba(231, 76, 60, 0.3);
+  }
+  
+  /* Boutons */
+  .btn-reset {
+    width: 100%;
+    padding: 16px;
+    background: var(--engage-gradient);
+    border: none;
+    border-radius: 12px;
+    color: white;
+    font-size: 1rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 10px 20px rgba(231, 76, 60, 0.3);
+  }
+  
+  .btn-reset:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 25px rgba(231, 76, 60, 0.4);
+  }
+  
+  .btn-reset:active {
+    transform: translateY(-1px);
+  }
+  
+  .btn-secondary {
+    width: 100%;
+    padding: 16px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    color: var(--engage-light);
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  
+  .btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: var(--engage-blue);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+  }
+  
+  /* Effet de vague sur les boutons */
+  .btn-reset::after,
+  .btn-secondary::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 5px;
+    height: 5px;
+    background: rgba(255, 255, 255, 0.5);
+    opacity: 0;
+    border-radius: 100%;
+    transform: scale(1, 1) translate(-50%);
+    transform-origin: 50% 50%;
+  }
+  
+  .btn-reset:hover::after,
+  .btn-secondary:hover::after {
+    animation: ripple 1s ease-out;
+  }
+  
+  @keyframes ripple {
+    0% {
+        transform: scale(0, 0);
+        opacity: 0.5;
+    }
+    100% {
+        transform: scale(20, 20);
+        opacity: 0;
+    }
+  }
+  
+  /* Lien de retour */
+  .back-link {
+    text-align: center;
+    margin-top: 25px;
+  }
+  
+  .back-link a {
+    color: var(--engage-blue);
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    position: relative;
+  }
+  
+  .back-link a:hover {
+    color: #5dade2;
+    text-decoration: none;
+  }
+  
+  .back-link a::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 1px;
+    background: var(--engage-blue);
+    transition: width 0.3s ease;
+  }
+  
+  .back-link a:hover::after {
+    width: 100%;
+  }
+  
+  /* Section de succès */
+  .text-center {
+    text-align: center;
+  }
+  
+  .text-center .fa-check-circle {
+    font-size: 4rem;
+    color: #27ae60;
+    margin-bottom: 20px;
+    animation: bounceIn 1s ease;
+  }
+  
+  @keyframes bounceIn {
+    0% {
+        transform: scale(0.3);
+        opacity: 0;
+    }
+    50% {
+        transform: scale(1.05);
+    }
+    70% {
+        transform: scale(0.9);
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+  }
+  
+  /* Grille responsive */
+  .row {
+    display: flex;
+    flex-wrap: wrap;
+    margin: 0 -10px;
+  }
+  
+  .col-md-6 {
+    flex: 0 0 50%;
+    max-width: 50%;
+    padding: 0 10px;
+  }
+  
+  /* Texte informatif */
+  .text-muted {
+    color: #bdc3c7 !important;
+    font-size: 0.9rem;
+  }
+  
+  .text-success {
+    color: #27ae60 !important;
+  }
+  
+  /* Responsive */
+  @media (max-width: 768px) {
+    .reset-container {
+        padding: 40px 25px;
+        margin: 20px;
+    }
+    
+    .reset-header h1 {
+        font-size: 2rem;
+    }
+    
+    .col-md-6 {
+        flex: 0 0 100%;
+        max-width: 100%;
+        margin-bottom: 10px;
+    }
+    
+    .step-label {
+        font-size: 0.7rem;
+    }
+    
+    .step-number {
+        width: 30px;
+        height: 30px;
+        font-size: 0.9rem;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .reset-container {
+        padding: 30px 20px;
+    }
+    
+    .reset-header h1 {
+        font-size: 1.8rem;
+    }
+    
+    .form-control {
+        padding: 14px 16px;
+    }
+    
+    .btn-reset,
+    .btn-secondary {
+        padding: 14px;
+        font-size: 0.9rem;
+    }
+  }
+  
+  /* Particules flottantes animées */
+  .particle {
+    position: absolute;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: -1;
+  }
+  
+  /* Animation des particules */
+  @keyframes float {
+    0%, 100% {
+        transform: translateY(0) rotate(0deg);
+        opacity: 0;
+    }
+    10%, 60% {
+        opacity: 1;
+    }
+    50% {
+        transform: translateY(-20px) rotate(180deg);
+    }
+  }
