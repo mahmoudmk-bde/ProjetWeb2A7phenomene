@@ -208,6 +208,7 @@ CREATE TABLE `response` (
   `reclamation_id` int(11) NOT NULL,
   `contenu` longtext NOT NULL,
   `date_response` timestamp NOT NULL DEFAULT current_timestamp(),
+  `vu` tinyint(1) NOT NULL DEFAULT 0,
   `admin_id` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 

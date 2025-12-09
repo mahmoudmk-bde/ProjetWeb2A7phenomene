@@ -42,15 +42,30 @@ $headerShowUserMenu = isset($headerShowUserMenu) ? (bool)$headerShowUserMenu : f
                     <?php if (isset($_SESSION['user_id'])): ?>
                         <?php if ($headerShowUserMenu): ?>
                             <?php
-                            // Compute number of distinct reclamations that have responses for current user
+                            // Compute number of unseen responses (vu = 0) for current user's reclamations
                             $responseCount = 0;
                             try {
                                 require_once __DIR__ . '/../../db_config.php';
                                 $pdo = config::getConnexion();
-                                $stmt = $pdo->prepare("SELECT COUNT(DISTINCT r.reclamation_id) AS cnt
+
+                                // Ensure `vu` column exists; if missing, attempt to add it (safe best-effort)
+                                try {
+                                    $dbNameStmt = $pdo->query('SELECT DATABASE() AS dbname');
+                                    $dbName = $dbNameStmt->fetchColumn();
+                                    $colCheck = $pdo->prepare("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = :db AND TABLE_NAME = 'response' AND COLUMN_NAME = 'vu'");
+                                    $colCheck->execute(['db' => $dbName]);
+                                    $exists = (int)$colCheck->fetchColumn();
+                                    if ($exists === 0) {
+                                        $pdo->exec("ALTER TABLE response ADD COLUMN vu TINYINT(1) NOT NULL DEFAULT 0 AFTER date_response");
+                                    }
+                                } catch (Exception $inner) {
+                                    // ignore schema modification failures; we'll still try to query using vu
+                                }
+
+                                $stmt = $pdo->prepare("SELECT COUNT(*) AS cnt
                                     FROM response r
                                     JOIN reclamation rec ON rec.id = r.reclamation_id
-                                    WHERE rec.utilisateur_id = :uid");
+                                    WHERE rec.utilisateur_id = :uid AND IFNULL(r.vu,0) = 0");
                                 $stmt->execute(['uid' => $_SESSION['user_id']]);
                                 $row = $stmt->fetch(PDO::FETCH_ASSOC);
                                 $responseCount = $row && isset($row['cnt']) ? (int)$row['cnt'] : 0;

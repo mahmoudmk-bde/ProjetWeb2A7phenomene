@@ -13,10 +13,20 @@ if (!isset($_SESSION['user_id'])) {
 
 $user_id = $_SESSION['user_id'];
 $reclamationController = new ReclamationController();
+
 $responseController = new ResponseController();
 $utilCtrl = new UtilisateurController();
 
 $reclamations = $reclamationController->getReclamationsByUser($user_id);
+
+// Mark responses as seen for all reclamations shown on this page so the header badge updates
+if (!empty($reclamations)) {
+    foreach ($reclamations as $r) {
+        if (!empty($r['id'])) {
+            $responseController->markResponsesSeenByReclamation(intval($r['id']), $user_id);
+        }
+    }
+}
 
 $headerShowUserMenu = true; // instruct header to show dropdown
 ?>

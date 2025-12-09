@@ -6,6 +6,30 @@ class ResponseController {
     
     public function __construct() {
         $this->pdo = config::getConnexion();
+        // Ensure the 'vu' column exists in the response table so we can track seen/unseen
+        $this->ensureVuColumnExists();
+    }
+
+    /**
+     * Ensure the `vu` column exists in `response` table. If missing, try to add it.
+     */
+    private function ensureVuColumnExists() {
+        try {
+            $dbNameStmt = $this->pdo->query('SELECT DATABASE() AS dbname');
+            $dbName = $dbNameStmt->fetchColumn();
+
+            $colCheck = $this->pdo->prepare("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = :db AND TABLE_NAME = 'response' AND COLUMN_NAME = 'vu'");
+            $colCheck->execute(['db' => $dbName]);
+            $exists = (int)$colCheck->fetchColumn();
+
+            if ($exists === 0) {
+                // Add a tinyint flag to mark whether the response has been viewed by the user
+                $this->pdo->exec("ALTER TABLE response ADD COLUMN vu TINYINT(1) NOT NULL DEFAULT 0 AFTER date_response");
+            }
+        } catch (Exception $e) {
+            // If we cannot modify schema (permissions), silently ignore — code will fallback gracefully
+            error_log('ensureVuColumnExists error: ' . $e->getMessage());
+        }
     }
     
     public function addResponse($reclamation_id, $contenu, $admin_id = null) {
@@ -16,15 +40,32 @@ class ResponseController {
             $admin_id = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : 1;
         }
         
-        $sql = "INSERT INTO response (reclamation_id, contenu, admin_id, date_response) 
-                VALUES (:reclamation_id, :contenu, :admin_id, NOW())";
-        
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute([
-            'reclamation_id' => $reclamation_id,
-            'contenu' => $contenu,
-            'admin_id' => $admin_id
-        ]);
+        // Insert response and mark it as unseen (vu = 0) for the user
+        $sql = "INSERT INTO response (reclamation_id, contenu, admin_id, date_response, vu) 
+                VALUES (:reclamation_id, :contenu, :admin_id, NOW(), 0)";
+
+        try {
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([
+                'reclamation_id' => $reclamation_id,
+                'contenu' => $contenu,
+                'admin_id' => $admin_id
+            ]);
+        } catch (PDOException $ex) {
+            // Fallback if the `vu` column does not exist or other DB error: try the original insert
+            try {
+                $fallback = "INSERT INTO response (reclamation_id, contenu, admin_id, date_response) 
+                            VALUES (:reclamation_id, :contenu, :admin_id, NOW())";
+                $stmt = $this->pdo->prepare($fallback);
+                $stmt->execute([
+                    'reclamation_id' => $reclamation_id,
+                    'contenu' => $contenu,
+                    'admin_id' => $admin_id
+                ]);
+            } catch (Exception $e) {
+                error_log('Response insert fallback failed: ' . $e->getMessage());
+            }
+        }
         
         // Mettre à jour le statut de la réclamation à "Traite"
         $updateSql = "UPDATE reclamation SET statut = 'Traite' WHERE id = :id";
@@ -117,10 +158,10 @@ class ResponseController {
     }
     
     public function getResponses($reclamation_id) {
-        $sql = "SELECT id, reclamation_id, contenu, date_response, admin_id 
-                FROM response 
-                WHERE reclamation_id = :reclamation_id 
-                ORDER BY date_response DESC";
+        $sql = "SELECT id, reclamation_id, contenu, date_response, admin_id, IFNULL(vu,0) AS vu 
+            FROM response 
+            WHERE reclamation_id = :reclamation_id 
+            ORDER BY date_response DESC";
         
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute(['reclamation_id' => $reclamation_id]);
@@ -131,6 +172,23 @@ class ResponseController {
     public function deleteResponse($id) {
         $stmt = $this->pdo->prepare("DELETE FROM response WHERE id = :id");
         $stmt->execute(['id' => $id]);
+    }
+
+    /**
+     * Mark responses as seen (vu = 1) for a reclamation owned by a specific user.
+     * This prevents marking other users' responses.
+     */
+    public function markResponsesSeenByReclamation($reclamation_id, $user_id) {
+        try {
+            $sql = "UPDATE response r
+                    JOIN reclamation rec ON rec.id = r.reclamation_id
+                    SET r.vu = 1
+                    WHERE r.reclamation_id = :rid AND rec.utilisateur_id = :uid";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute(['rid' => $reclamation_id, 'uid' => $user_id]);
+        } catch (Exception $e) {
+            error_log('markResponsesSeenByReclamation error: ' . $e->getMessage());
+        }
     }
 }
 ?>
