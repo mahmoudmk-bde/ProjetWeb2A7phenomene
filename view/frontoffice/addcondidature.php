@@ -50,6 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $message = "Vous avez déjà postulé à cette mission.";
                 $message_type = 'error';
             } else {
+<<<<<<< HEAD
                 // Gérer l'upload du CV (optionnel)
                 $cvPath = null;
                 if (isset($_FILES['cv']) && isset($_FILES['cv']['error']) && $_FILES['cv']['error'] !== UPLOAD_ERR_NO_FILE) {
@@ -89,6 +90,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     }
                 }
 
+=======
+>>>>>>> 6c1d02106b76736dc7ce843a7cf4f48a05d1ee1c
                 // Préparer les données attendues par condidaturecontroller::addCondidature()
                 $candidatureData = [
                     'utilisateur_id' => $user_id,
@@ -97,7 +100,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'niveau_experience' => $niveau_experience,
                     'disponibilites' => $disponibilites,
                     'email' => $email,
+<<<<<<< HEAD
                     'cv' => $cvPath,
+=======
+>>>>>>> 6c1d02106b76736dc7ce843a7cf4f48a05d1ee1c
                 ];
 
                 // DEBUG : Afficher les données pour vérification
@@ -328,7 +334,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="col-lg-12">
                     <nav class="navbar navbar-expand-lg navbar-light">
                         <a class="navbar-brand" href="index.php">
+<<<<<<< HEAD
                             <img src="assets/img/logo.png" alt="logo" />
+=======
+                            <img src="../img/logo.png" alt="logo" />
+>>>>>>> 6c1d02106b76736dc7ce843a7cf4f48a05d1ee1c
                         </a>
                         <button class="navbar-toggler" type="button" data-toggle="collapse" 
                                 data-target="#navbarSupportedContent">
@@ -422,7 +432,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             </p>
                         </div>
 
+<<<<<<< HEAD
                         <form id="condidature-form" method="POST" action="" enctype="multipart/form-data">
+=======
+                        <form id="condidature-form" method="POST" action="">
+>>>>>>> 6c1d02106b76736dc7ce843a7cf4f48a05d1ee1c
                             <input type="hidden" name="mission_id" value="<?= htmlspecialchars($mission_id) ?>">
 
                             <div class="form-group">
@@ -466,6 +480,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                        value="<?= isset($_POST['email']) ? htmlspecialchars($_POST['email']) : (isset($current_user['mail']) ? htmlspecialchars($current_user['mail']) : '') ?>">
                             </div>
 
+<<<<<<< HEAD
                             <div class="form-group">
                                 <label class="form-label">
                                     <i class="fas fa-file-pdf me-2"></i>CV (PDF/DOC/DOCX)
@@ -473,6 +488,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 <input type="file" name="cv" class="form-control" accept=".pdf,.doc,.docx">
                                 <small class="form-text" style="color: rgba(255,255,255,0.6);">Optionnel — Taille max 5MB. Formats acceptés : PDF, DOC, DOCX.</small>
                             </div>
+=======
+>>>>>>> 6c1d02106b76736dc7ce843a7cf4f48a05d1ee1c
                             
 
                             <div class="text-center mt-5">

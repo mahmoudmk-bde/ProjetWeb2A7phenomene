@@ -203,6 +203,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['statut'])) {
             background: var(--accent-color);
             transform: translateY(-2px);
         }
+<<<<<<< HEAD
 
         /* Small button variant */
         .btn-sm {
@@ -228,6 +229,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['statut'])) {
             color: #007bff;
             border-color: rgba(0,123,255,0.18);
         }
+=======
+>>>>>>> 6c1d02106b76736dc7ce843a7cf4f48a05d1ee1c
         
         .badge {
             display: inline-block;
@@ -318,6 +321,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['statut'])) {
                         <strong><i class="fas fa-calendar"></i> Disponibilités:</strong>
                         <?= htmlspecialchars($c['disponibilites'] ?? 'N/A') ?>
                     </div>
+<<<<<<< HEAD
                     <?php if (isset($c['cv']) && !empty($c['cv'])):
                         // Normaliser le chemin stocké en DB et construire une URL depuis la racine du projet
                         $cv_rel = str_replace('\\', '/', $c['cv']); // remplace backslashes Windows
@@ -345,6 +349,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['statut'])) {
                         </a>
                     </div>
                     <?php endif; ?>
+=======
+>>>>>>> 6c1d02106b76736dc7ce843a7cf4f48a05d1ee1c
                     <div class="info-item">
                         <strong><i class="fas fa-info-circle"></i> Statut actuel:</strong>
                         <span class="badge badge-<?= $c['statut'] ?>">

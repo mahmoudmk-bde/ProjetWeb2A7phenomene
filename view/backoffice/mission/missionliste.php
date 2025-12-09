@@ -1,5 +1,6 @@
 <?php 
 require_once __DIR__ . '/../../../controller/missioncontroller.php';
+<<<<<<< HEAD
 require_once __DIR__ . '/../../../controller/LikeController.php';
 
 $missionC = new missioncontroller();
@@ -19,6 +20,10 @@ $allMissions = $missionC->missionliste();
 // Récupérer les likes pour toutes les missions en une fois (optimisation)
 $missionIds = array_column($missions, 'id');
 $likesCount = $likeController->getLikesCountForMissions($missionIds);
+=======
+$missionC = new missioncontroller();
+$missions = $missionC->missionliste();
+>>>>>>> 6c1d02106b76736dc7ce843a7cf4f48a05d1ee1c
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -95,14 +100,21 @@ $likesCount = $likeController->getLikesCountForMissions($missionIds);
         
         .mission-card {
             background: var(--accent-color);
+<<<<<<< HEAD
             padding: 15px;
+=======
+            padding: 25px;
+>>>>>>> 6c1d02106b76736dc7ce843a7cf4f48a05d1ee1c
             border-radius: 15px;
             border: 1px solid var(--border-color);
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
             transition: all 0.3s ease;
             position: relative;
+<<<<<<< HEAD
             display: flex;
             flex-direction: column;
+=======
+>>>>>>> 6c1d02106b76736dc7ce843a7cf4f48a05d1ee1c
         }
         
         .mission-card:hover {
@@ -112,6 +124,7 @@ $likesCount = $likeController->getLikesCountForMissions($missionIds);
         }
         
         .mission-header {
+<<<<<<< HEAD
             margin-bottom: 8px;
         }
         
@@ -120,15 +133,37 @@ $likesCount = $likeController->getLikesCountForMissions($missionIds);
             font-weight: 700;
             color: var(--primary-color);
             margin: 0 0 4px 0;
+=======
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+        
+        .mission-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin: 0;
+            flex: 1;
+>>>>>>> 6c1d02106b76736dc7ce843a7cf4f48a05d1ee1c
         }
         
         .mission-difficulty {
             background: var(--secondary-color);
+<<<<<<< HEAD
             padding: 2px 8px;
             border-radius: 12px;
             font-size: 0.7rem;
             font-weight: 600;
             display: inline-block;
+=======
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-left: 15px;
+>>>>>>> 6c1d02106b76736dc7ce843a7cf4f48a05d1ee1c
         }
         
         .difficulty-facile { color: #28a745; border: 1px solid #28a745; }
@@ -137,21 +172,34 @@ $likesCount = $likeController->getLikesCountForMissions($missionIds);
         
         .mission-dates {
             display: flex;
+<<<<<<< HEAD
             flex-direction: column;
             gap: 4px;
             margin-bottom: 8px;
             font-size: 0.75rem;
+=======
+            gap: 20px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+>>>>>>> 6c1d02106b76736dc7ce843a7cf4f48a05d1ee1c
         }
         
         .date-info {
             display: flex;
             align-items: center;
+<<<<<<< HEAD
             gap: 4px;
             color: var(--text-muted);
+=======
+            gap: 8px;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+>>>>>>> 6c1d02106b76736dc7ce843a7cf4f48a05d1ee1c
         }
         
         .date-info i {
             color: var(--primary-color);
+<<<<<<< HEAD
             font-size: 0.8rem;
         }
         
@@ -161,50 +209,89 @@ $likesCount = $likeController->getLikesCountForMissions($missionIds);
             gap: 6px;
             margin-bottom: 8px;
             flex: 1;
+=======
+        }
+        
+        .mission-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+>>>>>>> 6c1d02106b76736dc7ce843a7cf4f48a05d1ee1c
         }
         
         .detail-item {
             display: flex;
             align-items: center;
+<<<<<<< HEAD
             gap: 6px;
             padding: 6px;
             background: var(--secondary-color);
             border-radius: 6px;
             font-size: 0.75rem;
+=======
+            gap: 10px;
+            padding: 10px;
+            background: var(--secondary-color);
+            border-radius: 8px;
+>>>>>>> 6c1d02106b76736dc7ce843a7cf4f48a05d1ee1c
         }
         
         .detail-item i {
             color: var(--primary-color);
+<<<<<<< HEAD
             width: 12px;
             text-align: center;
             flex-shrink: 0;
             font-size: 0.75rem;
+=======
+            width: 16px;
+            text-align: center;
+>>>>>>> 6c1d02106b76736dc7ce843a7cf4f48a05d1ee1c
         }
         
         .detail-label {
             color: var(--text-muted);
+<<<<<<< HEAD
             font-size: 0.65rem;
             display: block;
+=======
+            font-size: 0.85rem;
+>>>>>>> 6c1d02106b76736dc7ce843a7cf4f48a05d1ee1c
         }
         
         .detail-value {
             color: var(--text-color);
             font-weight: 600;
+<<<<<<< HEAD
             font-size: 0.8rem;
+=======
+>>>>>>> 6c1d02106b76736dc7ce843a7cf4f48a05d1ee1c
         }
         
         .mission-actions {
             display: flex;
             justify-content: center;
+<<<<<<< HEAD
             gap: 8px;
             margin-top: auto;
             padding-top: 10px;
+=======
+            gap: 10px;
+            margin-top: 20px;
+            padding-top: 15px;
+>>>>>>> 6c1d02106b76736dc7ce843a7cf4f48a05d1ee1c
             border-top: 1px solid var(--border-color);
         }
         
         .btn-icon {
+<<<<<<< HEAD
             width: 36px;
             height: 36px;
+=======
+            width: 45px;
+            height: 45px;
+>>>>>>> 6c1d02106b76736dc7ce843a7cf4f48a05d1ee1c
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -212,7 +299,11 @@ $likesCount = $likeController->getLikesCountForMissions($missionIds);
             text-decoration: none;
             transition: all 0.3s ease;
             border: none;
+<<<<<<< HEAD
             font-size: 0.95rem;
+=======
+            font-size: 1.1rem;
+>>>>>>> 6c1d02106b76736dc7ce843a7cf4f48a05d1ee1c
             cursor: pointer;
         }
         
@@ -264,6 +355,7 @@ $likesCount = $likeController->getLikesCountForMissions($missionIds);
             color: var(--text-muted);
             opacity: 0.5;
         }
+<<<<<<< HEAD
         /* Grille : afficher 2 cartes côte-à-côte sur desktop, 1 sur mobile */
         .mission-grid {
             display: grid;
@@ -303,6 +395,8 @@ $likesCount = $likeController->getLikesCountForMissions($missionIds);
         .pagination .page-item.disabled .page-link { opacity: .5; pointer-events: none; }
 
         @media (max-width: 768px) { .pagination .page-item .page-link { padding: 6px 8px; min-width: 34px; } }
+=======
+>>>>>>> 6c1d02106b76736dc7ce843a7cf4f48a05d1ee1c
     </style>
 </head>
 
@@ -319,26 +413,44 @@ $likesCount = $likeController->getLikesCountForMissions($missionIds);
     </div>
 
     <!-- Statistiques des missions -->
+<<<<<<< HEAD
         <div class="missions-stats">
         <div class="mission-stat-card">
             <span class="mission-stat-number"><?= count($allMissions) ?></span>
+=======
+    <div class="missions-stats">
+        <div class="mission-stat-card">
+            <span class="mission-stat-number"><?= count($missions) ?></span>
+>>>>>>> 6c1d02106b76736dc7ce843a7cf4f48a05d1ee1c
             <span class="mission-stat-label">Total Missions</span>
         </div>
         <div class="mission-stat-card">
             <span class="mission-stat-number">
+<<<<<<< HEAD
                 <?= count(array_filter($allMissions, fn($m) => strtolower($m['niveau_difficulte']) === 'facile')) ?>
+=======
+                <?= count(array_filter($missions, fn($m) => $m['niveau_difficulte'] === 'facile')) ?>
+>>>>>>> 6c1d02106b76736dc7ce843a7cf4f48a05d1ee1c
             </span>
             <span class="mission-stat-label">Missions Faciles</span>
         </div>
         <div class="mission-stat-card">
             <span class="mission-stat-number">
+<<<<<<< HEAD
                 <?= count(array_filter($allMissions, fn($m) => strtolower($m['niveau_difficulte']) === 'moyen')) ?>
+=======
+                <?= count(array_filter($missions, fn($m) => $m['niveau_difficulte'] === 'moyen')) ?>
+>>>>>>> 6c1d02106b76736dc7ce843a7cf4f48a05d1ee1c
             </span>
             <span class="mission-stat-label">Missions Moyennes</span>
         </div>
         <div class="mission-stat-card">
             <span class="mission-stat-number">
+<<<<<<< HEAD
                 <?= count(array_filter($allMissions, fn($m) => strtolower($m['niveau_difficulte']) === 'difficile')) ?>
+=======
+                <?= count(array_filter($missions, fn($m) => $m['niveau_difficulte'] === 'difficile')) ?>
+>>>>>>> 6c1d02106b76736dc7ce843a7cf4f48a05d1ee1c
             </span>
             <span class="mission-stat-label">Missions Difficiles</span>
         </div>
@@ -360,19 +472,35 @@ $likesCount = $likeController->getLikesCountForMissions($missionIds);
                 <div class="mission-card">
                     <!-- En-tête de la mission -->
                     <div class="mission-header">
+<<<<<<< HEAD
                         <div>
                             <h3 class="mission-title"><?= htmlspecialchars($m['titre']) ?></h3>
                             <span class="mission-difficulty difficulty-<?= strtolower($m['niveau_difficulte']) ?>">
                                 <?= ucfirst($m['niveau_difficulte']) ?>
                             </span>
                         </div>
+=======
+                        <h3 class="mission-title"><?= htmlspecialchars($m['titre']) ?></h3>
+                        <span class="mission-difficulty difficulty-<?= $m['niveau_difficulte'] ?>">
+                            <?= ucfirst($m['niveau_difficulte']) ?>
+                        </span>
+>>>>>>> 6c1d02106b76736dc7ce843a7cf4f48a05d1ee1c
                     </div>
 
                     <!-- Dates -->
                     <div class="mission-dates">
                         <div class="date-info">
+<<<<<<< HEAD
                             <i class="fas fa-calendar-alt"></i>
                             <span><?= date('d/m/Y', strtotime($m['date_debut'])) ?> - <?= date('d/m/Y', strtotime($m['date_fin'])) ?></span>
+=======
+                            <i class="fas fa-play-circle"></i>
+                            Début: <?= date('d/m/Y', strtotime($m['date_debut'])) ?>
+                        </div>
+                        <div class="date-info">
+                            <i class="fas fa-flag-checkered"></i>
+                            Fin: <?= date('d/m/Y', strtotime($m['date_fin'])) ?>
+>>>>>>> 6c1d02106b76736dc7ce843a7cf4f48a05d1ee1c
                         </div>
                     </div>
 
@@ -399,15 +527,22 @@ $likesCount = $likeController->getLikesCountForMissions($missionIds);
                             <i class="fas fa-file-alt"></i>
                             <div>
                                 <div class="detail-label">Description</div>
+<<<<<<< HEAD
                                 <div class="detail-value" style="font-weight: normal; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
                                     <?= htmlspecialchars(substr($m['description'], 0, 50)) ?>
                                     <?= strlen($m['description']) > 50 ? '...' : '' ?>
+=======
+                                <div class="detail-value" style="font-weight: normal;">
+                                    <?= htmlspecialchars(substr($m['description'], 0, 100)) ?>
+                                    <?= strlen($m['description']) > 100 ? '...' : '' ?>
+>>>>>>> 6c1d02106b76736dc7ce843a7cf4f48a05d1ee1c
                                 </div>
                             </div>
                         </div>
                         <?php endif; ?>
                     </div>
 
+<<<<<<< HEAD
                     <!-- Nombre de likes (style Facebook) -->
                     <div class="mission-likes-info" style="margin: 12px 0; padding: 10px; background: rgba(255, 74, 87, 0.1); border-radius: 8px; border-left: 3px solid #ff4a57; display: flex; align-items: center; gap: 8px;">
                         <i class="fas fa-heart" style="color: #ff4a57; font-size: 1rem;"></i>
@@ -417,6 +552,8 @@ $likesCount = $likeController->getLikesCountForMissions($missionIds);
                         </span>
                     </div>
 
+=======
+>>>>>>> 6c1d02106b76736dc7ce843a7cf4f48a05d1ee1c
                     <!-- Boutons d'action -->
                     <div class="mission-actions">
                         <!-- Candidatures -->
@@ -445,6 +582,7 @@ $likesCount = $likeController->getLikesCountForMissions($missionIds);
             <?php endforeach; ?>
         <?php endif; ?>
     </div>
+<<<<<<< HEAD
 
     <!-- Pagination (même structure que frontoffice) -->
     <?php if ($totalPages > 1): ?>
@@ -466,6 +604,8 @@ $likesCount = $likeController->getLikesCountForMissions($missionIds);
         </nav>
     </div>
     <?php endif; ?>
+=======
+>>>>>>> 6c1d02106b76736dc7ce843a7cf4f48a05d1ee1c
 </div>
 
 </body>
