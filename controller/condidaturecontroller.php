@@ -174,7 +174,7 @@ class condidaturecontroller
 
     public function updateCandidatureStatus($id, $statut)
     {
-        $sql = "UPDATE candidatures SET statut = :statut WHERE id = :id";
+        $sql = "UPDATE candidatures SET statut = :statut, date_reponse = NOW() WHERE id = :id";
         $db = config::getConnexion();
         $req = $db->prepare($sql);
         $req->execute([':statut' => $statut, ':id' => $id]);

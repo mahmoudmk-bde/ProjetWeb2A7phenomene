@@ -50,7 +50,8 @@ class NotificationController {
                     'Votre candidature a été acceptée' as message,
                     1 as response_count,
                     c.date_reponse as created_at,
-                    0 as is_unread,
+                    c.date_reponse as created_at,
+                    c.vu,
                     m.id as mission_id
                 FROM candidatures c
                 JOIN missions m ON m.id = c.mission_id
@@ -64,8 +65,10 @@ class NotificationController {
             $candidatures = $candStmt->fetchAll(PDO::FETCH_ASSOC);
             foreach ($candidatures as &$cand) {
                 $cand['type'] = 'candidature_accepted';
-                $cand['link'] = 'missiondetails.php?id=' . $cand['mission_id'];
+                $cand['link'] = 'missiondetails.php?id=' . $cand['mission_id'] . '&candidature_id=' . $cand['notification_id'];
+                $cand['is_unread'] = ($cand['vu'] == 0);
                 unset($cand['mission_id']);
+                unset($cand['vu']);
             }
             $notifications = array_merge($notifications, $candidatures);
 
@@ -77,7 +80,8 @@ class NotificationController {
                     'Votre candidature a été rejetée' as message,
                     1 as response_count,
                     c.date_reponse as created_at,
-                    0 as is_unread,
+                    c.date_reponse as created_at,
+                    c.vu,
                     m.id as mission_id
                 FROM candidatures c
                 JOIN missions m ON m.id = c.mission_id
@@ -91,8 +95,10 @@ class NotificationController {
             $rejections = $rejStmt->fetchAll(PDO::FETCH_ASSOC);
             foreach ($rejections as &$rej) {
                 $rej['type'] = 'candidature_rejected';
-                $rej['link'] = 'missiondetails.php?id=' . $rej['mission_id'];
+                $rej['link'] = 'missiondetails.php?id=' . $rej['mission_id'] . '&candidature_id=' . $rej['notification_id'];
+                $rej['is_unread'] = ($rej['vu'] == 0);
                 unset($rej['mission_id']);
+                unset($rej['vu']);
             }
             $notifications = array_merge($notifications, $rejections);
 
@@ -126,6 +132,19 @@ class NotificationController {
             $stmt->execute(['uid' => $user_id]);
             $result = $stmt->fetch(PDO::FETCH_ASSOC);
             $count += $result['unread_count'] ?? 0;
+
+            // Count unread candidatures (accepted/rejected)
+            $stmtCand = $this->pdo->prepare("
+                SELECT COUNT(*) as unread_count
+                FROM candidatures
+                WHERE utilisateur_id = :uid 
+                AND statut IN ('acceptee', 'rejetee') 
+                AND date_reponse IS NOT NULL 
+                AND vu = 0
+            ");
+            $stmtCand->execute(['uid' => $user_id]);
+            $resultCand = $stmtCand->fetch(PDO::FETCH_ASSOC);
+            $count += $resultCand['unread_count'] ?? 0;
         } catch (Exception $e) {
             error_log('getUnreadCount error: ' . $e->getMessage());
         }
@@ -149,6 +168,24 @@ class NotificationController {
             $stmt->execute(['rid' => $reclamation_id, 'uid' => $user_id]);
         } catch (Exception $e) {
             error_log('markResponsesAsRead error: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Mark a candidature notification as read
+     */
+    public function markCandidatureAsRead($candidature_id, $user_id) {
+        $candidature_id = intval($candidature_id);
+        $user_id = intval($user_id);
+
+        try {
+            $sql = "UPDATE candidatures 
+                    SET vu = 1 
+                    WHERE id = :cid AND utilisateur_id = :uid";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute(['cid' => $candidature_id, 'uid' => $user_id]);
+        } catch (Exception $e) {
+            error_log('markCandidatureAsRead error: ' . $e->getMessage());
         }
     }
 }

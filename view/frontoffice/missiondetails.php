@@ -15,6 +15,13 @@ $condidatureController = new condidaturecontroller();
 $utilisateurController = new UtilisateurController();
 $likeController = new LikeController();
 
+// Mark notification as read if coming from notification link
+if (isset($_GET['candidature_id']) && isset($_SESSION['user_id'])) {
+    require_once __DIR__ . '/../../controller/NotificationController.php';
+    $notifCtrl = new NotificationController();
+    $notifCtrl->markCandidatureAsRead($_GET['candidature_id'], $_SESSION['user_id']);
+}
+
 if (!isset($_GET['id']) || empty($_GET['id'])) {
     die("<h2 style='color:white;text-align:center;margin-top:50px;'>❌ ID de mission manquant</h2>");
 }
