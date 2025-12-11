@@ -797,13 +797,7 @@ foreach ($candidatures as $candidature) {
     </section>
 
     <!-- Historique des Réclamations moved to separate page -->
-    <section id="historique-reclamations" class="container fade-in" style="margin-top: 80px;">
-        <div class="section-title">
-            <h2>📝 Historique de mes Réclamations</h2>
-            <p>La section Historique des réclamations a été déplacée vers une page dédiée.</p>
-            <p><a href="historique_reclamations.php" class="action-btn">Voir mon historique des réclamations</a></p>
-        </div>
-    </section>
+
 
     <!-- Footer -->
     <footer class="footer-area">

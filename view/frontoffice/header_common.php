@@ -212,33 +212,3 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 
-<style>
-        box-shadow: 0 1px 2px rgba(0,0,0,0.15);
-    }
-    .user-dropdown a { display:block; padding:10px 16px; color:#333; border-bottom:1px solid #eee; }
-    .user-dropdown a:last-child { border-bottom: none; }
-    .user-dropdown a:hover { background:#f8f8f8; }
-    .user-wrapper .user-name { margin-right:10px; color: #fff; }
-    .user-menu .user-dropdown { right:0; left:auto; }
-</style>
-
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    const userMenu = document.querySelector('.user-menu');
-    if (!userMenu) return;
-
-    const dropdown = userMenu.querySelector('.user-dropdown');
-    const trigger = userMenu.querySelector('.user-wrapper');
-
-    trigger.addEventListener('click', function (e) {
-        e.stopPropagation();
-        dropdown.classList.toggle('show');
-    });
-
-    document.addEventListener('click', function (event) {
-        if (!userMenu.contains(event.target)) {
-            dropdown.classList.remove('show');
-        }
-    });
-});
-</script>
