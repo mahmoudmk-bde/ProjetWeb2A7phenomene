@@ -188,5 +188,102 @@ class NotificationController {
             error_log('markCandidatureAsRead error: ' . $e->getMessage());
         }
     }
+
+
+    /**
+     * Get admin notifications (new reclamations and candidatures)
+     */
+    public function getAdminNotifications($limit = 50) {
+        $notifications = [];
+
+        try {
+            // 1. New Reclamations (statut = 'En attente')
+            $recStmt = $this->pdo->prepare("
+                SELECT 
+                    id as notification_id,
+                    sujet as title,
+                    'Nouvelle réclamation reçue' as message,
+                    date_creation as created_at,
+                    'reclamation_new' as type,
+                    'reclamation/listReclamation.php' as link
+                FROM reclamation
+                WHERE statut = 'Non traite'
+                ORDER BY date_creation DESC
+                LIMIT :limit
+            ");
+            $recStmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+            $recStmt->execute();
+            $notifications = array_merge($notifications, $recStmt->fetchAll(PDO::FETCH_ASSOC));
+
+            // 2. New Candidatures (statut = 'en_attente')
+            $candStmt = $this->pdo->prepare("
+                SELECT 
+                    c.id as notification_id,
+                    m.titre as title,
+                    CONCAT('Nouvelle candidature de ', c.pseudo_gaming) as message,
+                    c.date_candidature as created_at,
+                    'candidature_new' as type,
+                    'condidature/listecondidature.php' as link
+                FROM candidatures c
+                JOIN missions m ON m.id = c.mission_id
+                WHERE c.statut = 'en_attente'
+                ORDER BY c.date_candidature DESC
+                LIMIT :limit
+            ");
+            $candStmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+            $candStmt->execute();
+            $notifications = array_merge($notifications, $candStmt->fetchAll(PDO::FETCH_ASSOC));
+
+            // 3. New Feedbacks
+            $feedStmt = $this->pdo->prepare("
+                SELECT 
+                    f.id as notification_id,
+                    CONCAT('Nouveau feedback - ', f.rating, '⭐') as title,
+                    SUBSTRING(f.commentaire, 1, 50) as message,
+                    f.date_feedback as created_at,
+                    'feedback_new' as type,
+                    'feedback/feedbackliste.php' as link
+                FROM feedback f
+                ORDER BY f.date_feedback DESC
+                LIMIT :limit
+            ");
+            $feedStmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+            $feedStmt->execute();
+            $notifications = array_merge($notifications, $feedStmt->fetchAll(PDO::FETCH_ASSOC));
+
+            // Sort by created_at descending
+            usort($notifications, function($a, $b) {
+                return strtotime($b['created_at'] ?? '2000-01-01') - strtotime($a['created_at'] ?? '2000-01-01');
+            });
+
+            return array_slice($notifications, 0, $limit);
+        } catch (Exception $e) {
+            error_log('getAdminNotifications error: ' . $e->getMessage());
+            return [];
+        }
+    }
+
+    /**
+     * Get unread notification count for admin
+     */
+    public function getAdminUnreadCount() {
+        $count = 0;
+
+        try {
+            // Count new reclamations
+            $stmt = $this->pdo->query("SELECT COUNT(*) as cnt FROM reclamation WHERE statut = 'Non traite'");
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            $count += $result['cnt'] ?? 0;
+
+            // Count new candidatures
+            $stmtCand = $this->pdo->query("SELECT COUNT(*) as cnt FROM candidatures WHERE statut = 'en_attente'");
+            $resultCand = $stmtCand->fetch(PDO::FETCH_ASSOC);
+            $count += $resultCand['cnt'] ?? 0;
+        } catch (Exception $e) {
+            error_log('getAdminUnreadCount error: ' . $e->getMessage());
+        }
+
+        return $count;
+    }
 }
 ?>
