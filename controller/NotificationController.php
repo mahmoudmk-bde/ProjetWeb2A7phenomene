@@ -43,6 +43,16 @@ class NotificationController {
             $notifications = array_merge($notifications, $reclamations);
 
             // 2. Accepted candidatures (mission applications accepted)
+            // Vérifier si la colonne 'vu' existe
+            $hasVuColumn = false;
+            try {
+                $checkCol = $this->pdo->query("SHOW COLUMNS FROM candidatures LIKE 'vu'");
+                $hasVuColumn = ($checkCol->rowCount() > 0);
+            } catch (Exception $e) {
+                // Colonne n'existe pas
+            }
+            
+            $vuSelect = $hasVuColumn ? 'c.vu' : '0 as vu';
             $candStmt = $this->pdo->prepare("
                 SELECT 
                     c.id as notification_id,
@@ -50,12 +60,11 @@ class NotificationController {
                     'Votre candidature a été acceptée' as message,
                     1 as response_count,
                     c.date_reponse as created_at,
-                    c.date_reponse as created_at,
-                    c.vu,
+                    " . $vuSelect . ",
                     m.id as mission_id
                 FROM candidatures c
                 JOIN missions m ON m.id = c.mission_id
-                WHERE c.utilisateur_id = :uid AND c.statut = 'acceptee' AND c.date_reponse IS NOT NULL
+                WHERE c.utilisateur_id = :uid AND (c.statut = 'acceptee' OR c.statut = 'accepte') AND c.date_reponse IS NOT NULL
                 ORDER BY c.date_reponse DESC
                 LIMIT :limit
             ");
@@ -66,13 +75,21 @@ class NotificationController {
             foreach ($candidatures as &$cand) {
                 $cand['type'] = 'candidature_accepted';
                 $cand['link'] = 'missiondetails.php?id=' . $cand['mission_id'] . '&candidature_id=' . $cand['notification_id'];
-                $cand['is_unread'] = ($cand['vu'] == 0);
+                // Si la colonne vu n'existe pas, considérer comme non lu si date_reponse est récente (moins de 7 jours)
+                if ($hasVuColumn) {
+                    $cand['is_unread'] = (isset($cand['vu']) && $cand['vu'] == 0);
+                } else {
+                    $dateReponse = strtotime($cand['created_at'] ?? '');
+                    $septJours = 7 * 24 * 60 * 60;
+                    $cand['is_unread'] = ($dateReponse && (time() - $dateReponse) < $septJours);
+                }
                 unset($cand['mission_id']);
-                unset($cand['vu']);
+                if (isset($cand['vu'])) unset($cand['vu']);
             }
             $notifications = array_merge($notifications, $candidatures);
 
             // 3. Rejected candidatures
+            $vuSelect = $hasVuColumn ? 'c.vu' : '0 as vu';
             $rejStmt = $this->pdo->prepare("
                 SELECT 
                     c.id as notification_id,
@@ -80,12 +97,11 @@ class NotificationController {
                     'Votre candidature a été rejetée' as message,
                     1 as response_count,
                     c.date_reponse as created_at,
-                    c.date_reponse as created_at,
-                    c.vu,
+                    " . $vuSelect . ",
                     m.id as mission_id
                 FROM candidatures c
                 JOIN missions m ON m.id = c.mission_id
-                WHERE c.utilisateur_id = :uid AND c.statut = 'rejetee' AND c.date_reponse IS NOT NULL
+                WHERE c.utilisateur_id = :uid AND (c.statut = 'rejetee' OR c.statut = 'refusee' OR c.statut = 'refuse') AND c.date_reponse IS NOT NULL
                 ORDER BY c.date_reponse DESC
                 LIMIT :limit
             ");
@@ -96,9 +112,15 @@ class NotificationController {
             foreach ($rejections as &$rej) {
                 $rej['type'] = 'candidature_rejected';
                 $rej['link'] = 'missiondetails.php?id=' . $rej['mission_id'] . '&candidature_id=' . $rej['notification_id'];
-                $rej['is_unread'] = ($rej['vu'] == 0);
+                if ($hasVuColumn) {
+                    $rej['is_unread'] = (isset($rej['vu']) && $rej['vu'] == 0);
+                } else {
+                    $dateReponse = strtotime($rej['created_at'] ?? '');
+                    $septJours = 7 * 24 * 60 * 60;
+                    $rej['is_unread'] = ($dateReponse && (time() - $dateReponse) < $septJours);
+                }
                 unset($rej['mission_id']);
-                unset($rej['vu']);
+                if (isset($rej['vu'])) unset($rej['vu']);
             }
             $notifications = array_merge($notifications, $rejections);
 
@@ -134,14 +156,35 @@ class NotificationController {
             $count += $result['unread_count'] ?? 0;
 
             // Count unread candidatures (accepted/rejected)
-            $stmtCand = $this->pdo->prepare("
-                SELECT COUNT(*) as unread_count
-                FROM candidatures
-                WHERE utilisateur_id = :uid 
-                AND statut IN ('acceptee', 'rejetee') 
-                AND date_reponse IS NOT NULL 
-                AND vu = 0
-            ");
+            // Vérifier si la colonne 'vu' existe
+            $hasVuColumn = false;
+            try {
+                $checkCol = $this->pdo->query("SHOW COLUMNS FROM candidatures LIKE 'vu'");
+                $hasVuColumn = ($checkCol->rowCount() > 0);
+            } catch (Exception $e) {
+                // Colonne n'existe pas
+            }
+            
+            if ($hasVuColumn) {
+                $stmtCand = $this->pdo->prepare("
+                    SELECT COUNT(*) as unread_count
+                    FROM candidatures
+                    WHERE utilisateur_id = :uid 
+                    AND statut IN ('acceptee', 'accepte', 'rejetee', 'refusee', 'refuse') 
+                    AND date_reponse IS NOT NULL 
+                    AND vu = 0
+                ");
+            } else {
+                // Si pas de colonne vu, compter les candidatures acceptées/rejetées des 7 derniers jours
+                $stmtCand = $this->pdo->prepare("
+                    SELECT COUNT(*) as unread_count
+                    FROM candidatures
+                    WHERE utilisateur_id = :uid 
+                    AND statut IN ('acceptee', 'accepte', 'rejetee', 'refusee', 'refuse') 
+                    AND date_reponse IS NOT NULL 
+                    AND date_reponse >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+                ");
+            }
             $stmtCand->execute(['uid' => $user_id]);
             $resultCand = $stmtCand->fetch(PDO::FETCH_ASSOC);
             $count += $resultCand['unread_count'] ?? 0;
@@ -219,11 +262,12 @@ class NotificationController {
             $candStmt = $this->pdo->prepare("
                 SELECT 
                     c.id as notification_id,
+                    c.mission_id,
                     m.titre as title,
-                    CONCAT('Nouvelle candidature de ', c.pseudo_gaming) as message,
+                    CONCAT('Nouvelle candidature de ', c.pseudo_gaming, ' pour la mission: ', m.titre) as message,
                     c.date_candidature as created_at,
                     'candidature_new' as type,
-                    'condidature/listecondidature.php' as link
+                    CONCAT('condidature/listecondidature.php?mission_id=', c.mission_id, '#candidature-', c.id) as link
                 FROM candidatures c
                 JOIN missions m ON m.id = c.mission_id
                 WHERE c.statut = 'en_attente'

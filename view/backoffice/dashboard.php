@@ -349,7 +349,7 @@ ksort($feedbackRatings);
                 <li><a href="#" onclick="openPage('mission/missionliste.php')">📌 Missions</a></li>
                 <li><a href="#" onclick="openPage('condidature/listecondidature.php')">👥 Candidatures</a></li>
                 <li><a href="#" onclick="openPage('feedback/feedbackliste.php')">⭐ Feedbacks</a></li>
-                <li><a href="#" onclick="showDashboard(); document.getElementById('stats').scrollIntoView({behavior: 'smooth'});">📊 Statistiques</a></li>
+                
             </ul>
         </li>
 

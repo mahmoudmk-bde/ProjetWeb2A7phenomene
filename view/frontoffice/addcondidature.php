@@ -329,7 +329,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <nav class="navbar navbar-expand-lg navbar-light">
                         <a class="navbar-brand" href="index.php">
                             <img src="assets/img/logo.png" alt="logo" />
-                            <img src="../img/logo.png" alt="logo" />
                         </a>
                         <button class="navbar-toggler" type="button" data-toggle="collapse" 
                                 data-target="#navbarSupportedContent">
@@ -341,10 +340,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 <li class="nav-item"><a class="nav-link" href="index.php">Accueil</a></li>
                                 <li class="nav-item"><a class="nav-link active" href="missionlist.php">Missions</a></li>
                                 <li class="nav-item"><a class="nav-link" href="#">Gamification</a></li>
-                                <li class="nav-item"><a class="nav-link" href="#">Réclamations</a></li>
                                 <li class="nav-item"><a class="nav-link" href="#">Événements</a></li>
                                 <li class="nav-item"><a class="nav-link" href="#">Quizzes</a></li>
-                                <li class="nav-item"><a class="nav-link" href="contact.php">Contact</a></li>
+                                
                             </ul>
                         </div>
 
@@ -424,7 +422,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         </div>
 
                         <form id="condidature-form" method="POST" action="" enctype="multipart/form-data">
-                        <form id="condidature-form" method="POST" action="">
                             <input type="hidden" name="mission_id" value="<?= htmlspecialchars($mission_id) ?>">
 
                             <div class="form-group">

@@ -17,14 +17,6 @@ class condidaturecontroller
                 throw new Exception("ID utilisateur manquant. Données reçues: " . print_r($data, true));
             }
 
-            // Vérifier si l'utilisateur est banni
-            require_once __DIR__ . '/BadWordController.php';
-            $badWordController = new BadWordController();
-            $banInfo = $badWordController->isUserBanned($data['utilisateur_id']);
-            if ($banInfo) {
-                throw new Exception("Vous êtes banni jusqu'au " . date('d/m/Y à H:i', strtotime($banInfo['expires_at'])) . ". Raison: " . ($banInfo['reason'] ?? 'Utilisation de mots interdits'));
-            }
-
                 // Préparer l'insertion en fonction des colonnes réelles de la table
                 $db  = config::getConnexion();
 
@@ -174,7 +166,7 @@ class condidaturecontroller
 
     public function updateCandidatureStatus($id, $statut)
     {
-        $sql = "UPDATE candidatures SET statut = :statut, date_reponse = NOW() WHERE id = :id";
+        $sql = "UPDATE candidatures SET statut = :statut WHERE id = :id";
         $db = config::getConnexion();
         $req = $db->prepare($sql);
         $req->execute([':statut' => $statut, ':id' => $id]);

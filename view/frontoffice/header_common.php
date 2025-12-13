@@ -47,8 +47,9 @@ if (isset($_SESSION['user_id']) && $headerShowUserMenu) {
                         <ul class="navbar-nav ml-auto">
                             <li class="nav-item"><a class="nav-link" href="index.php">Accueil</a></li>
                             <li class="nav-item"><a class="nav-link" href="missionlist.php">Missions</a></li>
-                            <li class="nav-item"><a class="nav-link" href="store.php?controller=Store&action=index">Store</a></li>
-                            <li class="nav-item"><a class="nav-link" href="store.php?controller=Partenaire&action=index">Partenaires</a></li>
+                            <li class="nav-item"><a class="nav-link" href="gamification.php">Gamification</a></li>
+                            <li class="nav-item"><a class="nav-link" href="quiz.php">Quiz</a></li>
+                            <li class="nav-item"><a class="nav-link" href="evenements.php">Événements</a></li>
                         </ul>
                     </div>
 
