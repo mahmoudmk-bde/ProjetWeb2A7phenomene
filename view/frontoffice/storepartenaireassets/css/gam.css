@@ -272,12 +272,35 @@ a:hover {
 }
 
 /* Badge par catégorie */
-.badge-action { background: #007bff; color: white; }
-.badge-aventure { background: #28a745; color: white; }
-.badge-sport { background: #ffc107; color: #212529; }
-.badge-strategie { background: #6f42c1; color: white; }
-.badge-simulation { background: #fd7e14; color: white; }
-.badge-rpg { background: #e83e8c; color: white; }
+.badge-action {
+    background: #007bff;
+    color: white;
+}
+
+.badge-aventure {
+    background: #28a745;
+    color: white;
+}
+
+.badge-sport {
+    background: #ffc107;
+    color: #212529;
+}
+
+.badge-strategie {
+    background: #6f42c1;
+    color: white;
+}
+
+.badge-simulation {
+    background: #fd7e14;
+    color: white;
+}
+
+.badge-rpg {
+    background: #e83e8c;
+    color: white;
+}
 
 /* ============================================
    ALERTS
@@ -480,6 +503,7 @@ textarea.form-control {
         opacity: 0;
         transform: translateY(10px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -495,6 +519,7 @@ textarea.form-control {
         opacity: 0;
         transform: translateY(20px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);

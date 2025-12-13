@@ -52,6 +52,14 @@ if (isset($_SESSION['user_id']) && $headerShowUserMenu) {
                         </ul>
                     </div>
 
+                    <!-- Cart & Wishlist -->
+                    <div class="d-flex align-items-center mr-3">
+                        <a href="store.php?controller=Store&action=cart" class="btn_1 btn-cart d-none d-sm-inline-flex" aria-label="Panier">
+                            (<?php $cnt=0; if(isset($_SESSION['cart'])){ foreach($_SESSION['cart'] as $q){ $cnt+=(int)$q; } } echo $cnt; ?>)
+                        </a>
+                        <a href="store.php?controller=Store&action=wishlist" class="btn_1 btn-like d-none d-sm-inline-flex" aria-label="Liste d'envies"></a>
+                    </div>
+
                     <!-- Button / User dropdown -->
                     <?php if (isset($_SESSION['user_id'])): ?>
                         <?php if ($headerShowUserMenu): ?>

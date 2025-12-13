@@ -42,9 +42,12 @@ switch ($controllerName) {
             'updateCart',
             'removeFromCart',
             'toggleLike',
+            'wishlist',
+            'toggleWishlist',
             'addComment',
             'clearCart',
-            'checkout'
+            'checkout',
+            'recommendations'
         ];
         break;
 }

@@ -1,9 +1,10 @@
 <?php
-class StoreItem {
+class StoreItem
+{
     private $conn;
     private $table = "store_items";
 
-    
+
     public $id;
     public $partenaire_id;
     public $nom;
@@ -15,17 +16,19 @@ class StoreItem {
     public $plateforme;
     public $age_minimum;
     public $created_at;
-    public $partenaire_nom; 
+    public $partenaire_nom;
     public $likes_count;
     public $views_count;
 
-    
-    public function __construct($db) {
+
+    public function __construct($db)
+    {
         $this->conn = $db;
     }
 
     // creation
-    public function create() {
+    public function create()
+    {
         $query = "INSERT INTO " . $this->table . "
                 SET partenaire_id = :partenaire_id,
                     nom = :nom,
@@ -55,31 +58,33 @@ class StoreItem {
         $stmt->bindParam(":age_minimum", $this->age_minimum);
 
         try {
-        return $stmt->execute();
-    } catch (PDOException $e) {
-        error_log("Erreur StoreItem::create: " . $e->getMessage());
-        return false;
+            return $stmt->execute();
+        } catch (PDOException $e) {
+            error_log("Erreur StoreItem::create: " . $e->getMessage());
+            return false;
+        }
     }
-}
 
     // lire
-    public function getAll() {
+    public function getAll()
+    {
         $query = "SELECT s.*, p.nom as partenaire_nom 
                   FROM " . $this->table . " s
                   LEFT JOIN partenaires p ON s.partenaire_id = p.id
                   ORDER BY s.created_at DESC";
-        
+
         $stmt = $this->conn->prepare($query);
         $stmt->execute();
         return $stmt;
     }
 
     // lire par partenaire
-    public function getByPartenaire($partenaire_id) {
+    public function getByPartenaire($partenaire_id)
+    {
         $query = "SELECT * FROM " . $this->table . " 
                   WHERE partenaire_id = :partenaire_id 
                   ORDER BY created_at DESC";
-        
+
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(":partenaire_id", $partenaire_id);
         $stmt->execute();
@@ -87,20 +92,21 @@ class StoreItem {
     }
 
     // lire par id
-    public function getById() {
+    public function getById()
+    {
         $query = "SELECT s.*, p.nom as partenaire_nom, p.logo as partenaire_logo
                   FROM " . $this->table . " s
                   LEFT JOIN partenaires p ON s.partenaire_id = p.id
                   WHERE s.id = :id 
                   LIMIT 1";
-        
+
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(":id", $this->id);
         $stmt->execute();
-        
+
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        
-        if($row) {
+
+        if ($row) {
             $this->id = $row['id'];
             $this->partenaire_id = $row['partenaire_id'];
             $this->nom = $row['nom'];
@@ -121,7 +127,8 @@ class StoreItem {
     }
 
     // mise a jour
-    public function update() {
+    public function update()
+    {
         $query = "UPDATE " . $this->table . "
                 SET nom = :nom,
                     prix = :prix,
@@ -149,35 +156,37 @@ class StoreItem {
         $stmt->bindParam(":plateforme", $this->plateforme);
         $stmt->bindParam(":age_minimum", $this->age_minimum);
 
-        if($stmt->execute()) {
+        if ($stmt->execute()) {
             return true;
         }
         return false;
     }
 
     // mise a jour stock
-    public function updateStock($quantite) {
+    public function updateStock($quantite)
+    {
         $query = "UPDATE " . $this->table . "
                 SET stock = stock - :quantite
                 WHERE id = :id AND stock >= :quantite";
-        
+
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(":id", $this->id);
         $stmt->bindParam(":quantite", $quantite);
-        
-        if($stmt->execute() && $stmt->rowCount() > 0) {
+
+        if ($stmt->execute() && $stmt->rowCount() > 0) {
             return true;
         }
         return false;
     }
 
     // supp
-    public function delete() {
+    public function delete()
+    {
         $query = "DELETE FROM " . $this->table . " WHERE id = :id";
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(":id", $this->id);
-        
-        if($stmt->execute()) {
+
+        if ($stmt->execute()) {
             return true;
         }
         return false;
