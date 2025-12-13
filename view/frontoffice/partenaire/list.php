@@ -137,66 +137,15 @@
 
 <body>
     <div class="body_bg">
-        <!--::header part start::-->
-        <header class="main_menu single_page_menu">
-            <div class="container">
-                <div class="row align-items-center">
-                    <div class="col-lg-12">
-                        <nav class="navbar navbar-expand-lg navbar-light">
-                            <a class="navbar-brand" href="<?php echo BASE_URL; ?>">
-                                <img src="<?php echo BASE_URL; ?>view/frontoffice/storepartenaireassets/img/logo.png"
-                                    alt="logo">
-                            </a>
-                            <button class="navbar-toggler" type="button" data-toggle="collapse"
-                                data-target="#navbarSupportedContent">
-                                <span class="menu_icon"><i class="fas fa-bars"></i></span>
-                            </button>
+        <?php
+        // Set header context variables
+        $headerShowUserMenu = isset($_SESSION['user_id']);
+        $sessionUserName = isset($_SESSION['user_name']) ? $_SESSION['user_name'] : 'Utilisateur';
+        $sessionUserType = isset($_SESSION['user_type']) ? $_SESSION['user_type'] : 'guest';
 
-                            <div class="collapse navbar-collapse main-menu-item" id="navbarSupportedContent">
-                                <ul class="navbar-nav ml-auto">
-                                    <li class="nav-item">
-                                        <a class="nav-link"
-                                            href="<?php echo BASE_URL; ?>view/frontoffice/index.php">Accueil</a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link"
-                                            href="<?php echo BASE_URL; ?>view/frontoffice/missionlist.php">Missions</a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link" href="?controller=Store&action=index">Store</a>
-                                    </li>
-                                    <li class="nav-item active">
-                                        <a class="nav-link" href="?controller=Partenaire&action=index">Partenaires</a>
-                                    </li>
-                                </ul>
-                            </div>
-                            <div style="display:flex; gap:10px; align-items:center;">
-                                <a href="<?= BASE_URL; ?>view/frontoffice/store.php?controller=Store&action=cart"
-                                    class="btn_1 btn-cart d-none d-sm-inline-flex" aria-label="Panier">
-                                    (<?php $cnt = 0;
-                                    if (isset($_SESSION['cart'])) {
-                                        foreach ($_SESSION['cart'] as $q) {
-                                            $cnt += (int) $q;
-                                        }
-                                    }
-                                    echo $cnt; ?>)
-                                </a>
-                                <a href="<?= BASE_URL; ?>view/frontoffice/store.php?controller=Store&action=wishlist"
-                                    class="btn_1 btn-like d-none d-sm-inline-flex" aria-label="Liste d'envies"></a>
-                                <?php if (isset($_SESSION['user_id'])): ?>
-                                    <a href="<?php echo BASE_URL; ?>view/frontoffice/index1.php"
-                                        class="btn_1 d-none d-sm-block">Mon Espace</a>
-                                <?php else: ?>
-                                    <a href="<?php echo BASE_URL; ?>view/frontoffice/connexion.php"
-                                        class="btn_1 d-none d-sm-block">Se connecter</a>
-                                <?php endif; ?>
-                            </div>
-                        </nav>
-                    </div>
-                </div>
-            </div>
-        </header>
-        <!-- Header part end-->
+        // Include the common header
+        include __DIR__ . '/../header_common.php';
+        ?>
 
         <!-- breadcrumb start-->
         <section class="breadcrumb breadcrumb_bg">

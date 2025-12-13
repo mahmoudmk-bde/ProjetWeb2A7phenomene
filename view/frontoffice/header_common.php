@@ -47,14 +47,16 @@ if (isset($_SESSION['user_id']) && $headerShowUserMenu) {
                         <ul class="navbar-nav ml-auto">
                             <li class="nav-item"><a class="nav-link" href="index.php">Accueil</a></li>
                             <li class="nav-item"><a class="nav-link" href="missionlist.php">Missions</a></li>
-                            <li class="nav-item"><a class="nav-link" href="gamification.php">Gamification</a></li>
+                            <li class="nav-item"><a class="nav-link" href="store.php?controller=Store&action=index">Store</a></li>
+                            <li class="nav-item"><a class="nav-link" href="store.php?controller=Partenaire&action=index">Partenaires</a></li>
                             <li class="nav-item"><a class="nav-link" href="quiz.php">Quiz</a></li>
                             <li class="nav-item"><a class="nav-link" href="evenements.php">Événements</a></li>
                         </ul>
                     </div>
 
+
                     <!-- Cart & Wishlist -->
-                    <div class="d-flex align-items-center mr-3">
+                    <div class="d-flex align-items-center mr-3" style="gap: 15px;">
                         <a href="store.php?controller=Store&action=cart" class="btn_1 btn-cart d-none d-sm-inline-flex" aria-label="Panier">
                             (<?php $cnt=0; if(isset($_SESSION['cart'])){ foreach($_SESSION['cart'] as $q){ $cnt+=(int)$q; } } echo $cnt; ?>)
                         </a>

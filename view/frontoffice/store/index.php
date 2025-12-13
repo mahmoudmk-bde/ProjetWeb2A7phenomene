@@ -203,67 +203,15 @@ $isWishlist = isset($isWishlist) ? (bool) $isWishlist : false;
 
 <body>
     <div class="body_bg">
-        <!--::header part start::-->
-        <header class="main_menu single_page_menu">
-            <div class="container">
-                <div class="row align-items-center">
-                    <div class="col-lg-12">
-                        <nav class="navbar navbar-expand-lg navbar-light">
-                            <a class="navbar-brand" href="<?php echo BASE_URL; ?>">
-                                <img src="<?php echo BASE_URL; ?>view/frontoffice/storepartenaireassets/img/logo.png"
-                                    alt="logo">
-                            </a>
-                            <button class="navbar-toggler" type="button" data-toggle="collapse"
-                                data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
-                                aria-expanded="false" aria-label="Toggle navigation">
-                                <span class="menu_icon">Menu</span>
-                            </button>
+        <?php
+        // Set header context variables
+        $headerShowUserMenu = isset($_SESSION['user_id']);
+        $sessionUserName = isset($_SESSION['user_name']) ? $_SESSION['user_name'] : 'Utilisateur';
+        $sessionUserType = isset($_SESSION['user_type']) ? $_SESSION['user_type'] : 'guest';
 
-                            <div class="collapse navbar-collapse main-menu-item" id="navbarSupportedContent">
-                                <ul class="navbar-nav ml-auto">
-                                    <li class="nav-item">
-                                        <a class="nav-link"
-                                            href="<?php echo BASE_URL; ?>view/frontoffice/index.php">Accueil</a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link"
-                                            href="<?php echo BASE_URL; ?>view/frontoffice/missionlist.php">Missions</a>
-                                    </li>
-                                    <li class="nav-item active">
-                                        <a class="nav-link" href="?controller=Store&action=index">Store</a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link" href="?controller=Partenaire&action=index">Partenaires</a>
-                                    </li>
-                                </ul>
-                            </div>
-                            <div style="display:flex; gap:10px; align-items:center;">
-                                <a href="?controller=Store&action=cart" class="btn_1 btn-cart d-none d-sm-block"
-                                    aria-label="Panier">
-                                    (<?php $cnt = 0;
-                                    if (isset($_SESSION['cart'])) {
-                                        foreach ($_SESSION['cart'] as $q) {
-                                            $cnt += (int) $q;
-                                        }
-                                    }
-                                    echo $cnt; ?>)
-                                </a>
-                                <a href="?controller=Store&action=wishlist" class="btn_1 btn-like d-none d-sm-block"
-                                    aria-label="Liste d'envies"></a>
-                                <?php if (isset($_SESSION['user_id'])): ?>
-                                        <a href="<?php echo BASE_URL; ?>view/frontoffice/index1.php"
-                                            class="btn_1 d-none d-sm-block">Mon Espace</a>
-                                <?php else: ?>
-                                        <a href="<?php echo BASE_URL; ?>view/frontoffice/connexion.php"
-                                            class="btn_1 d-none d-sm-block">Se connecter</a>
-                                <?php endif; ?>
-                            </div>
-                        </nav>
-                    </div>
-                </div>
-            </div>
-        </header>
-        <!-- Header part end-->
+        // Include the common header
+        include __DIR__ . '/../header_common.php';
+        ?>
 
         <!-- breadcrumb start-->
         <section class="breadcrumb breadcrumb_bg">
@@ -292,49 +240,49 @@ $isWishlist = isset($isWishlist) ? (bool) $isWishlist : false;
                         <div class="col-lg-12 text-center">
                             <?php $isWishlist = isset($isWishlist) ? (bool) $isWishlist : false; ?>
                             <?php if (!$isWishlist): ?>
-                                    <h4 class="filter-title">Filtrer par catégorie</h4>
-                                    <form method="get" action=""
-                                        style="max-width:880px; margin:0 auto 15px auto; display:flex; gap:10px; align-items:center;">
-                                        <input type="hidden" name="controller" value="Store">
-                                        <input type="hidden" name="action" value="index">
-                                        <input type="text" name="q"
-                                            value="<?= htmlspecialchars(isset($_GET['q']) ? $_GET['q'] : '') ?>"
-                                            class="form-control" placeholder="Rechercher par nom, plateforme..."
-                                            style="flex:1;">
-                                        <input type="text" name="partenaire"
-                                            value="<?= htmlspecialchars(isset($_GET['partenaire']) ? $_GET['partenaire'] : '') ?>"
-                                            class="form-control" placeholder="Marque/Partenaire" style="flex:0.6;">
-                                        <button class="btn_1" type="submit" style="white-space:nowrap;">Chercher</button>
-                                    </form>
-                                    <div class="filter-buttons">
-                                        <a class="filter-btn" href="?controller=Store&action=index" data-filter="all">
-                                            <i class="fas fa-th"></i> Tous les jeux
-                                        </a>
-                                        <a class="filter-btn" href="?controller=Store&action=index&categorie=action"
-                                            data-filter="action">Action</a>
-                                        <a class="filter-btn" href="?controller=Store&action=index&categorie=aventure"
-                                            data-filter="aventure">Aventure</a>
-                                        <a class="filter-btn" href="?controller=Store&action=index&categorie=sport"
-                                            data-filter="sport">Sport</a>
-                                        <a class="filter-btn" href="?controller=Store&action=index&categorie=strategie"
-                                            data-filter="strategie">Stratégie</a>
-                                        <a class="filter-btn" href="?controller=Store&action=index&categorie=simulation"
-                                            data-filter="simulation">Simulation</a>
-                                        <a class="filter-btn" href="?controller=Store&action=index&categorie=rpg"
-                                            data-filter="rpg">RPG</a>
-                                        <a class="filter-btn" href="?controller=Store&action=index&categorie=educatif"
-                                            data-filter="educatif">Éducatif</a>
+                                <h4 class="filter-title">Filtrer par catégorie</h4>
+                                <form method="get" action=""
+                                    style="max-width:880px; margin:0 auto 15px auto; display:flex; gap:10px; align-items:center;">
+                                    <input type="hidden" name="controller" value="Store">
+                                    <input type="hidden" name="action" value="index">
+                                    <input type="text" name="q"
+                                        value="<?= htmlspecialchars(isset($_GET['q']) ? $_GET['q'] : '') ?>"
+                                        class="form-control" placeholder="Rechercher par nom, plateforme..."
+                                        style="flex:1;">
+                                    <input type="text" name="partenaire"
+                                        value="<?= htmlspecialchars(isset($_GET['partenaire']) ? $_GET['partenaire'] : '') ?>"
+                                        class="form-control" placeholder="Marque/Partenaire" style="flex:0.6;">
+                                    <button class="btn_1" type="submit" style="white-space:nowrap;">Chercher</button>
+                                </form>
+                                <div class="filter-buttons">
+                                    <a class="filter-btn" href="?controller=Store&action=index" data-filter="all">
+                                        <i class="fas fa-th"></i> Tous les jeux
+                                    </a>
+                                    <a class="filter-btn" href="?controller=Store&action=index&categorie=action"
+                                        data-filter="action">Action</a>
+                                    <a class="filter-btn" href="?controller=Store&action=index&categorie=aventure"
+                                        data-filter="aventure">Aventure</a>
+                                    <a class="filter-btn" href="?controller=Store&action=index&categorie=sport"
+                                        data-filter="sport">Sport</a>
+                                    <a class="filter-btn" href="?controller=Store&action=index&categorie=strategie"
+                                        data-filter="strategie">Stratégie</a>
+                                    <a class="filter-btn" href="?controller=Store&action=index&categorie=simulation"
+                                        data-filter="simulation">Simulation</a>
+                                    <a class="filter-btn" href="?controller=Store&action=index&categorie=rpg"
+                                        data-filter="rpg">RPG</a>
+                                    <a class="filter-btn" href="?controller=Store&action=index&categorie=educatif"
+                                        data-filter="educatif">Éducatif</a>
 
-                                        <!-- AI Recommendations Link -->
-                                        <?php if (isset($_SESSION['user_id'])): ?>
-                                                <a class="filter-btn" href="?controller=Store&action=recommendations"
-                                                    style="background: linear-gradient(45deg, var(--secondary), var(--accent)); color:white; border:none;">
-                                                    <i class="fas fa-magic"></i> Pour Vous
-                                                </a>
-                                        <?php endif; ?>
-                                    </div>
+                                    <!-- AI Recommendations Link -->
+                                    <?php if (isset($_SESSION['user_id'])): ?>
+                                        <a class="filter-btn" href="?controller=Store&action=recommendations"
+                                            style="background: linear-gradient(45deg, var(--secondary), var(--accent)); color:white; border:none;">
+                                            <i class="fas fa-magic"></i> Pour Vous
+                                        </a>
+                                    <?php endif; ?>
+                                </div>
                             <?php else: ?>
-                                    <h4 class="filter-title">Ma liste d'envies</h4>
+                                <h4 class="filter-title">Ma liste d'envies</h4>
                             <?php endif; ?>
                         </div>
                     </div>

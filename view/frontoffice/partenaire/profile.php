@@ -4,26 +4,33 @@
 ?>
 <!doctype html>
 <html lang="fr">
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title><?php echo htmlspecialchars($this->partenaire->nom); ?> - Engage</title>
     <link rel="icon" href="<?php echo BASE_URL; ?>view/frontoffice/storepartenaireassets/img/favicon.png">
-    <link rel="stylesheet" href="<?php echo BASE_URL; ?>view/frontoffice/storepartenaireassets/css/css/bootstrap.min.css">
+    <link rel="stylesheet"
+        href="<?php echo BASE_URL; ?>view/frontoffice/storepartenaireassets/css/css/bootstrap.min.css">
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>view/frontoffice/storepartenaireassets/css/css/animate.css">
-    <link rel="stylesheet" href="<?php echo BASE_URL; ?>view/frontoffice/storepartenaireassets/css/css/owl.carousel.min.css">
+    <link rel="stylesheet"
+        href="<?php echo BASE_URL; ?>view/frontoffice/storepartenaireassets/css/css/owl.carousel.min.css">
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>view/frontoffice/storepartenaireassets/css/css/all.css">
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>view/frontoffice/storepartenaireassets/css/css/flaticon.css">
-    <link rel="stylesheet" href="<?php echo BASE_URL; ?>view/frontoffice/storepartenaireassets/css/css/themify-icons.css">
-    <link rel="stylesheet" href="<?php echo BASE_URL; ?>view/frontoffice/storepartenaireassets/css/css/magnific-popup.css">
+    <link rel="stylesheet"
+        href="<?php echo BASE_URL; ?>view/frontoffice/storepartenaireassets/css/css/themify-icons.css">
+    <link rel="stylesheet"
+        href="<?php echo BASE_URL; ?>view/frontoffice/storepartenaireassets/css/css/magnific-popup.css">
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>view/frontoffice/storepartenaireassets/css/css/style.css">
-    <link rel="stylesheet" href="<?php echo BASE_URL; ?>view/frontoffice/storepartenaireassets/css/custom-frontoffice.css">
+    <link rel="stylesheet"
+        href="<?php echo BASE_URL; ?>view/frontoffice/storepartenaireassets/css/custom-frontoffice.css">
     <style>
         /* Fix Header Overlap */
         .partner-hero-section {
-            padding-top: 140px; /* Space for fixed header */
+            padding-top: 140px;
+            /* Space for fixed header */
             padding-bottom: 60px;
-            background: linear-gradient(180deg, rgba(20,20,24,0.9) 0%, rgba(20,20,24,1) 100%);
+            background: linear-gradient(180deg, rgba(20, 20, 24, 0.9) 0%, rgba(20, 20, 24, 1) 100%);
         }
 
         /* Hero Section Styles */
@@ -46,7 +53,7 @@
             align-items: center;
             justify-content: center;
             padding: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
         }
 
         .partner-hero-logo {
@@ -84,7 +91,7 @@
             gap: 30px;
             margin-top: 25px;
             padding-top: 25px;
-            border-top: 1px solid rgba(255,255,255,0.1);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .stat-item {
@@ -172,7 +179,7 @@
 
         .store-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
             border-color: var(--accent);
         }
 
@@ -223,7 +230,7 @@
             align-items: center;
             justify-content: space-between;
             padding-top: 15px;
-            border-top: 1px solid rgba(255,255,255,0.1);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .store-card .game-price {
@@ -271,7 +278,10 @@
             color: #ffd700;
             padding: 0 2px;
         }
-        .partner-star-btn:hover { transform: scale(1.2); }
+
+        .partner-star-btn:hover {
+            transform: scale(1.2);
+        }
 
         @media (max-width: 991px) {
             .partner-hero-card {
@@ -279,12 +289,15 @@
                 align-items: center;
                 text-align: center;
             }
+
             .partner-hero-logo-container {
                 margin-bottom: 20px;
             }
+
             .partner-stats-row {
                 justify-content: center;
             }
+
             .info-grid {
                 grid-template-columns: 1fr;
             }
@@ -294,53 +307,15 @@
 
 <body>
     <div class="body_bg">
-        <!--::header part start::-->
-        <header class="main_menu single_page_menu">
-            <div class="container">
-                <div class="row align-items-center">
-                    <div class="col-lg-12">
-                        <nav class="navbar navbar-expand-lg navbar-light">
-                            <a class="navbar-brand" href="<?php echo BASE_URL; ?>">
-                                <img src="<?php echo BASE_URL; ?>view/frontoffice/storepartenaireassets/img/logo.png" alt="logo">
-                            </a>
-                            <button class="navbar-toggler" type="button" data-toggle="collapse"
-                                data-target="#navbarSupportedContent">
-                                <span class="menu_icon"><i class="fas fa-bars"></i></span>
-                            </button>
+        <?php
+        // Set header context variables
+        $headerShowUserMenu = isset($_SESSION['user_id']);
+        $sessionUserName = isset($_SESSION['user_name']) ? $_SESSION['user_name '] : 'Utilisateur';
+        $sessionUserType = isset($_SESSION['user_type']) ? $_SESSION['user_type'] : 'guest';
 
-                            <div class="collapse navbar-collapse main-menu-item" id="navbarSupportedContent">
-                                <ul class="navbar-nav ml-auto">
-                                    <li class="nav-item">
-                                        <a class="nav-link" href="<?php echo BASE_URL; ?>view/frontoffice/index.php">Accueil</a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link" href="<?php echo BASE_URL; ?>view/frontoffice/missionlist.php">Missions</a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link" href="?controller=Store&action=index">Store</a>
-                                    </li>
-                                    <li class="nav-item active">
-                                        <a class="nav-link" href="?controller=Partenaire&action=index">Partenaires</a>
-                                    </li>
-                                </ul>
-                            </div>
-                            <div style="display:flex; gap:10px; align-items:center;">
-                                <a href="<?= BASE_URL; ?>view/frontoffice/store.php?controller=Store&action=cart" class="btn_1 btn-cart d-none d-sm-inline-flex" aria-label="Panier">
-                                    (<?php $cnt=0; if(isset($_SESSION['cart'])){ foreach($_SESSION['cart'] as $q){ $cnt+=(int)$q; } } echo $cnt; ?>)
-                                </a>
-                                <a href="<?= BASE_URL; ?>view/frontoffice/store.php?controller=Store&action=wishlist" class="btn_1 btn-like d-none d-sm-inline-flex" aria-label="Liste d'envies"></a>
-                                <?php if (isset($_SESSION['user_id'])): ?>
-                                    <a href="<?php echo BASE_URL; ?>view/frontoffice/index1.php" class="btn_1 d-none d-sm-block">Mon Espace</a>
-                                <?php else: ?>
-                                    <a href="<?php echo BASE_URL; ?>view/frontoffice/connexion.php" class="btn_1 d-none d-sm-block">Se connecter</a>
-                                <?php endif; ?>
-                            </div>
-                        </nav>
-                    </div>
-                </div>
-            </div>
-        </header>
-        <!-- Header part end-->
+        // Include the common header
+        include __DIR__ . '/../header_common.php';
+        ?>
 
         <!-- Partner Hero Section -->
         <section class="partner-hero-section">
@@ -348,17 +323,16 @@
                 <div class="partner-hero-card">
                     <div class="partner-hero-logo-container">
                         <?php if ($this->partenaire->logo): ?>
-                            <img src="<?php echo BASE_URL . htmlspecialchars($this->partenaire->logo); ?>" 
-                                 alt="<?= htmlspecialchars($this->partenaire->nom) ?>" 
-                                 class="partner-hero-logo">
+                            <img src="<?php echo BASE_URL . htmlspecialchars($this->partenaire->logo); ?>"
+                                alt="<?= htmlspecialchars($this->partenaire->nom) ?>" class="partner-hero-logo">
                         <?php else: ?>
                             <i class="fas fa-building" style="font-size: 60px; color: #212529;"></i>
                         <?php endif; ?>
                     </div>
-                    
+
                     <div class="partner-hero-content">
                         <h1 class="partner-title"><?= htmlspecialchars($this->partenaire->nom) ?></h1>
-                        
+
                         <span class="partner-type-badge">
                             <?php
                             $types = [
@@ -370,7 +344,8 @@
                             ?>
                         </span>
 
-                        <div class="description-text" style="color: #cfd3d8; font-size: 16px; line-height: 1.6; max-width: 800px;">
+                        <div class="description-text"
+                            style="color: #cfd3d8; font-size: 16px; line-height: 1.6; max-width: 800px;">
                             <?php if ($this->partenaire->description): ?>
                                 <?= nl2br(htmlspecialchars($this->partenaire->description)) ?>
                             <?php else: ?>
@@ -386,7 +361,11 @@
                                         <?= (isset($partnerRatingCount) && $partnerRatingCount > 0 && isset($partnerRatingAvg)) ? number_format($partnerRatingAvg, 1) : '0.0' ?>
                                     </span>
                                     <div style="font-size:16px;">
-                                        <form id="partnerStarRateForm" data-initial="<?= (isset($partnerRatingCount) && $partnerRatingCount > 0 && isset($partnerRatingAvg)) ? (int)floor($partnerRatingAvg) : 0 ?>" method="post" action="?controller=Partenaire&action=rate&id=<?= $this->partenaire->id ?>" style="display:inline-flex;">
+                                        <form id="partnerStarRateForm"
+                                            data-initial="<?= (isset($partnerRatingCount) && $partnerRatingCount > 0 && isset($partnerRatingAvg)) ? (int) floor($partnerRatingAvg) : 0 ?>"
+                                            method="post"
+                                            action="?controller=Partenaire&action=rate&id=<?= $this->partenaire->id ?>"
+                                            style="display:inline-flex;">
                                             <input type="hidden" name="score" id="partnerStarScore" value="">
                                             <button type="button" class="partner-star-btn" data-score="1">★</button>
                                             <button type="button" class="partner-star-btn" data-score="2">★</button>
@@ -405,7 +384,8 @@
                             </div>
 
                             <div class="stat-item">
-                                <div class="stat-value"><?= isset($statsTotalViews) ? number_format($statsTotalViews) : 0 ?></div>
+                                <div class="stat-value">
+                                    <?= isset($statsTotalViews) ? number_format($statsTotalViews) : 0 ?></div>
                                 <div class="stat-label">Vues Totales</div>
                             </div>
                         </div>
@@ -417,7 +397,9 @@
                                     <div class="info-icon"><i class="fas fa-envelope"></i></div>
                                     <div class="info-content">
                                         <h6>Email</h6>
-                                        <p><a href="mailto:<?= htmlspecialchars($this->partenaire->email) ?>"><?= htmlspecialchars($this->partenaire->email) ?></a></p>
+                                        <p><a
+                                                href="mailto:<?= htmlspecialchars($this->partenaire->email) ?>"><?= htmlspecialchars($this->partenaire->email) ?></a>
+                                        </p>
                                     </div>
                                 </div>
                             <?php endif; ?>
@@ -437,11 +419,12 @@
                                     <div class="info-icon"><i class="fas fa-globe"></i></div>
                                     <div class="info-content">
                                         <h6>Site Web</h6>
-                                        <p><a href="<?= htmlspecialchars($this->partenaire->site_web) ?>" target="_blank">Visiter le site</a></p>
+                                        <p><a href="<?= htmlspecialchars($this->partenaire->site_web) ?>"
+                                                target="_blank">Visiter le site</a></p>
                                     </div>
                                 </div>
                             <?php endif; ?>
-                            
+
                             <div class="info-card">
                                 <div class="info-icon"><i class="fas fa-calendar-alt"></i></div>
                                 <div class="info-content">
@@ -460,7 +443,8 @@
             <div class="container">
                 <div class="row mb-5">
                     <div class="col-lg-12">
-                        <h2 style="color: white; font-weight: 700; border-left: 5px solid var(--accent); padding-left: 20px;">
+                        <h2
+                            style="color: white; font-weight: 700; border-left: 5px solid var(--accent); padding-left: 20px;">
                             Catalogue de Jeux
                         </h2>
                     </div>
@@ -473,18 +457,18 @@
                                 <div class="store-card">
                                     <div class="game-card-img">
                                         <?php if ($jeu['image']): ?>
-                                            <img src="<?php echo BASE_URL . htmlspecialchars($jeu['image']); ?>" 
-                                                 alt="<?= htmlspecialchars($jeu['nom']) ?>">
+                                            <img src="<?php echo BASE_URL . htmlspecialchars($jeu['image']); ?>"
+                                                alt="<?= htmlspecialchars($jeu['nom']) ?>">
                                         <?php else: ?>
-                                            <img src="<?php echo BASE_URL; ?>view/frontoffice/storepartenaireassets/img/gallery/gallery_item_1.png" 
-                                                 alt="<?= htmlspecialchars($jeu['nom']) ?>">
+                                            <img src="<?php echo BASE_URL; ?>view/frontoffice/storepartenaireassets/img/gallery/gallery_item_1.png"
+                                                alt="<?= htmlspecialchars($jeu['nom']) ?>">
                                         <?php endif; ?>
                                         <span class="game-badge"><?= ucfirst($jeu['categorie']) ?></span>
                                     </div>
                                     <div class="game-card-body">
                                         <div class="game-category"><?= htmlspecialchars($jeu['plateforme'] ?? 'PC') ?></div>
                                         <h5 class="game-title"><?= htmlspecialchars($jeu['nom']) ?></h5>
-                                        
+
                                         <div class="game-foot">
                                             <div class="game-price"><?= number_format($jeu['prix'], 2) ?> DT</div>
                                             <a href="?controller=Store&action=show&id=<?= $jeu['id'] ?>" class="btn-view-game">
@@ -503,7 +487,7 @@
                         <p style="color: var(--muted);">Ce partenaire n'a pas encore publié de jeux.</p>
                     </div>
                 <?php endif; ?>
-                
+
                 <div class="mt-5 text-center">
                     <a href="?controller=Partenaire&action=index" class="btn_1">
                         <i class="fas fa-arrow-left"></i> Retour aux Partenaires
@@ -520,7 +504,8 @@
                         <div class="col-sm-6 col-lg-3">
                             <div class="single_footer_part">
                                 <a href="<?php echo BASE_URL; ?>" class="footer_logo_iner">
-                                    <img src="<?php echo BASE_URL; ?>view/frontoffice/storepartenaireassets/img/logo.png" alt="logo">
+                                    <img src="<?php echo BASE_URL; ?>view/frontoffice/storepartenaireassets/img/logo.png"
+                                        alt="logo">
                                 </a>
                                 <p>Engage - La plateforme de matchmaking pour le volontariat par le jeu vidéo</p>
                             </div>
@@ -550,8 +535,8 @@
                                 <p>Inscrivez-vous pour recevoir nos nouveautés</p>
                                 <div id="mc_embed_signup">
                                     <form action="#" method="get" class="subscribe_form relative mail_part">
-                                        <input type="email" name="email" placeholder="Email Address" 
-                                               class="placeholder hide-on-focus">
+                                        <input type="email" name="email" placeholder="Email Address"
+                                            class="placeholder hide-on-focus">
                                         <button type="submit" class="email_icon newsletter-submit">
                                             <i class="far fa-paper-plane"></i>
                                         </button>
@@ -567,13 +552,17 @@
                     <div class="row align-items-center">
                         <div class="col-lg-8">
                             <div class="copyright_text">
-                                <p>© <script>document.write(new Date().getFullYear());</script> Engage. Tous droits réservés</p>
+                                <p>©
+                                    <script>document.write(new Date().getFullYear());</script> Engage. Tous droits
+                                    réservés
+                                </p>
                             </div>
                         </div>
                         <div class="col-lg-4">
                             <div class="footer_icon social_icon">
                                 <ul class="list-unstyled">
-                                    <li><a href="#" class="single_social_icon"><i class="fab fa-facebook-f"></i></a></li>
+                                    <li><a href="#" class="single_social_icon"><i class="fab fa-facebook-f"></i></a>
+                                    </li>
                                     <li><a href="#" class="single_social_icon"><i class="fab fa-twitter"></i></a></li>
                                     <li><a href="#" class="single_social_icon"><i class="fab fa-instagram"></i></a></li>
                                     <li><a href="#" class="single_social_icon"><i class="fab fa-linkedin"></i></a></li>
@@ -595,45 +584,46 @@
     <script src="<?php echo BASE_URL; ?>view/frontoffice/storepartenaireassets/js/owl.carousel.min.js"></script>
     <script src="<?php echo BASE_URL; ?>view/frontoffice/storepartenaireassets/js/custom.js"></script>
     <script>
-        (function(){
+        (function () {
             var stars = document.querySelectorAll('.partner-star-btn');
             var scoreInput = document.getElementById('partnerStarScore');
             var form = document.getElementById('partnerStarRateForm');
             var ratingEl = document.getElementById('partnerRatingValue');
-            function paint(n){
-                stars.forEach(function(s,i){
+            function paint(n) {
+                stars.forEach(function (s, i) {
                     s.style.color = (i < n) ? '#ffd700' : '#777';
                 });
             }
-            stars.forEach(function(btn){
-                btn.addEventListener('mouseover', function(){
-                    var v = parseInt(btn.getAttribute('data-score'),10) || 1;
+            stars.forEach(function (btn) {
+                btn.addEventListener('mouseover', function () {
+                    var v = parseInt(btn.getAttribute('data-score'), 10) || 1;
                     paint(Math.max(1, Math.min(5, v)));
                 });
-                btn.addEventListener('focus', function(){
-                    var v = parseInt(btn.getAttribute('data-score'),10) || 1;
+                btn.addEventListener('focus', function () {
+                    var v = parseInt(btn.getAttribute('data-score'), 10) || 1;
                     paint(Math.max(1, Math.min(5, v)));
                 });
-                btn.addEventListener('click', function(){
-                    var val = parseInt(btn.getAttribute('data-score'),10) || 1;
+                btn.addEventListener('click', function () {
+                    var val = parseInt(btn.getAttribute('data-score'), 10) || 1;
                     val = Math.max(1, Math.min(5, val));
                     scoreInput.value = val;
                     paint(val);
                     if (ratingEl) { ratingEl.textContent = val.toFixed(1); }
                     form.submit();
                 });
-                btn.addEventListener('mouseleave', function(){
-                    var init = 0; 
-                    if (form) { 
-                        var a = parseInt(form.getAttribute('data-initial')||'0',10); 
-                        if (!isNaN(a)) init = Math.max(0, Math.min(5, a)); 
+                btn.addEventListener('mouseleave', function () {
+                    var init = 0;
+                    if (form) {
+                        var a = parseInt(form.getAttribute('data-initial') || '0', 10);
+                        if (!isNaN(a)) init = Math.max(0, Math.min(5, a));
                     }
                     paint(init);
                 });
             });
-            var init = 0; if (form) { var a = parseInt(form.getAttribute('data-initial')||'0',10); if (!isNaN(a)) init = Math.max(0, Math.min(5, a)); }
+            var init = 0; if (form) { var a = parseInt(form.getAttribute('data-initial') || '0', 10); if (!isNaN(a)) init = Math.max(0, Math.min(5, a)); }
             paint(init);
         })();
     </script>
 </body>
+
 </html>
