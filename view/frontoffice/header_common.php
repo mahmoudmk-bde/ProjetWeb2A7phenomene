@@ -114,6 +114,7 @@ $frontOfficePath = $baseUrl . 'view/frontoffice/';
                             <li class="nav-item"><a class="nav-link" href="missionlist.php">Missions</a></li>
                             <li class="nav-item"><a class="nav-link" href="store.php?controller=Store&action=index">Store</a></li>
                             <li class="nav-item"><a class="nav-link" href="store.php?controller=Partenaire&action=index">Partenaires</a></li>
+                            <li class="nav-item"><a class="nav-link" href="events/event.php">Événements</a></li>
                             <?php if (isset($_SESSION['user_id'])): ?>
                             <li class="nav-item notification-item">
                                 <a class="nav-link notification-bell" href="#" id="notificationBell">
