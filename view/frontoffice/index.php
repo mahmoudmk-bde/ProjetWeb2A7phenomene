@@ -10,7 +10,7 @@ session_start();
     <title>ENGAGE – Volontariat par le jeu vidéo</title>
 
     <!-- Favicon -->
-    <link rel="icon" href="../img/logo.png">
+    <link rel="icon" href="assets/img/logo.png">
 
     <!-- CSS -->
     <link rel="stylesheet" href="assets/css/bootstrap.min.css">
@@ -89,7 +89,7 @@ session_start();
                     </p>
 
                     <?php if (!isset($_SESSION['user_id'])): ?>
-                        <a href="inscription.php" class="btn_1 mt-4">Commencer maintenant</a>
+                        <a href="connexion.php" class="btn_1 mt-4">Commencer maintenant</a>
                     <?php else: ?>
                         <a href="missionlist.php" class="btn_1 mt-4">Voir les missions</a>
                     <?php endif; ?>

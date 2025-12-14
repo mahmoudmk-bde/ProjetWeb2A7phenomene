@@ -5,7 +5,9 @@
 <!doctype html>
 <html lang="fr">
 <head>
+    
     <meta charset="utf-8">
+    
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>Gaming Store - Engage</title>
     <link rel="icon" href="<?php echo BASE_URL; ?>view/frontoffice/storepartenaireassets/img/favicon.png">
@@ -30,53 +32,7 @@
 
 <body>
     <div class="body_bg">
-        <!--::header part start::-->
-        <header class="main_menu single_page_menu">
-            <div class="container">
-                <div class="row align-items-center">
-                    <div class="col-lg-12">
-                        <nav class="navbar navbar-expand-lg navbar-light">
-                            <a class="navbar-brand" href="<?php echo BASE_URL; ?>">
-                                <img src="<?php echo BASE_URL; ?>view/frontoffice/storepartenaireassets/img/logo.png" alt="logo">
-                            </a>
-                            <button class="navbar-toggler" type="button" data-toggle="collapse"
-                                data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
-                                aria-expanded="false" aria-label="Toggle navigation">
-                                <span class="menu_icon">Menu</span>
-                            </button>
-
-                            <div class="collapse navbar-collapse main-menu-item" id="navbarSupportedContent">
-                                <ul class="navbar-nav ml-auto">
-                                    <li class="nav-item">
-                                        <a class="nav-link" href="<?php echo BASE_URL; ?>view/frontoffice/index.php">Accueil</a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link" href="<?php echo BASE_URL; ?>view/frontoffice/missionlist.php">Missions</a>
-                                    </li>
-                                    <li class="nav-item active">
-                                        <a class="nav-link" href="?controller=Store&action=index">Store</a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link" href="?controller=Partenaire&action=index">Partenaires</a>
-                                    </li>
-                                </ul>
-                            </div>
-                            <div style="display:flex; gap:10px; align-items:center;">
-                                <a href="?controller=Store&action=cart" class="btn_1 d-none d-sm-block">
-                                    Panier
-                                    <?php $cnt=0; if(isset($_SESSION['cart'])){ foreach($_SESSION['cart'] as $q){ $cnt+=(int)$q; } } echo $cnt; ?>
-                                </a>
-                                <?php if (isset($_SESSION['user_id'])): ?>
-                                    <a href="<?php echo BASE_URL; ?>view/frontoffice/index1.php" class="btn_1 d-none d-sm-block">Mon Espace</a>
-                                <?php else: ?>
-                                    <a href="<?php echo BASE_URL; ?>view/frontoffice/connexion.php" class="btn_1 d-none d-sm-block">Se connecter</a>
-                                <?php endif; ?>
-                            </div>
-                        </nav>
-                    </div>
-                </div>
-            </div>
-        </header>
+    <?php include 'header_mission.php'; ?>
         <!-- Header part end-->
 
         <!-- breadcrumb start-->
