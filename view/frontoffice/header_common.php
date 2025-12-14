@@ -168,12 +168,19 @@ $frontOfficePath = $baseUrl . 'view/frontoffice/';
                         <?php
                         // Compute number of distinct reclamations that have responses for current user
                         $responseCount = 0;
+                        // Get user profile picture
+                        $headerUserImg = null;
+                        $headerImgPath = null;
+                        $headerImgExists = false;
+                        
                         try {
                             // Only require db_config if not already included
                             if (!class_exists('config')) {
                                 require_once __DIR__ . '/../../db_config.php';
                             }
                             $pdo = config::getConnexion();
+                            
+                            // Get response count
                             $stmt = $pdo->prepare("SELECT COUNT(DISTINCT r.reclamation_id) AS cnt
                                 FROM response r
                                 JOIN reclamation rec ON rec.id = r.reclamation_id
@@ -181,8 +188,22 @@ $frontOfficePath = $baseUrl . 'view/frontoffice/';
                             $stmt->execute(['uid' => $_SESSION['user_id']]);
                             $row = $stmt->fetch(PDO::FETCH_ASSOC);
                             $responseCount = $row && isset($row['cnt']) ? (int)$row['cnt'] : 0;
+                            
+                            // Get user profile picture
+                            $userStmt = $pdo->prepare("SELECT img FROM utilisateur WHERE id_util = :uid");
+                            $userStmt->execute(['uid' => $_SESSION['user_id']]);
+                            $userData = $userStmt->fetch(PDO::FETCH_ASSOC);
+                            
+                            if ($userData && !empty($userData['img'])) {
+                                $headerUserImg = $userData['img'];
+                                $headerImgPath = $frontOfficePath . 'assets/uploads/profiles/' . $headerUserImg;
+                                // Check if file exists
+                                $fullPath = $_SERVER['DOCUMENT_ROOT'] . '/ProjetWeb2A7phenomene/view/frontoffice/assets/uploads/profiles/' . $headerUserImg;
+                                $headerImgExists = file_exists($fullPath);
+                            }
                         } catch (Exception $e) {
                             $responseCount = 0;
+                            $headerImgExists = false;
                         }
                         ?>
 
@@ -190,7 +211,13 @@ $frontOfficePath = $baseUrl . 'view/frontoffice/';
                             <div class="user-wrapper">
                                 <span class="user-name"><?= htmlspecialchars($sessionUserName) ?></span>
                                 <div class="user-avatar" style="position:relative;">
-                                    <i class="fas fa-user"></i>
+                                    <?php if ($headerImgExists && $headerImgPath): ?>
+                                        <img src="<?= htmlspecialchars($headerImgPath) ?>" 
+                                             alt="Photo de profil" 
+                                             style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+                                    <?php else: ?>
+                                        <i class="fas fa-user"></i>
+                                    <?php endif; ?>
                                     <?php if ($responseCount > 0): ?>
                                         <span class="response-badge"><?= $responseCount ?></span>
                                     <?php endif; ?>
