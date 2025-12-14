@@ -89,8 +89,16 @@ if (isset($_SESSION['user_id']) && empty($notifications)) {
 
 $headerShowUserMenu = isset($headerShowUserMenu) ? (bool)$headerShowUserMenu : false;
 
-// Determine Base URL for consistent paths
-$baseUrl = defined('BASE_URL') ? BASE_URL : '/ProjetWeb2A7phenomene/';
+// Determine Base URL for consistent paths - auto-detect if not defined
+if (!defined('BASE_URL')) {
+    $scriptPath = dirname($_SERVER['SCRIPT_NAME']);
+    $baseUrl = rtrim(str_replace('\\', '/', $scriptPath), '/');
+    // Strip any nested /view/frontoffice/... segments to get project root
+    $baseUrl = preg_replace('#/view/frontoffice(?:/.*)?$#i', '', $baseUrl);
+    $baseUrl = rtrim($baseUrl, '/') . '/';
+} else {
+    $baseUrl = BASE_URL;
+}
 // Ensure we point to view/frontoffice for links
 $frontOfficePath = $baseUrl . 'view/frontoffice/';
 ?>
@@ -110,11 +118,11 @@ $frontOfficePath = $baseUrl . 'view/frontoffice/';
 
                     <div class="collapse navbar-collapse main-menu-item" id="navbarSupportedContent">
                         <ul class="navbar-nav ml-auto">
-                            <li class="nav-item"><a class="nav-link" href="/projetweb2/view/frontoffice/index.php">Accueil</a></li>
-                            <li class="nav-item"><a class="nav-link" href="/projetweb2/view/frontoffice/missionlist.php">Missions</a></li>
-                            <li class="nav-item"><a class="nav-link" href="/projetweb2/view/frontoffice/store.php?controller=Store&action=index">Store</a></li>
-                            <li class="nav-item"><a class="nav-link" href="/projetweb2/view/frontoffice/store.php?controller=Partenaire&action=index">Partenaires</a></li>
-                            <li class="nav-item"><a class="nav-link" href="/projetweb2/view/frontoffice/events/event.php">Événements</a></li>
+                            <li class="nav-item"><a class="nav-link" href="<?= $frontOfficePath ?>index.php">Accueil</a></li>
+                            <li class="nav-item"><a class="nav-link" href="<?= $frontOfficePath ?>missionlist.php">Missions</a></li>
+                            <li class="nav-item"><a class="nav-link" href="<?= $frontOfficePath ?>store.php?controller=Store&action=index">Store</a></li>
+                            <li class="nav-item"><a class="nav-link" href="<?= $frontOfficePath ?>store.php?controller=Partenaire&action=index">Partenaires</a></li>
+                            <li class="nav-item"><a class="nav-link" href="<?= $frontOfficePath ?>events/event.php">Événements</a></li>
                             <?php if (isset($_SESSION['user_id'])): ?>
                             <li class="nav-item notification-item">
                                 <a class="nav-link notification-bell" href="#" id="notificationBell">

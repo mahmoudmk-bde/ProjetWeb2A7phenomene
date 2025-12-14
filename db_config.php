@@ -21,3 +21,10 @@ if (!class_exists('config')) {
         }
     }
 }
+
+// Helper function to sanitize input
+if (!function_exists('secure_data')) {
+    function secure_data($data) {
+        return htmlspecialchars(trim($data), ENT_QUOTES, 'UTF-8');
+    }
+}
