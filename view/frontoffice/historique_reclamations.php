@@ -145,13 +145,18 @@ $headerShowUserMenu = true; // instruct header to show dropdown
         }
 
         .timeline { display:flex; flex-direction:column; gap:18px; }
-        .timeline-item { background: rgba(255,255,255,0.03); border-radius:8px; padding:18px; position:relative; box-shadow: 0 6px 18px rgba(0,0,0,0.35); }
+        .timeline-item { background: rgba(255,255,255,0.03); border-radius:8px; padding:18px; position:relative; box-shadow: 0 6px 18px rgba(0,0,0,0.35); border:1px solid rgba(255,255,255,0.05); }
+        .timeline-item.pending { border-color: rgba(255,199,0,0.35); box-shadow: 0 6px 24px rgba(255,199,0,0.22); }
         .timeline-marker { width:8px; height:8px; background:var(--primary); border-radius:50%; position:absolute; left:-18px; top:18px; }
         .timeline-date { color: var(--primary); font-weight:700; font-size:0.9rem; }
         .timeline-title { font-weight:700; margin-top:6px; color: #fff; }
         .timeline-description { margin-top:10px; color: var(--text-light); }
             .responses { margin-top: 8px; }
             .response-card { background: rgba(255,255,255,0.02); padding:10px; border-left:3px solid var(--primary); margin-bottom:8px; border-radius:6px; }
+        .status-chip { display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border-radius:20px; font-size:0.85rem; font-weight:700; letter-spacing:0.01em; }
+        .status-answered { background: rgba(56,213,152,0.18); color:#38d998; border:1px solid rgba(56,213,152,0.35); }
+        .status-pending { background: rgba(255,199,0,0.18); color:#ffd166; border:1px solid rgba(255,199,0,0.4); }
+        .status-progress { background: rgba(82,156,255,0.18); color:#92c5ff; border:1px solid rgba(82,156,255,0.35); }
     </style>
 </head>
 <body class="body_bg">
@@ -169,7 +174,22 @@ $headerShowUserMenu = true; // instruct header to show dropdown
         <?php if (!empty($reclamations)): ?>
             <div class="timeline">
                 <?php foreach ($reclamations as $reclamation): ?>
-                    <div class="timeline-item">
+                    <?php
+                        $responses = $responseController->getResponses($reclamation['id']);
+                        $hasResponses = !empty($responses);
+                        $statut = $reclamation['statut'] ?? 'Non traite';
+                        $statusClass = 'status-pending';
+                        $statusIcon = '⏳';
+                        if ($statut === 'Traite' || $hasResponses) {
+                            $statusClass = 'status-answered';
+                            $statusIcon = '✔️';
+                        } elseif ($statut === 'En cours') {
+                            $statusClass = 'status-progress';
+                            $statusIcon = '🔄';
+                        }
+                        $itemClass = ($statut === 'Non traite' && !$hasResponses) ? ' pending' : '';
+                    ?>
+                    <div class="timeline-item<?= $itemClass; ?>" id="rec-<?= (int)$reclamation['id']; ?>">
                         <div class="timeline-marker"></div>
                         <div class="timeline-content">
                             <div class="timeline-date">
@@ -180,19 +200,13 @@ $headerShowUserMenu = true; // instruct header to show dropdown
                             </div>
                             <div class="timeline-description">
                                 <div style="display:flex; gap:12px; align-items:center; margin-bottom:8px;">
-                                    <span style="font-size:0.85rem; color: #ddd;">
-                                        <strong>Statut:</strong> <?php echo htmlspecialchars($reclamation['statut']); ?>
-                                    </span>
+                                    <span class="status-chip <?= $statusClass; ?>"><?php echo $statusIcon; ?> <?php echo htmlspecialchars($statut); ?></span>
                                     <span style="font-size:0.85rem; color: #ddd;">
                                         <i class="fas fa-flag"></i> Priorité: <?php echo htmlspecialchars($reclamation['priorite']); ?>
                                     </span>
                                 </div>
                                 <p><?php echo nl2br(htmlspecialchars($reclamation['description'])); ?></p>
 
-                                <?php
-                                    // Fetch responses for this reclamation
-                                    $responses = $responseController->getResponses($reclamation['id']);
-                                ?>
                                 <?php if (!empty($responses)): ?>
                                     <div class="responses" style="margin-top:12px;">
                                         <?php foreach ($responses as $resp): ?>

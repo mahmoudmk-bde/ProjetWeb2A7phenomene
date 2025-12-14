@@ -43,6 +43,29 @@ class ResponseController {
         
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    /**
+     * Notifications pour un utilisateur (réponses aux réclamations qu'il a créées).
+     */
+    public function getNotificationsForUser(int $userId, int $limit = 10): array {
+        $sql = "SELECT r.id,
+                       r.reclamation_id,
+                       r.contenu,
+                       r.date_response,
+                       r.admin_id,
+                       rec.sujet
+                FROM response r
+                JOIN reclamation rec ON rec.id = r.reclamation_id
+                WHERE rec.utilisateur_id = :uid
+                ORDER BY r.date_response DESC
+                LIMIT :lim";
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->bindValue(':uid', $userId, PDO::PARAM_INT);
+        $stmt->bindValue(':lim', $limit, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
     
     public function deleteResponse($id) {
         $stmt = $this->pdo->prepare("DELETE FROM response WHERE id = :id");

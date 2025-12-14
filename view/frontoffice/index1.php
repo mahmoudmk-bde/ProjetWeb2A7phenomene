@@ -10,10 +10,14 @@ if (!isset($_SESSION['user_id'])) {
 include '../../controller/utilisateurcontroller.php';
 include '../../controller/condidaturecontroller.php';
 include '../../controller/ReclamationController.php';
+include '../../controller/ResponseController.php';
+include '../../controller/missioncontroller.php';
 
 $utilisateurController = new UtilisateurController();
 $condidatureController = new CondidatureController();
 $reclamationController = new ReclamationController();
+$responseController = new ResponseController();
+$missionController = new missioncontroller();
 
 $user_id = $_SESSION['user_id'];
 $current_user = $utilisateurController->showUtilisateur($user_id);
@@ -38,6 +42,64 @@ $sessionUserType = $_SESSION['user_type'] ?? ($current_user['typee'] ?? 'user');
 $candidatures = $condidatureController->getCandidaturesByUser($user_id);
 // Récupérer les réclamations de l'utilisateur
 $reclamations = $reclamationController->getReclamationsByUser($user_id);
+
+// Notifications multi-sources
+$notifications = [];
+
+// 1) Réponses aux réclamations
+try {
+    $respNotifs = $responseController->getNotificationsForUser($user_id, 10);
+    foreach ($respNotifs as $n) {
+        $notifications[] = [
+            'title' => 'Réponse à votre réclamation',
+            'body' => $n['sujet'] ?? 'Réclamation',
+            'text' => $n['contenu'] ?? '',
+            'date' => $n['date_response'] ?? null,
+            'href' => 'historique_reclamations.php#rec-' . (int)($n['reclamation_id'] ?? 0),
+            'key' => md5(($n['sujet'] ?? '') . '|' . ($n['contenu'] ?? '') . '|' . ($n['date_response'] ?? '') . '|' . ($n['reclamation_id'] ?? ''))
+        ];
+    }
+} catch (Exception $e) {}
+
+// 2) Candidatures acceptées
+$acceptedStatuses = ['accepte', 'acceptee', 'acceptée'];
+foreach ($candidatures as $cand) {
+    $statut = strtolower($cand['statut'] ?? '');
+    if (in_array($statut, $acceptedStatuses, true)) {
+        $notifications[] = [
+            'title' => 'Candidature acceptée',
+            'body' => $cand['titre_mission'] ?? 'Mission',
+            'text' => 'Vous avez été accepté(e) dans cette mission.',
+            'date' => $cand['date_candidature'] ?? null,
+            'href' => 'missiondetails.php?id=' . (int)($cand['mission_id'] ?? 0),
+            'key' => md5('cand|' . ($cand['mission_id'] ?? '') . '|' . ($cand['date_candidature'] ?? '') . '|' . ($cand['statut'] ?? ''))
+        ];
+    }
+}
+
+// 3) Nouvelles missions (récents)
+try {
+    $recent = $missionController->getMissionsPaginated(1, 3)['data'] ?? [];
+    foreach ($recent as $m) {
+        $notifications[] = [
+            'title' => 'Nouvelle mission',
+            'body' => $m['titre'] ?? 'Mission',
+            'text' => $m['description'] ?? '',
+            'date' => $m['date_creation'] ?? null,
+            'href' => 'missiondetails.php?id=' . (int)($m['id'] ?? 0),
+            'key' => md5('mission|' . ($m['id'] ?? '') . '|' . ($m['date_creation'] ?? '') . '|' . ($m['titre'] ?? ''))
+        ];
+    }
+} catch (Exception $e) {}
+
+// Trier par date desc
+usort($notifications, function($a, $b) {
+    $da = isset($a['date']) ? strtotime($a['date']) : 0;
+    $db = isset($b['date']) ? strtotime($b['date']) : 0;
+    return $db <=> $da;
+});
+
+$notificationCount = count($notifications);
 
 // Compter les statuts
 $stats = [

@@ -1,9 +1,11 @@
 <?php
 session_start();
 require_once "../../controller/ReclamationController.php";
+require_once "../../controller/missioncontroller.php";
 
 $success_message = '';
 $error_message = '';
+$sessionEmail = $_SESSION['user_email'] ?? '';
 
 // Cette page nécessite un utilisateur connecté pour lier la réclamation
 if (!isset($_SESSION['user_id'])) {
@@ -11,20 +13,80 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
+// Chargement des listes (missions, événements, partenaires, utilisateurs)
+$missions = [];
+$evenements = [];
+$partenaires = [];
+$utilisateurs = [];
+
+try {
+    $missionCtrl = new missioncontroller();
+    $missions = $missionCtrl->missionliste();
+
+    $pdo = config::getConnexion();
+    $evenements = $pdo->query("SELECT id_evenement, titre, date_evenement FROM evenement ORDER BY date_evenement DESC")
+        ->fetchAll(PDO::FETCH_ASSOC);
+    $partenaires = $pdo->query("SELECT id, nom FROM partenaires ORDER BY nom ASC")
+        ->fetchAll(PDO::FETCH_ASSOC);
+    $utilisateurs = $pdo->query("SELECT id_util, prenom, nom, mail FROM utilisateur ORDER BY prenom, nom")
+        ->fetchAll(PDO::FETCH_ASSOC);
+} catch (Exception $e) {
+    $error_message = "Impossible de charger toutes les données de sélection : " . $e->getMessage();
+}
+
+function findLabelById(array $items, string $idKey, string $labelKey, $id): ?string {
+    foreach ($items as $item) {
+        if ((string)($item[$idKey] ?? '') === (string)$id) {
+            return $item[$labelKey] ?? null;
+        }
+    }
+    return null;
+}
+
 if ($_SERVER['REQUEST_METHOD'] === "POST") {
     try {
-        $email = $_POST['email'] ?? '';
+        $email = $_POST['email'] ?? $sessionEmail;
         $sujet = $_POST['sujet'] ?? '';
         $description = $_POST['description'] ?? '';
 
-        // Lier la réclamation à l'utilisateur connecté (obligatoire ici)
+        $type = $_POST['type_reclamation'] ?? 'autre';
+        $missionId = $_POST['mission_id'] ?? null;
+        $evenementId = $_POST['evenement_id'] ?? null;
+        $partenaireId = $_POST['partenaire_id'] ?? null;
+        $utilisateurCibleId = $_POST['utilisateur_cible_id'] ?? null;
+        $techniqueDetail = $_POST['technique_detail'] ?? '';
+
+        $contextPieces = ["Type: " . ucfirst($type)];
+        if ($type === 'mission' && $missionId) {
+            $missionLabel = findLabelById($missions, 'id', 'titre', $missionId);
+            $contextPieces[] = "Mission #" . intval($missionId) . ($missionLabel ? " (" . $missionLabel . ")" : '');
+        }
+        if ($type === 'evenement' && $evenementId) {
+            $eventLabel = findLabelById($evenements, 'id_evenement', 'titre', $evenementId);
+            $contextPieces[] = "Événement #" . intval($evenementId) . ($eventLabel ? " (" . $eventLabel . ")" : '');
+        }
+        if ($type === 'partenaire' && $partenaireId) {
+            $partLabel = findLabelById($partenaires, 'id', 'nom', $partenaireId);
+            $contextPieces[] = "Partenaire #" . intval($partenaireId) . ($partLabel ? " (" . $partLabel . ")" : '');
+        }
+        if ($type === 'utilisateur' && $utilisateurCibleId) {
+            $userLabel = findLabelById($utilisateurs, 'id_util', 'prenom', $utilisateurCibleId);
+            $contextPieces[] = "Utilisateur #" . intval($utilisateurCibleId) . ($userLabel ? " (" . $userLabel . ")" : '');
+        }
+        if ($type === 'technique' && $techniqueDetail) {
+            $contextPieces[] = "Détail technique: " . trim($techniqueDetail);
+        }
+
+        $contextString = implode(' | ', $contextPieces);
+        $descriptionWithContext = $contextString . "\n\n" . trim($description);
+        $sujetDecorated = '[' . ucfirst($type) . '] ' . $sujet;
+
         $utilisateur_id = $_SESSION['user_id'];
-        // Pour l'instant, pas de produit spécifique (NULL)
         $product_id = null;
 
         $rec = new Reclamation(
-            $sujet,
-            $description,
+            $sujetDecorated,
+            $descriptionWithContext,
             $email,
             "Non traite",
             $utilisateur_id,
@@ -296,23 +358,90 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
                 <!-- Formulaire direct de réclamation -->
                 <form id="reclamationForm" method="POST" action="" novalidate>
                     <div class="form-group">
+                        <label for="type_reclamation">Type de réclamation</label>
+                        <select class="form-control" id="type_reclamation" name="type_reclamation" required>
+                            <option value="">Choisissez le type</option>
+                            <option value="mission" <?= (($_POST['type_reclamation'] ?? '') === 'mission') ? 'selected' : '' ?>>Mission</option>
+                            <option value="evenement" <?= (($_POST['type_reclamation'] ?? '') === 'evenement') ? 'selected' : '' ?>>Événement</option>
+                            <option value="partenaire" <?= (($_POST['type_reclamation'] ?? '') === 'partenaire') ? 'selected' : '' ?>>Partenaire</option>
+                            <option value="utilisateur" <?= (($_POST['type_reclamation'] ?? '') === 'utilisateur') ? 'selected' : '' ?>>Utilisateur</option>
+                            <option value="technique" <?= (($_POST['type_reclamation'] ?? '') === 'technique') ? 'selected' : '' ?>>Technique</option>
+                            <option value="autre" <?= (($_POST['type_reclamation'] ?? '') === 'autre') ? 'selected' : '' ?>>Autre</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group conditional-field d-none" data-block="mission">
+                        <label for="mission_id">Mission concernée</label>
+                        <select class="form-control" id="mission_id" name="mission_id">
+                            <option value="">Sélectionnez une mission</option>
+                            <?php foreach ($missions as $mission): ?>
+                                <option value="<?= htmlspecialchars($mission['id']) ?>" <?= (($_POST['mission_id'] ?? '') == $mission['id']) ? 'selected' : '' ?>>
+                                    <?= htmlspecialchars($mission['titre'] ?? ('Mission #' . $mission['id'])) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+
+                    <div class="form-group conditional-field d-none" data-block="evenement">
+                        <label for="evenement_id">Événement concerné</label>
+                        <select class="form-control" id="evenement_id" name="evenement_id">
+                            <option value="">Sélectionnez un événement</option>
+                            <?php foreach ($evenements as $event): ?>
+                                <option value="<?= htmlspecialchars($event['id_evenement']) ?>" <?= (($_POST['evenement_id'] ?? '') == $event['id_evenement']) ? 'selected' : '' ?>>
+                                    <?= htmlspecialchars(($event['titre'] ?? 'Événement') . ' – ' . ($event['date_evenement'] ?? '')) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+
+                    <div class="form-group conditional-field d-none" data-block="partenaire">
+                        <label for="partenaire_id">Partenaire concerné</label>
+                        <select class="form-control" id="partenaire_id" name="partenaire_id">
+                            <option value="">Sélectionnez un partenaire</option>
+                            <?php foreach ($partenaires as $p): ?>
+                                <option value="<?= htmlspecialchars($p['id']) ?>" <?= (($_POST['partenaire_id'] ?? '') == $p['id']) ? 'selected' : '' ?>>
+                                    <?= htmlspecialchars($p['nom'] ?? ('Partenaire #' . $p['id'])) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+
+                    <div class="form-group conditional-field d-none" data-block="utilisateur">
+                        <label for="utilisateur_cible_id">Utilisateur concerné</label>
+                        <select class="form-control" id="utilisateur_cible_id" name="utilisateur_cible_id">
+                            <option value="">Sélectionnez un utilisateur</option>
+                            <?php foreach ($utilisateurs as $u): ?>
+                                <option value="<?= htmlspecialchars($u['id_util']) ?>" <?= (($_POST['utilisateur_cible_id'] ?? '') == $u['id_util']) ? 'selected' : '' ?>>
+                                    ID #<?= htmlspecialchars($u['id_util']) ?> – <?= htmlspecialchars(trim(($u['prenom'] ?? '') . ' ' . ($u['nom'] ?? ''))) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+
+                    <div class="form-group conditional-field d-none" data-block="technique">
+                        <label for="technique_detail">Détail technique</label>
+                        <input type="text" class="form-control" id="technique_detail" name="technique_detail" 
+                               placeholder="Précisez le problème technique" value="<?= htmlspecialchars($_POST['technique_detail'] ?? '') ?>">
+                    </div>
+
+                    <div class="form-group">
                         <label for="sujet">Sujet de la réclamation</label>
                         <input type="text" class="form-control" id="sujet" name="sujet" 
-                               placeholder="Entrez le sujet" aria-describedby="sujetHelp">
+                               placeholder="Entrez le sujet" aria-describedby="sujetHelp" value="<?= htmlspecialchars($_POST['sujet'] ?? '') ?>">
                         <div class="invalid-feedback" id="sujetHelp"></div>
                     </div>
 
                     <div class="form-group">
                         <label for="email">Votre email</label>
                         <input type="email" class="form-control" id="email" name="email" 
-                               placeholder="Entrez votre email" aria-describedby="emailHelp">
+                               placeholder="Entrez votre email" aria-describedby="emailHelp" value="<?= htmlspecialchars($_POST['email'] ?? $sessionEmail) ?>">
                         <div class="invalid-feedback" id="emailHelp"></div>
                     </div>
 
                     <div class="form-group">
                         <label for="description">Description de la réclamation</label>
                         <textarea class="form-control" id="description" name="description" 
-                                  placeholder="Décrivez en détail votre réclamation..." aria-describedby="descriptionHelp"></textarea>
+                                  placeholder="Décrivez en détail votre réclamation..." aria-describedby="descriptionHelp"><?= htmlspecialchars($_POST['description'] ?? '') ?></textarea>
                         <div class="invalid-feedback" id="descriptionHelp"></div>
                     </div>
 
@@ -346,6 +475,41 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
     <script src="assets/js/jquery.magnific-popup.js"></script>
     <script src="assets/js/slick.min.js"></script>
     <script src="assets/js/custom.js"></script>
+    <script>
+        (function() {
+            const typeSelect = document.getElementById('type_reclamation');
+            const blocks = document.querySelectorAll('.conditional-field');
+            const requiredByType = {
+                mission: ['mission_id'],
+                evenement: ['evenement_id'],
+                partenaire: ['partenaire_id'],
+                utilisateur: ['utilisateur_cible_id'],
+                technique: ['technique_detail']
+            };
+
+            function updateBlocks() {
+                const current = typeSelect ? typeSelect.value : '';
+                blocks.forEach(block => {
+                    const isActive = block.dataset.block === current;
+                    block.classList.toggle('d-none', !isActive);
+                });
+
+                Object.keys(requiredByType).forEach(type => {
+                    requiredByType[type].forEach(id => {
+                        const field = document.getElementById(id);
+                        if (field) {
+                            field.required = (type === current);
+                        }
+                    });
+                });
+            }
+
+            if (typeSelect) {
+                typeSelect.addEventListener('change', updateBlocks);
+                updateBlocks();
+            }
+        })();
+    </script>
     <!-- Validation spécifique du formulaire de réclamation -->
     <script src="js/form-validation.js"></script>
 </body>
