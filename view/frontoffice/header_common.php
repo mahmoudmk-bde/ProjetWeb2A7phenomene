@@ -93,8 +93,9 @@ $headerShowUserMenu = isset($headerShowUserMenu) ? (bool)$headerShowUserMenu : f
 if (!defined('BASE_URL')) {
     $scriptPath = dirname($_SERVER['SCRIPT_NAME']);
     $baseUrl = rtrim(str_replace('\\', '/', $scriptPath), '/');
-    // Navigate up to project root (remove /view/frontoffice or similar)
-    $baseUrl = preg_replace('#/view(/[^/]+)?$#', '', $baseUrl) . '/';
+    // Strip any nested /view/frontoffice/... segments to get project root
+    $baseUrl = preg_replace('#/view/frontoffice(?:/.*)?$#i', '', $baseUrl);
+    $baseUrl = rtrim($baseUrl, '/') . '/';
 } else {
     $baseUrl = BASE_URL;
 }
