@@ -32,9 +32,13 @@ CREATE TABLE `evenement` (
   `titre` varchar(100) NOT NULL,
   `description` text NOT NULL,
   `date_evenement` date NOT NULL,
+  `heure_evenement` time DEFAULT NULL,
+  `duree_minutes` int(11) DEFAULT NULL,
   `lieu` varchar(100) NOT NULL,
   `image` varchar(255) DEFAULT NULL,
-  `id_organisation` int(11) NOT NULL
+  `id_organisation` int(11) NOT NULL,
+  `type_evenement` enum('gratuit','payant') NOT NULL DEFAULT 'gratuit',
+  `prix` decimal(10,2) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -48,7 +52,11 @@ CREATE TABLE `participation` (
   `id_evenement` int(11) NOT NULL,
   `id_volontaire` int(11) NOT NULL,
   `date_participation` date DEFAULT curdate(),
-  `statut` enum('en attente','acceptée','refusée') DEFAULT 'en attente'
+  `statut` enum('en attente','acceptée','refusée') DEFAULT 'en attente',
+  `quantite` int(11) NOT NULL DEFAULT 1,
+  `montant_total` decimal(10,2) DEFAULT NULL,
+  `mode_paiement` varchar(50) DEFAULT NULL,
+  `reference_paiement` varchar(100) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --

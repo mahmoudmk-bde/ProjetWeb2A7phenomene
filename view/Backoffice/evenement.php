@@ -55,7 +55,7 @@ $events = $eventModel->getAllEvents();
                                             <th>Titre</th>
                                             <th>Date</th>
                                             <th>Lieu</th>
-                                            <th>Organisation</th>
+                                            <th>Thème</th>
                                             <th>Participants</th>
                                             <th>Actions</th>
                                         </tr>

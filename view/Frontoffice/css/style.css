@@ -1,4 +1,4 @@
-/**************** extend css start ****************/
+/** ************ extend css start ************ */
 @import url("https://fonts.googleapis.com/css?family=Aclonica|Poppins:300,400,500,600&display=swap");
 /* line 2, ../../01 cl html template/03_jun 2019/186_Gaiming_html/sass/_extends.scss */
 .btn_1, .live_stareams .live_stareams_slide .live_stareams_slide_img:after, .Latest_War .Latest_War_text:after, .gallery_part .single_gallery_item .single_gallery_item_iner:after, .footer_part .single_footer_part .mail_part .email_icon {
@@ -6,6 +6,123 @@
   background-image: -webkit-linear-gradient(right, #ff0000 0%, #c6019a 51%, #ff0000 100%);
   background-image: -o-linear-gradient(right, #ff0000 0%, #c6019a 51%, #ff0000 100%);
   background-image: linear-gradient(to left, #ff0000 0%, #c6019a 51%, #ff0000 100%);
+}
+
+/* --------- Custom event styling (cards & pricing) --------- */
+.event-card-modern {
+  border-radius: 14px;
+  overflow: hidden;
+  background: #0f1014;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.55);
+}
+
+.event-card-modern .card-body {
+  padding: 18px 20px 20px;
+}
+
+.event-card-image-wrapper {
+  position: relative;
+  overflow: hidden;
+}
+
+.event-card-img {
+  max-height: 230px;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.event-card-modern:hover .event-card-img {
+  transform: scale(1.04);
+}
+
+.event-price-badge {
+  position: absolute;
+  right: 18px;
+  bottom: 16px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-family: "Poppins", sans-serif;
+  font-size: 12px;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.45);
+}
+
+.event-price-badge.paid {
+  background: #ff0062;
+  color: #fff;
+}
+
+.event-price-badge.free {
+  background: #1cbf6a;
+  color: #fff;
+}
+
+.event-price-badge .price-value {
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.event-price-badge .price-currency {
+  font-size: 11px;
+  text-transform: uppercase;
+  opacity: 0.9;
+}
+
+.event-price-badge .price-free {
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.event-card-desc {
+  color: #c4c7d1 !important;
+  font-size: 13px;
+}
+
+.participants-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+  font-size: 13px;
+}
+
+.participants-big .participants-badge {
+  min-width: 44px;
+  height: 44px;
+  font-size: 15px;
+}
+
+.btn-event-details {
+  padding: 8px 18px;
+  font-size: 13px;
+}
+
+.event-detail-price-badge {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-family: "Poppins", sans-serif;
+  font-size: 13px;
+}
+
+.event-detail-price-badge.paid {
+  background: #ff0062;
+  color: #fff;
+}
+
+.event-detail-price-badge.free {
+  background: #1cbf6a;
+  color: #fff;
 }
 
 /* line 8, ../../01 cl html template/03_jun 2019/186_Gaiming_html/sass/_extends.scss */

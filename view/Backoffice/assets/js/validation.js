@@ -37,7 +37,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (!lieu || !lieu.value.trim()) errors.push('Le lieu est requis.');
 
-        if (!org || !org.value) errors.push('Veuillez sélectionner l\'organisation.');
+        if (!org || !org.value) errors.push('Veuillez sélectionner le thème.');
 
         if (image && image.files && image.files.length > 0) {
             const file = image.files[0];

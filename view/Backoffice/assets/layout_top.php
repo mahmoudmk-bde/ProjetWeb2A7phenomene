@@ -100,6 +100,9 @@
                 <a href="evenement.php"><i class="fas fa-calendar-alt"></i> Événements</a>
             </li>
             <li>
+                <a href="participation_history.php"><i class="fas fa-history"></i> Historique participants</a>
+            </li>
+            <li>
                 <a href="#"><i class="fas fa-graduation-cap"></i> Contenu Éducatif</a>
             </li>
             <li>

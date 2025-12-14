@@ -15,6 +15,7 @@
     <link rel="stylesheet" href="css/magnific-popup.css">
     <link rel="stylesheet" href="css/slick.css">
     <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/event-custom.css">
 </head>
 
 <body>
@@ -71,6 +72,9 @@
                                     </li>
                                     <li class="nav-item">
                                         <a class="nav-link" href="event.php">Evénement</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="my_events.php">Mes événements</a>
                                     </li>
                                 </ul>
                             </div>

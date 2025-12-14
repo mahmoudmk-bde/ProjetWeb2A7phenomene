@@ -9,8 +9,7 @@ $eventModel = new EvenementModel();
 function normalize_backoffice_image($path) {
     if (empty($path)) return '';
     if (preg_match('#^https?://#i', $path)) return $path;
-    if ($path[0] === '/') return $path;
-    return '/gamingroom/' . ltrim($path, '/');
+    return normalize_asset_path($path, '');
 }
 
 // Get event ID from URL or POST
@@ -36,8 +35,15 @@ if ($_POST) {
     $titre = secure_data($_POST['titre']);
     $description = secure_data($_POST['description']);
     $date_evenement = $_POST['date_evenement'];
+    $heure_evenement = isset($_POST['heure_evenement']) && $_POST['heure_evenement'] !== '' ? $_POST['heure_evenement'] : null;
+    $duree_minutes = isset($_POST['duree_minutes']) && $_POST['duree_minutes'] !== '' ? (int) $_POST['duree_minutes'] : null;
     $lieu = secure_data($_POST['lieu']);
     $id_organisation = $_POST['id_organisation'];
+    $type_evenement = isset($_POST['type_evenement']) && $_POST['type_evenement'] === 'payant' ? 'payant' : 'gratuit';
+    $prix = null;
+    if ($type_evenement === 'payant' && isset($_POST['prix']) && $_POST['prix'] !== '') {
+        $prix = (float) $_POST['prix'];
+    }
     
     // Image handling
     $image = $eventData['image']; // Current image by default
@@ -52,13 +58,12 @@ if ($_POST) {
         $uploadFile = $uploadDir . $fileName;
         
         if (move_uploaded_file($_FILES['image']['tmp_name'], $uploadFile)) {
-            // Save a web-root relative path so Frontoffice can access the same image
-            $image = '/gamingroom/uploads/events/' . $fileName;
+            $image = 'uploads/events/' . $fileName;
         }
     }
     
     // Update 
-    if ($eventModel->update($id, $titre, $description, $date_evenement, $lieu, $image, $id_organisation)) {
+    if ($eventModel->update($id, $titre, $description, $date_evenement, $heure_evenement, $duree_minutes, $lieu, $image, $id_organisation, $type_evenement, $prix)) {
         $_SESSION['success'] = "Événement modifié avec succès!";
         header('Location: editevent.php?id=' . $id . '&success=1');
         exit;
@@ -109,20 +114,51 @@ if ($_POST) {
                                     <input type="date" class="form-control" id="date_evenement" name="date_evenement" 
                                            value="<?= $eventData['date_evenement'] ?>">
                                 </div>
-                                
+
+                                <div class="mb-3">
+                                    <label for="heure_evenement" class="form-label">Heure de l'événement</label>
+                                    <input type="time" class="form-control" id="heure_evenement" name="heure_evenement" 
+                                           value="<?= htmlspecialchars($eventData['heure_evenement'] ?? '') ?>">
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="duree_minutes" class="form-label">Durée (minutes)</label>
+                                    <input type="number" min="15" step="5" class="form-control" id="duree_minutes" name="duree_minutes" 
+                                           value="<?= htmlspecialchars($eventData['duree_minutes'] ?? '') ?>" placeholder="Ex: 90">
+                                </div>
+
                                 <div class="mb-3">
                                     <label for="lieu" class="form-label">Lieu *</label>
                                     <input type="text" class="form-control" id="lieu" name="lieu" 
                                            value="<?= htmlspecialchars($eventData['lieu']) ?>">
                                 </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Type d'événement *</label>
+                                    <select class="form-control" id="type_evenement" name="type_evenement">
+                                        <option value="gratuit" <?= (isset($eventData['type_evenement']) && $eventData['type_evenement'] === 'gratuit') ? 'selected' : '' ?>>Gratuit</option>
+                                        <option value="payant" <?= (isset($eventData['type_evenement']) && $eventData['type_evenement'] === 'payant') ? 'selected' : '' ?>>Payant</option>
+                                    </select>
+                                </div>
+
+                                <div class="mb-3" id="prix_wrapper">
+                                    <label for="prix" class="form-label">Prix (TND)</label>
+                                    <input type="number" min="0" step="0.1" class="form-control" id="prix" name="prix"
+                                           value="<?= isset($eventData['prix']) ? htmlspecialchars($eventData['prix']) : '' ?>" placeholder="Ex: 10">
+                                    <div class="form-text">Laissez vide ou 0 pour un événement gratuit.</div>
+                                </div>
                                 
                                 <div class="mb-3">
-                                    <label for="id_organisation" class="form-label">Organisation *</label>
+                                    <label for="id_organisation" class="form-label">Thème *</label>
                                     <select class="form-control" id="id_organisation" name="id_organisation">
-                                        <option value="">Sélectionnez une organisation</option>
-                                        <option value="1" <?= $eventData['id_organisation'] == 1 ? 'selected' : '' ?>>Association Gaming Solidarité</option>
-                                        <option value="2" <?= $eventData['id_organisation'] == 2 ? 'selected' : '' ?>>Hôpital des Jeunes</option>
-                                        <option value="3" <?= $eventData['id_organisation'] == 3 ? 'selected' : '' ?>>École du Gaming</option>
+                                        <option value="">Sélectionnez un thème</option>
+                                        <option value="1" <?= $eventData['id_organisation'] == 1 ? 'selected' : '' ?>>Sport</option>
+                                        <option value="2" <?= $eventData['id_organisation'] == 2 ? 'selected' : '' ?>>Éducation</option>
+                                        <option value="3" <?= $eventData['id_organisation'] == 3 ? 'selected' : '' ?>>Esport</option>
+                                        <option value="4" <?= $eventData['id_organisation'] == 4 ? 'selected' : '' ?>>Création</option>
+                                        <option value="5" <?= $eventData['id_organisation'] == 5 ? 'selected' : '' ?>>Prévention</option>
+                                        <option value="6" <?= $eventData['id_organisation'] == 6 ? 'selected' : '' ?>>Coaching</option>
+                                        <option value="7" <?= $eventData['id_organisation'] == 7 ? 'selected' : '' ?>>Compétition</option>
                                     </select>
                                 </div>
                                 

@@ -9,7 +9,7 @@ class ParticipationModel {
         $this->conn = $database->getConnection();
     }
 
-    public function create($id_evenement, $id_volontaire, $date_participation, $statut) {
+    public function create($id_evenement, $id_volontaire, $date_participation, $statut, $quantite = 1, $montant_total = null, $mode_paiement = null, $reference_paiement = null) {
         // Vérifier si déjà inscrit
         $checkQuery = "SELECT id_participation FROM participation 
                       WHERE id_evenement = :id_evenement AND id_volontaire = :id_volontaire";
@@ -24,8 +24,8 @@ class ParticipationModel {
             return false; // Déjà inscrit
         }
 
-        $query = "INSERT INTO participation (id_evenement, id_volontaire, date_participation, statut) 
-                  VALUES (:id_evenement, :id_volontaire, :date_participation, :statut)";
+        $query = "INSERT INTO participation (id_evenement, id_volontaire, date_participation, statut, quantite, montant_total, mode_paiement, reference_paiement) 
+                  VALUES (:id_evenement, :id_volontaire, :date_participation, :statut, :quantite, :montant_total, :mode_paiement, :reference_paiement)";
         
         $stmt = $this->conn->prepare($query);
         
@@ -33,7 +33,11 @@ class ParticipationModel {
             ':id_evenement' => $id_evenement,
             ':id_volontaire' => $id_volontaire,
             ':date_participation' => $date_participation,
-            ':statut' => $statut
+            ':statut' => $statut,
+            ':quantite' => $quantite,
+            ':montant_total' => $montant_total,
+            ':mode_paiement' => $mode_paiement,
+            ':reference_paiement' => $reference_paiement
         ]);
     }
 
@@ -88,7 +92,7 @@ class ParticipationModel {
     }
 
     public function getUserParticipations($user_id) {
-        $query = "SELECT p.*, e.titre, e.description, e.date_evenement, e.lieu, e.image 
+        $query = "SELECT p.*, e.titre, e.description, e.date_evenement, e.heure_evenement, e.duree_minutes, e.lieu, e.image, e.prix, e.type_evenement, e.id_organisation 
                   FROM participation p 
                   JOIN evenement e ON p.id_evenement = e.id_evenement 
                   WHERE p.id_volontaire = :user_id 
@@ -97,6 +101,19 @@ class ParticipationModel {
         $stmt = $this->conn->prepare($query);
         $stmt->execute([':user_id' => $user_id]);
         
+        return $stmt->fetchAll();
+    }
+
+    public function getAllParticipationsWithUsers() {
+        $query = "SELECT p.*, e.titre, e.date_evenement, e.heure_evenement, e.duree_minutes, e.lieu, u.nom, u.prenom, u.email, e.type_evenement, e.prix
+                  FROM participation p
+                  JOIN evenement e ON p.id_evenement = e.id_evenement
+                  JOIN utilisateur u ON p.id_volontaire = u.id_utilisateur
+                  ORDER BY p.date_participation DESC";
+
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+
         return $stmt->fetchAll();
     }
 

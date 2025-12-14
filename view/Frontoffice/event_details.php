@@ -1,36 +1,68 @@
 <?php
 require_once __DIR__ . '/../../model/evenementModel.php';
 require_once __DIR__ . '/../../model/participationModel.php';
+require_once __DIR__ . '/../../config.php';
+
 if (session_status() === PHP_SESSION_NONE) session_start();
 
 $eventModel = new EvenementModel();
 $participationModel = new ParticipationModel();
 
-$message = '';
+$themeMap = [
+    1 => 'Sport',
+    2 => 'Éducation',
+    3 => 'Esport',
+    4 => 'Création',
+    5 => 'Prévention',
+    6 => 'Coaching',
+    7 => 'Compétition'
+];
 
+function theme_label($id, $map) {
+    return $map[$id] ?? 'Thématique';
+}
+
+function normalize_event_image($img) {
+    return normalize_asset_path($img);
+}
+
+$message = '';
+$alertType = 'info';
 $event_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+
 if ($event_id <= 0) {
-    $message = 'Invalid event ID.';
+    $message = 'Identifiant d’événement invalide.';
 } else {
     $event = $eventModel->getById($event_id);
     if (!$event) {
-        $message = 'Event not found.';
+        $message = 'Événement introuvable.';
     }
 }
 
-// Handle participation POST
-// Handle guest participation POST (form with name/email)
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'guest_participate' && isset($event) && $event) {
-    require_once __DIR__ . '/../../config.php';
-    $prenom = isset($_POST['prenom']) ? secure_data($_POST['prenom']) : '';
-    $nom = isset($_POST['nom']) ? secure_data($_POST['nom']) : '';
+if (isset($event)) {
+    $participants = $participationModel->getEventParticipants($event_id);
+    $isRegistered = isset($_SESSION['user_id']) ? $participationModel->isUserRegistered($_SESSION['user_id'], $event_id) : false;
+    $price = isset($event['prix']) ? (float)$event['prix'] : 0;
+    $isPaidEvent = ($event['type_evenement'] === 'payant') && $price > 0;
+} else {
+    $participants = [];
+    $isRegistered = false;
+    $price = 0;
+    $isPaidEvent = false;
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && isset($event) && $event) {
+    $action = $_POST['action'];
+
+    if ($action === 'guest_participate') {
+        $prenom = secure_data($_POST['prenom'] ?? '');
+        $nom = secure_data($_POST['nom'] ?? '');
     $email = isset($_POST['email']) ? filter_var($_POST['email'], FILTER_SANITIZE_EMAIL) : '';
 
-    // Basic server-side validation
     if (empty($prenom) || empty($nom) || empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $message = 'Please provide a valid first name, last name and email.';
+            $message = 'Veuillez fournir un prénom, un nom et un email valides.';
+            $alertType = 'danger';
     } else {
-        // Find or create user by email
         $db = (new Database())->getConnection();
         try {
             $stmt = $db->prepare('SELECT id_utilisateur FROM utilisateur WHERE email = :email LIMIT 1');
@@ -44,63 +76,118 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 $user_id = (int)$db->lastInsertId();
             }
 
-            // Check registration and create participation
             if ($participationModel->isUserRegistered($user_id, $event_id)) {
-                $message = 'You are already registered for this event.';
+                    $message = 'Vous êtes déjà inscrit à cet événement.';
+                    $alertType = 'warning';
             } else {
                 $created = $participationModel->create($event_id, $user_id, date('Y-m-d'), 'en attente');
                 if ($created) {
-                    $message = 'Your participation was recorded and is pending approval.';
-                    // Optionally set session user to help UX
                     $_SESSION['user_id'] = $user_id;
+                        $message = 'Votre demande a été enregistrée et est en attente de validation.';
+                        $alertType = 'success';
                 } else {
-                    $message = 'Could not register for the event (maybe already registered).';
+                        $message = 'Impossible d’enregistrer la participation.';
+                        $alertType = 'danger';
+                    }
                 }
+            } catch (Exception $e) {
+                $message = 'Erreur lors de l’enregistrement : ' . $e->getMessage();
+                $alertType = 'danger';
             }
-        } catch (Exception $e) {
-            $message = 'An error occurred while registering: ' . $e->getMessage();
         }
-    }
+    } elseif ($action === 'pay_and_participate') {
+        if (!$isPaidEvent) {
+            $message = 'Cet événement ne nécessite pas de paiement.';
+            $alertType = 'warning';
+        } else {
+            $prenom = secure_data($_POST['prenom'] ?? '');
+            $nom = secure_data($_POST['nom'] ?? '');
+            $email = isset($_POST['email']) ? filter_var($_POST['email'], FILTER_SANITIZE_EMAIL) : '';
+            $quantite = isset($_POST['quantite']) ? (int) $_POST['quantite'] : 1;
+            $quantite = max(1, $quantite);
+            $cardNumber = preg_replace('/\D+/', '', $_POST['card_number'] ?? '');
+            $cardExp = strtoupper(trim($_POST['card_exp'] ?? ''));
+            $cardCvv = preg_replace('/\D+/', '', $_POST['card_cvv'] ?? '');
 
-    // Refresh participants/isRegistered info after POST (guest flow)
-    $isRegistered = isset($user_id) ? $participationModel->isUserRegistered($user_id, $event_id) : false;
-    $participants = $participationModel->getEventParticipants($event_id);
+            $expiryValid = false;
+            if (preg_match('/^(0[1-9]|1[0-2])\/(\d{2})$/', $cardExp, $match)) {
+                $month = (int)$match[1];
+                $year = (int)$match[2] + 2000;
+                $expiryDate = DateTime::createFromFormat('Y-m', sprintf('%04d-%02d', $year, $month));
+                $expiryValid = $expiryDate && $expiryDate >= new DateTime('first day of this month');
+            }
 
-} elseif ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['participate']) && isset($event) && $event) {
-    if (!isset($_SESSION['user_id'])) {
-        $_SESSION['user_id'] = 1; // simulate user
-    }
-    $user_id = $_SESSION['user_id'];
+            if (empty($prenom) || empty($nom) || empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                $message = 'Veuillez renseigner vos informations personnelles.';
+                $alertType = 'danger';
+            } elseif (strlen($cardNumber) < 13 || strlen($cardNumber) > 19) {
+                $message = 'Le numéro de carte doit contenir entre 13 et 19 chiffres.';
+                $alertType = 'danger';
+            } elseif (!$expiryValid) {
+                $message = 'La date d\'expiration n\'est pas valide (format MM/AA, carte non expirée).';
+                $alertType = 'danger';
+            } elseif (strlen($cardCvv) < 3 || strlen($cardCvv) > 4) {
+                $message = 'Le CVV doit contenir 3 ou 4 chiffres.';
+                $alertType = 'danger';
+            } else {
+                $db = (new Database())->getConnection();
+                try {
+                    $stmt = $db->prepare('SELECT id_utilisateur FROM utilisateur WHERE email = :email LIMIT 1');
+                    $stmt->execute([':email' => $email]);
+                    $row = $stmt->fetch();
+                    if ($row && isset($row['id_utilisateur'])) {
+                        $user_id = (int)$row['id_utilisateur'];
+                    } else {
+                        $ins = $db->prepare('INSERT INTO utilisateur (nom, prenom, email) VALUES (:nom, :prenom, :email)');
+                        $ins->execute([':nom' => $nom, ':prenom' => $prenom, ':email' => $email]);
+                        $user_id = (int)$db->lastInsertId();
+                    }
 
     if ($participationModel->isUserRegistered($user_id, $event_id)) {
-        $message = 'You are already registered for this event.';
+                        $message = 'Vous êtes déjà inscrit à cet événement.';
+                        $alertType = 'warning';
     } else {
-        $created = $participationModel->create($event_id, $user_id, date('Y-m-d'), 'en attente');
+                        $reference = 'PAY-' . strtoupper(substr(md5(uniqid('', true)), 0, 8));
+                        $montant_total = $quantite * $price;
+                        $created = $participationModel->create(
+                            $event_id,
+                            $user_id,
+                            date('Y-m-d'),
+                            'acceptée',
+                            $quantite,
+                            $montant_total,
+                            'Carte bancaire',
+                            $reference
+                        );
+
         if ($created) {
-            $message = 'Your participation was recorded and is pending approval.';
+                            $_SESSION['user_id'] = $user_id;
+                            $message = 'Paiement confirmé ! Votre place est maintenant réservée.';
+                            $alertType = 'success';
         } else {
-            $message = 'Could not register for the event (maybe already registered).';
+                            $message = 'Une erreur est survenue lors du paiement.';
+                            $alertType = 'danger';
+                        }
+                    }
+                } catch (Exception $e) {
+                    $message = 'Erreur de paiement : ' . $e->getMessage();
+                    $alertType = 'danger';
+                }
+            }
         }
     }
 
-    // Refresh participants/isRegistered info after POST
-    $isRegistered = $participationModel->isUserRegistered($user_id, $event_id);
-    $participants = $participationModel->getEventParticipants($event_id);
-} else {
-    // initial page load
-    if (isset($event)) {
         $participants = $participationModel->getEventParticipants($event_id);
         $isRegistered = isset($_SESSION['user_id']) ? $participationModel->isUserRegistered($_SESSION['user_id'], $event_id) : false;
-    }
 }
 ?>
 <!doctype html>
-<html lang="zxx">
+<html lang="fr">
 
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title><?php echo isset($event) ? htmlspecialchars($event['titre']) : 'Event'; ?> - gaming</title>
+    <title><?= isset($event) ? htmlspecialchars($event['titre']) : 'Event'; ?> - gaming</title>
     <link rel="icon" href="img/favicon.png">
     <link rel="stylesheet" href="css/bootstrap.min.css">
     <link rel="stylesheet" href="css/animate.css">
@@ -111,6 +198,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     <link rel="stylesheet" href="css/magnific-popup.css">
     <link rel="stylesheet" href="css/slick.css">
     <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/event-custom.css">
 </head>
 
 <body>
@@ -168,23 +256,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                                     <li class="nav-item">
                                         <a class="nav-link" href="event.php">Evénement</a>
                                     </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="my_events.php">Mes événements</a>
+                                    </li>
                                 </ul>
                             </div>
-                            <a href="#" class="btn_1 d-none d-sm-block">Install Now</a>
+                            <a href="event.php" class="btn_1 d-none d-sm-block">Tous les événements</a>
                         </nav>
                     </div>
                 </div>
             </div>
         </header>
 
-        <section class="banner_part">
+        <section class="profile-header">
             <div class="container">
                 <div class="row align-items-center justify-content-between">
                     <div class="col-lg-8">
                         <div class="banner_text">
                             <div class="banner_text_iner">
-                                <h1><?php echo isset($event) ? htmlspecialchars($event['titre']) : 'Event'; ?></h1>
-                                <p><?php echo isset($event) ? htmlspecialchars($event['lieu']) : ''; ?></p>
+                                <h1><?= isset($event) ? htmlspecialchars($event['titre']) : 'Event'; ?></h1>
+                                <p><?= isset($event) ? htmlspecialchars($event['lieu']) : ''; ?></p>
                             </div>
                         </div>
                     </div>
@@ -197,7 +288,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 <?php if ($message): ?>
                     <div class="row mb-3">
                         <div class="col-12">
-                            <div class="alert alert-info"><?php echo htmlspecialchars($message); ?></div>
+                            <div class="alert alert-<?= htmlspecialchars($alertType) ?>"><?= htmlspecialchars($message) ?></div>
                         </div>
                     </div>
                 <?php endif; ?>
@@ -205,82 +296,128 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 <?php if (isset($event) && $event): ?>
                 <div class="row">
                     <?php
-                        function normalize_event_image($img) {
-                            $default = 'img/favicon.png';
-                            if (empty($img)) return $default;
-                            $img = trim($img);
-                            if (stripos($img, 'http://') === 0 || stripos($img, 'https://') === 0) return $img;
-                            if (strpos($img, '/gamingroom/uploads/events/') === 0) return $img;
-                            if (strpos($img, '/uploads/events/') === 0) return '/gamingroom' . $img;
-                            if (strpos($img, 'uploads/events/') === 0) return '/gamingroom/' . $img;
-                            if (strpos($img, '/') === 0) return $img;
-                            return $img;
-                        }
-                        $img = normalize_event_image(!empty($event['image']) ? $event['image'] : null);
+                        $img = normalize_event_image($event['image'] ?? null);
+                        $accepted_count = (int) $eventModel->countParticipants($event_id);
+                        $heure = !empty($event['heure_evenement']) ? substr($event['heure_evenement'], 0, 5) : '--:--';
                     ?>
-                    <div class="col-md-6">
-                        <div class="event-hero">
-                            <img src="<?= htmlspecialchars($img) ?>" alt="<?= htmlspecialchars($event['titre']) ?>" class="event-hero-img">
-                            <div class="event-hero-overlay">
-                                <div class="event-hero-text">
-                                    <h1><?= htmlspecialchars($event['titre']) ?></h1>
-                                    <p class="text-light small"><?= !empty($event['date_evenement']) ? date('F j, Y', strtotime($event['date_evenement'])) : ''; ?> • <?= htmlspecialchars($event['lieu']) ?></p>
+                    <div class="col-lg-7">
+                        <div class="game-detail-card mb-4">
+                            <img src="<?= htmlspecialchars($img) ?>" alt="<?= htmlspecialchars($event['titre']) ?>" class="game-main-image img-fluid mb-3">
+                            <div class="info-grid">
+                                <div class="info-item">
+                                    <i class="far fa-calendar-alt"></i>
+                                    <div>
+                                        <div class="info-label">Date</div>
+                                        <strong><?= !empty($event['date_evenement']) ? date('d M Y', strtotime($event['date_evenement'])) : 'À confirmer' ?></strong>
+                                    </div>
+                                </div>
+                                <div class="info-item">
+                                    <i class="far fa-clock"></i>
+                                    <div>
+                                        <div class="info-label">Heure</div>
+                                        <strong><?= $heure ?></strong>
+                                    </div>
+                                </div>
+                                <div class="info-item">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    <div>
+                                        <div class="info-label">Lieu</div>
+                                        <strong><?= htmlspecialchars($event['lieu']) ?></strong>
+                                    </div>
+                                </div>
+                                <div class="info-item">
+                                    <i class="fas fa-stream"></i>
+                                    <div>
+                                        <div class="info-label">Thème</div>
+                                        <strong><?= theme_label($event['id_organisation'], $themeMap) ?></strong>
+                                    </div>
                                 </div>
                             </div>
+                            <p class="description-text mt-3"><?= nl2br(htmlspecialchars($event['description'])) ?></p>
+                        </div>
+
+                        <div class="game-detail-card">
+                            <div class="card-header bg-transparent border-0 px-0">
+                                <h4 class="text-white mb-3">Participants (acceptés)</h4>
+                            </div>
+                            <?php if (!empty($participants)): ?>
+                                <div class="list-group list-group-flush mt-2">
+                                    <?php foreach ($participants as $p): ?>
+                                        <div class="list-group-item bg-transparent text-light px-0 py-2">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <div class="font-weight-bold"><?= htmlspecialchars($p['prenom'] . ' ' . $p['nom']) ?></div>
+                                                    <div class="small text-muted"><?= htmlspecialchars($p['email']) ?></div>
+                                                </div>
+                                                <div class="small text-muted"><?= !empty($p['gamer_tag']) ? htmlspecialchars($p['gamer_tag']) : '-' ?></div>
+                                            </div>
+                                        </div>
+                                    <?php endforeach; ?>
+                                </div>
+                            <?php else: ?>
+                                <div class="text-muted">Aucun participant pour le moment.</div>
+                            <?php endif; ?>
                         </div>
                     </div>
-                    <div class="col-md-6">
-                        <div class="event-details card event-card">
-                            <div class="card-body">
-                                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div class="col-lg-5">
+                        <div class="ticket-card mb-4">
+                            <div class="ticket-card-header">
+                                <div>
+                                    <h4>Billetterie</h4>
+                                    <p><?= $isPaidEvent ? 'Réservez votre place en ligne' : 'Participation gratuite' ?></p>
+                                </div>
+                                <span class="badge <?= $isPaidEvent ? 'badge-paid' : 'badge-free' ?>">
+                                    <?= $isPaidEvent ? number_format($price, 0) . ' TND' : 'Gratuit' ?>
+                                </span>
+                            </div>
+                            <div class="ticket-card-body">
+                                <div class="ticket-info">
                                     <div>
-                                        <h3 class="mb-1"><?= htmlspecialchars($event['titre']); ?></h3>
-                                        <p class="text-muted mb-0 small"><?= !empty($event['date_evenement']) ? date('F j, Y', strtotime($event['date_evenement'])) : ''; ?> — <?= htmlspecialchars($event['lieu']); ?></p>
+                                        <div class="ticket-label">Date</div>
+                                        <strong><?= !empty($event['date_evenement']) ? date('d/m/Y', strtotime($event['date_evenement'])) : 'À venir' ?></strong>
                                     </div>
-                                    <div class="text-right">
-                                        <?php $accepted_count = (int) $eventModel->countParticipants($event_id); ?>
-                                        <div class="participants-big"><span class="participants-badge"><?= $accepted_count ?></span><div class="small text-muted">accepted</div></div>
+                                    <div>
+                                        <div class="ticket-label">Heure</div>
+                                        <strong><?= $heure ?></strong>
+                                    </div>
+                                    <div>
+                                        <div class="ticket-label">Participants</div>
+                                        <strong><?= $accepted_count ?></strong>
                                     </div>
                                 </div>
-                                <?php if (isset($isRegistered) && $isRegistered): ?>
-                                    <div class="alert alert-success">You are registered for this event.</div>
-                                <?php else: ?>
-                                    <div id="participant-errors"></div>
-                                    <div class="mb-3">
-                                        <button type="button" class="btn_1 register-btn" data-toggle="modal" data-target="#participateModal" style="font-size:1.05rem; padding:12px 24px;">Participate</button>
-                                        <small class="text-muted d-block mt-2">You will receive a confirmation email after approval.</small>
-                                    </div>
-                                <?php endif; ?>
-
-                                <div class="mb-3 description-text" style="margin-top:6px;"><?= nl2br(htmlspecialchars($event['description'])); ?></div>
-
-                                <div class="mt-3">
-                                    <strong>Participants (accepted):</strong>
-                                    <?php if (!empty($participants)): ?>
-                                        <div class="list-group list-group-flush mt-2">
-                                            <?php foreach ($participants as $p): ?>
-                                            <div class="list-group-item bg-transparent text-light px-0 py-2">
-                                                <div class="d-flex justify-content-between align-items-center">
-                                                    <div>
-                                                        <div class="font-weight-bold"><?php echo htmlspecialchars($p['prenom'] . ' ' . $p['nom']); ?></div>
-                                                        <div class="small text-muted"><?php echo htmlspecialchars($p['email']); ?></div>
-                                                    </div>
-                                                    <div class="small text-muted"><?php echo !empty($p['gamer_tag']) ? htmlspecialchars($p['gamer_tag']) : '-'; ?></div>
-                                                </div>
+                                <?php if (!$isRegistered): ?>
+                                    <?php if ($isPaidEvent): ?>
+                                        <div class="quantity-wrapper">
+                                            <label>Nombre de billets</label>
+                                            <div class="quantity-control">
+                                                <button class="quantity-btn" type="button" data-direction="down">-</button>
+                                                <input type="number" id="ticketQuantity" value="1" min="1">
+                                                <button class="quantity-btn" type="button" data-direction="up">+</button>
                                             </div>
-                                            <?php endforeach; ?>
                                         </div>
+                                        <div class="ticket-total">
+                                            <span>Total</span>
+                                            <strong id="ticketTotal"><?= number_format($price, 2) ?> TND</strong>
+                                        </div>
+                                        <button type="button" class="btn-buy-now mt-3" data-toggle="modal" data-target="#paymentModal">Payer maintenant</button>
                                     <?php else: ?>
-                                        <div class="mt-2 text-muted">Aucun participant pour le moment.</div>
+                                        <button type="button" class="btn-buy-now mt-3" data-toggle="modal" data-target="#participateModal">
+                                            Participer gratuitement
+                                        </button>
                                     <?php endif; ?>
-                                </div>
+                                    <small class="text-muted d-block mt-2">Vous recevrez un email de confirmation.</small>
+                                <?php else: ?>
+                                    <div class="alert alert-success mt-3 mb-0">Vous êtes inscrit à cet événement.</div>
+                                <?php endif; ?>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <?php else: ?>
                     <div class="row">
                         <div class="col-12">
                             <div class="single_war_text text-center">
-                                <h4><?php echo htmlspecialchars($message ?: 'Event not found'); ?></h4>
+                                <h4><?= htmlspecialchars($message ?: 'Event not found'); ?></h4>
                             </div>
                         </div>
                     </div>
@@ -288,7 +425,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             </div>
         </section>
 
-        <!--::footer_part start::-->
         <footer class="footer_part">
             <div class="footer_top">
                 <div class="container">
@@ -354,26 +490,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 </div>
             </div>
         </footer>
-        <!--::footer_part end::-->
     </div>
 
-
-    <!-- jquery plugins here-->
     <script src="js/jquery-1.12.1.min.js"></script>
-    <!-- popper js -->
     <script src="js/popper.min.js"></script>
-    <!-- bootstrap js -->
     <script src="js/bootstrap.min.js"></script>
-    <!-- easing js -->
     <script src="js/jquery.magnific-popup.js"></script>
-    <!-- swiper js -->
     <script src="js/swiper.min.js"></script>
-    <!-- swiper js -->
     <script src="js/masonry.pkgd.js"></script>
-    <!-- particles js -->
     <script src="js/owl.carousel.min.js"></script>
     <script src="js/jquery.nice-select.min.js"></script>
-    <!-- slick js -->
     <script src="js/slick.min.js"></script>
     <script src="js/jquery.counterup.min.js"></script>
     <script src="js/waypoints.min.js"></script>
@@ -383,42 +509,182 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     <script src="js/jquery.validate.min.js"></script>
     <script src="js/mail-script.js"></script>
     <script src="js/participant_validate.js"></script>
-    <!-- custom js -->
     <script src="js/custom.js"></script>
-        <!-- Participation Modal -->
-        <div class="modal fade" id="participateModal" tabindex="-1" role="dialog" aria-labelledby="participateModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="participateModalLabel">Participate to <?= htmlspecialchars($event['titre'] ?? 'this event') ?></h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                    <div class="modal-body">
-                        <form method="post" id="participant-modal-form" novalidate>
-                            <input type="hidden" name="action" value="guest_participate">
-                            <div id="participant-errors-modal"></div>
-                            <div class="form-group">
-                                <label for="modal_prenom">Prénom</label>
-                                <input type="text" name="prenom" id="modal_prenom" class="form-control" placeholder="Prénom" style="font-size:1.05rem;">
-                            </div>
-                            <div class="form-group">
-                                <label for="modal_nom">Nom</label>
-                                <input type="text" name="nom" id="modal_nom" class="form-control" placeholder="Nom" style="font-size:1.05rem;">
-                            </div>
-                            <div class="form-group">
-                                <label for="modal_email">Email</label>
-                                <input type="email" name="email" id="modal_email" class="form-control" placeholder="email@example.com" style="font-size:1.05rem;">
-                            </div>
-                            <div class="text-right">
-                                <button type="submit" class="btn_1 register-btn">Submit</button>
-                            </div>
-                        </form>
-                    </div>
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const quantityInput = document.getElementById('ticketQuantity');
+        const quantityButtons = document.querySelectorAll('.quantity-btn');
+        const totalLabel = document.getElementById('ticketTotal');
+        const hiddenQuantity = document.getElementById('paymentQuantity');
+        const summary = document.getElementById('paymentSummary');
+        const ticketPrice = parseFloat(<?= json_encode($price) ?>) || 0;
+        const paymentForm = document.getElementById('payment-form');
+        const paymentErrors = document.getElementById('payment-errors');
+
+        function updateTotals() {
+            if (!quantityInput) return;
+            let qty = parseInt(quantityInput.value, 10);
+            if (isNaN(qty) || qty < 1) qty = 1;
+            quantityInput.value = qty;
+            if (hiddenQuantity) hiddenQuantity.value = qty;
+            const total = (qty * ticketPrice).toFixed(2) + ' TND';
+            if (totalLabel) totalLabel.textContent = total;
+            if (summary) summary.innerHTML = 'Total: <strong>' + total + '</strong>';
+        }
+
+        if (quantityButtons.length && quantityInput) {
+            quantityButtons.forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    const direction = btn.dataset.direction;
+                    let value = parseInt(quantityInput.value, 10) || 1;
+                    if (direction === 'up') value += 1;
+                    if (direction === 'down') value = Math.max(1, value - 1);
+                    quantityInput.value = value;
+                    updateTotals();
+                });
+            });
+            quantityInput.addEventListener('input', updateTotals);
+            updateTotals();
+        }
+
+        $('#paymentModal').on('shown.bs.modal', function () {
+            updateTotals();
+            if (paymentErrors) {
+                paymentErrors.classList.add('d-none');
+                paymentErrors.innerHTML = '';
+            }
+        });
+
+        if (paymentForm) {
+            paymentForm.addEventListener('submit', function (e) {
+                const errors = [];
+                const prenom = paymentForm.pay_prenom.value.trim();
+                const nom = paymentForm.pay_nom.value.trim();
+                const email = paymentForm.pay_email.value.trim();
+                const cardNumber = paymentForm.card_number.value.replace(/\D+/g, '');
+                const cardExp = paymentForm.card_exp.value.trim().toUpperCase();
+                const cardCvv = paymentForm.card_cvv.value.replace(/\D+/g, '');
+                const qty = parseInt(hiddenQuantity ? hiddenQuantity.value : '1', 10) || 1;
+
+                if (prenom.length < 2) errors.push('Le prénom doit contenir au moins 2 caractères.');
+                if (nom.length < 2) errors.push('Le nom doit contenir au moins 2 caractères.');
+                if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.push('Adresse email invalide.');
+                if (cardNumber.length < 13 || cardNumber.length > 19) errors.push('Le numéro de carte doit contenir entre 13 et 19 chiffres.');
+                const expMatch = cardExp.match(/^(0[1-9]|1[0-2])\/(\d{2})$/);
+                if (!expMatch) {
+                    errors.push('La date d\'expiration doit être au format MM/AA.');
+                }
+                if (cardCvv.length < 3 || cardCvv.length > 4) errors.push('Le CVV doit contenir 3 ou 4 chiffres.');
+                if (qty < 1) errors.push('La quantité doit être supérieure ou égale à 1.');
+
+                if (errors.length) {
+                    e.preventDefault();
+                    if (paymentErrors) {
+                        paymentErrors.innerHTML = errors.join('<br>');
+                        paymentErrors.classList.remove('d-none');
+                    } else {
+                        alert(errors.join('\n'));
+                    }
+                } else if (paymentErrors) {
+                    paymentErrors.classList.add('d-none');
+                    paymentErrors.innerHTML = '';
+                }
+            });
+        }
+    });
+    </script>
+
+    <!-- Modal d'inscription gratuite -->
+    <div class="modal fade" id="participateModal" tabindex="-1" role="dialog" aria-labelledby="participateModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="participateModalLabel">Participer à <?= htmlspecialchars($event['titre'] ?? 'cet événement') ?></h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form method="post" id="participant-modal-form" novalidate>
+                        <input type="hidden" name="action" value="guest_participate">
+                        <div class="form-group">
+                            <label for="modal_prenom">Prénom</label>
+                            <input type="text" name="prenom" id="modal_prenom" class="form-control" placeholder="Prénom" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="modal_nom">Nom</label>
+                            <input type="text" name="nom" id="modal_nom" class="form-control" placeholder="Nom" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="modal_email">Email</label>
+                            <input type="email" name="email" id="modal_email" class="form-control" placeholder="email@example.com" required>
+                        </div>
+                        <div class="text-right">
+                            <button type="submit" class="btn-buy-now">Envoyer</button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- Modal de paiement -->
+    <div class="modal fade" id="paymentModal" tabindex="-1" role="dialog" aria-labelledby="paymentModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="paymentModalLabel">Paiement - <?= htmlspecialchars($event['titre'] ?? '') ?></h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form method="post" id="payment-form" novalidate>
+                        <input type="hidden" name="action" value="pay_and_participate">
+                        <input type="hidden" name="quantite" id="paymentQuantity" value="1">
+                        <div id="payment-errors" class="alert alert-danger d-none"></div>
+                        <div class="form-group">
+                            <label for="pay_prenom">Prénom</label>
+                            <input type="text" name="prenom" id="pay_prenom" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="pay_nom">Nom</label>
+                            <input type="text" name="nom" id="pay_nom" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="pay_email">Email</label>
+                            <input type="email" name="email" id="pay_email" class="form-control" required>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="form-group">
+                                    <label for="card_number">Numéro de carte</label>
+                                    <input type="text" name="card_number" id="card_number" class="form-control" placeholder="1234 5678 9012 3456" required>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="card_exp">Expiration</label>
+                                    <input type="text" name="card_exp" id="card_exp" class="form-control" placeholder="MM/AA" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="card_cvv">CVV</label>
+                            <input type="text" name="card_cvv" id="card_cvv" class="form-control" placeholder="123" required>
+                        </div>
+                        <div class="alert alert-secondary" id="paymentSummary">
+                            Total: <strong><?= number_format(max(1, $price), 2) ?> TND</strong>
+                        </div>
+                        <div class="text-right">
+                            <button type="submit" class="btn-buy-now">Confirmer le paiement</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </body>
 
 </html>

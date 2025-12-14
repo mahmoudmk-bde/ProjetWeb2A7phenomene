@@ -9,9 +9,9 @@ class EvenementModel {
         $this->conn = $database->getConnection();
     }
 
-    public function create($titre, $description, $date_evenement, $lieu, $image, $id_organisation) {
-        $query = "INSERT INTO evenement (titre, description, date_evenement, lieu, image, id_organisation) 
-                  VALUES (:titre, :description, :date_evenement, :lieu, :image, :id_organisation)";
+    public function create($titre, $description, $date_evenement, $heure_evenement, $duree_minutes, $lieu, $image, $id_organisation, $type_evenement = 'gratuit', $prix = null) {
+        $query = "INSERT INTO evenement (titre, description, date_evenement, heure_evenement, duree_minutes, lieu, image, id_organisation, type_evenement, prix) 
+                  VALUES (:titre, :description, :date_evenement, :heure_evenement, :duree_minutes, :lieu, :image, :id_organisation, :type_evenement, :prix)";
         
         $stmt = $this->conn->prepare($query);
         
@@ -19,9 +19,13 @@ class EvenementModel {
             ':titre' => $titre,
             ':description' => $description,
             ':date_evenement' => $date_evenement,
+            ':heure_evenement' => $heure_evenement,
+            ':duree_minutes' => $duree_minutes,
             ':lieu' => $lieu,
             ':image' => $image,
-            ':id_organisation' => $id_organisation
+            ':id_organisation' => $id_organisation,
+            ':type_evenement' => $type_evenement,
+            ':prix' => $prix
         ]);
     }
 
@@ -36,7 +40,7 @@ class EvenementModel {
         
         return $stmt->fetchAll();
     }
-
+ 
     public function getById($id) {
         $query = "SELECT e.* 
                   FROM evenement e 
@@ -73,10 +77,12 @@ class EvenementModel {
         }
     }
 
-    public function update($id, $titre, $description, $date_evenement, $lieu, $image, $id_organisation) {
+    public function update($id, $titre, $description, $date_evenement, $heure_evenement, $duree_minutes, $lieu, $image, $id_organisation, $type_evenement = 'gratuit', $prix = null) {
         $query = "UPDATE evenement 
-                  SET titre = :titre, description = :description, date_evenement = :date_evenement, 
-                      lieu = :lieu, image = :image, id_organisation = :id_organisation 
+        SET titre = :titre, description = :description, date_evenement = :date_evenement, 
+                      heure_evenement = :heure_evenement, duree_minutes = :duree_minutes,
+                      lieu = :lieu, image = :image, id_organisation = :id_organisation,
+                      type_evenement = :type_evenement, prix = :prix
                   WHERE id_evenement = :id_evenement";
         
         $stmt = $this->conn->prepare($query);
@@ -85,9 +91,13 @@ class EvenementModel {
             ':titre' => $titre,
             ':description' => $description,
             ':date_evenement' => $date_evenement,
+            ':heure_evenement' => $heure_evenement,
+            ':duree_minutes' => $duree_minutes,
             ':lieu' => $lieu,
             ':image' => $image,
             ':id_organisation' => $id_organisation,
+            ':type_evenement' => $type_evenement,
+            ':prix' => $prix,
             ':id_evenement' => $id
         ]);
     }

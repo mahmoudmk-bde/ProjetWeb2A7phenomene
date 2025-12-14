@@ -5,15 +5,7 @@ $eventModel = new EvenementModel();
 $events = $eventModel->getAllEvents();
 
 function normalize_event_image($img) {
-    $default = 'img/favicon.png';
-    if (empty($img)) return $default;
-    $img = trim($img);
-    if (stripos($img, 'http://') === 0 || stripos($img, 'https://') === 0) return $img;
-    if (strpos($img, '/gamingroom/uploads/events/') === 0) return $img;
-    if (strpos($img, '/uploads/events/') === 0) return '/gamingroom' . $img;
-    if (strpos($img, 'uploads/events/') === 0) return '/gamingroom/' . $img;
-    if (strpos($img, '/') === 0) return $img;
-    return $img;
+    return normalize_asset_path($img);
 }
 ?>
 <!doctype html>
@@ -33,6 +25,7 @@ function normalize_event_image($img) {
     <link rel="stylesheet" href="css/magnific-popup.css">
     <link rel="stylesheet" href="css/slick.css">
     <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/event-custom.css">
 </head>
 
 <body>
@@ -90,6 +83,9 @@ function normalize_event_image($img) {
                                     <li class="nav-item">
                                         <a class="nav-link active" href="event.php">Evénement</a>
                                     </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" href="my_events.php">Mes événements</a>
+                                    </li>
                                 </ul>
                             </div>
                             <a href="#" class="btn_1 d-none d-sm-block">Install Now</a>
@@ -132,25 +128,56 @@ function normalize_event_image($img) {
             $desc = htmlspecialchars($ev['description']);
             $date = !empty($ev['date_evenement']) ? date('F j, Y', strtotime($ev['date_evenement'])) : '';
             $lieu = htmlspecialchars($ev['lieu']);
+            $time = !empty($ev['heure_evenement']) ? substr($ev['heure_evenement'], 0, 5) : null;
+            $duration = !empty($ev['duree_minutes']) ? (int)$ev['duree_minutes'] . ' min' : null;
             $img = !empty($ev['image']) ? $ev['image'] : 'img/favicon.png';
             // Normalize older relative image paths
             if (strpos($img, 'uploads/events/') === 0) { $img = '/gamingroom/' . $img; }
             $participants = (int)$eventModel->countParticipants($ev['id_evenement']);
+            $type = isset($ev['type_evenement']) ? $ev['type_evenement'] : 'gratuit';
+            $prix = isset($ev['prix']) ? (float)$ev['prix'] : 0;
+            $isPaid = ($type === 'payant') && $prix > 0;
         ?>
         <div class="col-lg-4 col-md-6 mb-4">
-            <div class="card event-card h-100">
-                <img src="<?= htmlspecialchars($img) ?>" class="card-img-top" alt="<?= $title ?>">
-                <div class="card-body d-flex flex-column">
-                    <h5 class="card-title"><?= $title ?></h5>
-                    <p class="text-muted small mb-2"><?= $date ?> • <?= $lieu ?></p>
-                    <p class="card-text mb-3" style="flex:1; color:#444;"><?= (strlen($desc) > 160) ? substr($desc,0,160).'...' : $desc; ?></p>
-                    <div class="d-flex justify-content-between align-items-center mt-2">
-                        <a href="event_details.php?id=<?= $ev['id_evenement']; ?>" class="btn_2">Details</a>
-                        <div class="text-right">
-                            <span class="participants-badge"><?= $participants ?></span>
-                            <div class="small text-muted">accepted</div>
+            <div class="game-card store-card">
+                <div class="game-card-img">
+                    <img src="<?= htmlspecialchars($img) ?>" alt="<?= $title ?>">
+                    <?php if ($isPaid): ?>
+                        <div class="game-price"><?= number_format($prix, 0) ?> TND</div>
+                    <?php else: ?>
+                        <div class="stock-badge">Gratuit</div>
+                    <?php endif; ?>
+                </div>
+                <div class="game-card-body">
+                    <h5 class="game-title"><?= $title ?></h5>
+                    <p class="game-platform mb-1">
+                        <i class="far fa-calendar-alt mr-1"></i><?= $date ?>
+                        &nbsp;•&nbsp;
+                        <i class="fas fa-map-marker-alt mr-1"></i><?= $lieu ?>
+                    </p>
+                    <p class="game-platform">
+                        <?php if ($time): ?>
+                            <i class="far fa-clock mr-1"></i><?= $time ?>
+                        <?php endif; ?>
+                        <?php if ($duration): ?>
+                            &nbsp;•&nbsp;
+                            <i class="fas fa-stopwatch mr-1"></i><?= $duration ?>
+                        <?php endif; ?>
+                    </p>
+                    <p class="game-description"><?= (strlen($desc) > 160) ? substr($desc,0,160).'...' : $desc; ?></p>
+                    <div class="game-foot">
+                        <span class="game-price-inline">
+                            <?php if ($isPaid): ?>
+                                <?= number_format($prix, 0) ?> TND
+                            <?php else: ?>
+                                Gratuit
+                            <?php endif; ?>
+                        </span>
+                        <div class="game-stats">
+                            <span><i class="far fa-user"></i><?= $participants ?> participants</span>
                         </div>
                     </div>
+                    <a href="event_details.php?id=<?= $ev['id_evenement']; ?>" class="btn-view-game">Voir les détails</a>
                 </div>
             </div>
         </div>

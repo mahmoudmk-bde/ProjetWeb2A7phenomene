@@ -18,8 +18,15 @@ if ($_POST) {
     $titre = secure_data($_POST['titre']);
     $description = secure_data($_POST['description']);
     $date_evenement = $_POST['date_evenement'];
+    $heure_evenement = isset($_POST['heure_evenement']) && $_POST['heure_evenement'] !== '' ? $_POST['heure_evenement'] : null;
+    $duree_minutes = isset($_POST['duree_minutes']) && $_POST['duree_minutes'] !== '' ? (int) $_POST['duree_minutes'] : null;
     $lieu = secure_data($_POST['lieu']);
     $id_organisation = $_POST['id_organisation'];
+    $type_evenement = isset($_POST['type_evenement']) && $_POST['type_evenement'] === 'payant' ? 'payant' : 'gratuit';
+    $prix = null;
+    if ($type_evenement === 'payant' && isset($_POST['prix']) && $_POST['prix'] !== '') {
+        $prix = (float) $_POST['prix'];
+    }
     $image = null;
     
     if (isset($_FILES['image']) && $_FILES['image']['error'] == 0) {
@@ -32,12 +39,11 @@ if ($_POST) {
         $uploadFile = $uploadDir . $fileName;
         
         if (move_uploaded_file($_FILES['image']['tmp_name'], $uploadFile)) {
-            // Save path relative to web root so front views can reference it reliably.
-            $image = '/gamingroom/uploads/events/' . $fileName;
+            $image = 'uploads/events/' . $fileName;
         }
     }
     
-    if ($eventModel->create($titre, $description, $date_evenement, $lieu, $image, $id_organisation)) {
+    if ($eventModel->create($titre, $description, $date_evenement, $heure_evenement, $duree_minutes, $lieu, $image, $id_organisation, $type_evenement, $prix)) {
         $_SESSION['success'] = "Événement créé avec succès!";
         header('Location: createevent.php?success=1');
         exit;
@@ -79,18 +85,46 @@ if ($_POST) {
                                 </div>
 
                                 <div class="mb-3">
+                                    <label for="heure_evenement" class="form-label">Heure de l'événement</label>
+                                    <input type="time" class="form-control" id="heure_evenement" name="heure_evenement">
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="duree_minutes" class="form-label">Durée (minutes)</label>
+                                    <input type="number" min="15" step="5" class="form-control" id="duree_minutes" name="duree_minutes" placeholder="Ex: 90">
+                                </div>
+
+                                <div class="mb-3">
                                     <label for="lieu" class="form-label">Lieu *</label>
                                     <input type="text" class="form-control" id="lieu" name="lieu">
                                     <div class="form-text">Précisez si c'est en ligne ou l'adresse physique</div>
                                 </div>
 
                                 <div class="mb-3">
-                                    <label for="id_organisation" class="form-label">Organisation *</label>
+                                    <label class="form-label">Type d'événement *</label>
+                                    <select class="form-control" id="type_evenement" name="type_evenement">
+                                        <option value="gratuit">Gratuit</option>
+                                        <option value="payant">Payant</option>
+                                    </select>
+                                </div>
+
+                                <div class="mb-3" id="prix_wrapper">
+                                    <label for="prix" class="form-label">Prix (TND)</label>
+                                    <input type="number" min="0" step="0.1" class="form-control" id="prix" name="prix" placeholder="Ex: 10">
+                                    <div class="form-text">Laissez vide ou 0 pour un événement gratuit.</div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="id_organisation" class="form-label">Thème *</label>
                                     <select class="form-control" id="id_organisation" name="id_organisation">
-                                        <option value="">Sélectionnez une organisation</option>
-                                        <option value="1">Association Gaming Solidarité</option>
-                                        <option value="2">Hôpital des Jeunes</option>
-                                        <option value="3">École du Gaming</option>
+                                        <option value="">Sélectionnez un thème</option>
+                                        <option value="1">Sport</option>
+                                        <option value="2">Éducation</option>
+                                        <option value="3">Esport</option>
+                                        <option value="4">Création</option>
+                                        <option value="5">Prévention</option>
+                                        <option value="6">Coaching</option>
+                                        <option value="7">Compétition</option>
                                     </select>
                                 </div>
 

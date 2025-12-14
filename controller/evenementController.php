@@ -27,9 +27,16 @@ class EvenementController {
             $titre = secure_data($_POST['titre']);
             $description = secure_data($_POST['description']);
             $date_evenement = $_POST['date_evenement'];
+            $heure_evenement = isset($_POST['heure_evenement']) && $_POST['heure_evenement'] !== '' ? $_POST['heure_evenement'] : null;
+            $duree_minutes = isset($_POST['duree_minutes']) && $_POST['duree_minutes'] !== '' ? (int) $_POST['duree_minutes'] : null;
             $lieu = secure_data($_POST['lieu']);
             $id_organisation = $_POST['id_organisation'];
             $image = null;
+            $type_evenement = isset($_POST['type_evenement']) && $_POST['type_evenement'] === 'payant' ? 'payant' : 'gratuit';
+            $prix = null;
+            if ($type_evenement === 'payant' && isset($_POST['prix']) && $_POST['prix'] !== '') {
+                $prix = (float) $_POST['prix'];
+            }
             
             if (isset($_FILES['image']) && $_FILES['image']['error'] == 0) {
                 $uploadDir = 'uploads/events/';
@@ -42,11 +49,11 @@ class EvenementController {
                 
                 if (move_uploaded_file($_FILES['image']['tmp_name'], $uploadFile)) {
                     // store web-root-relative path for use in front views
-                    $image = '/gamingroom/' . $uploadFile;
+                    $image = 'uploads/events/' . $fileName;
                 }
             }
             
-            if ($this->eventModel->create($titre, $description, $date_evenement, $lieu, $image, $id_organisation)) {
+            if ($this->eventModel->create($titre, $description, $date_evenement, $heure_evenement, $duree_minutes, $lieu, $image, $id_organisation, $type_evenement, $prix)) {
                 $_SESSION['success'] = "Événement créé avec succès!";
                 header('Location: view/Backoffice/evenement.php');
                 exit;
@@ -73,8 +80,15 @@ public function editEvent($id) {
         $titre = secure_data($_POST['titre']);
         $description = secure_data($_POST['description']);
         $date_evenement = $_POST['date_evenement'];
+        $heure_evenement = isset($_POST['heure_evenement']) && $_POST['heure_evenement'] !== '' ? $_POST['heure_evenement'] : null;
+        $duree_minutes = isset($_POST['duree_minutes']) && $_POST['duree_minutes'] !== '' ? (int) $_POST['duree_minutes'] : null;
         $lieu = secure_data($_POST['lieu']);
         $id_organisation = $_POST['id_organisation'];
+        $type_evenement = isset($_POST['type_evenement']) && $_POST['type_evenement'] === 'payant' ? 'payant' : 'gratuit';
+        $prix = null;
+        if ($type_evenement === 'payant' && isset($_POST['prix']) && $_POST['prix'] !== '') {
+            $prix = (float) $_POST['prix'];
+        }
         
         // Gestion de l'image
         $image = $eventData['image']; // Image actuelle par défaut
@@ -89,12 +103,12 @@ public function editEvent($id) {
             $uploadFile = $uploadDir . $fileName;
             
             if (move_uploaded_file($_FILES['image']['tmp_name'], $uploadFile)) {
-                $image = '/gamingroom/' . $uploadFile;
+                $image = 'uploads/events/' . $fileName;
             }
         }
         
         // Mettre à jour l'événement
-        if ($this->eventModel->update($id, $titre, $description, $date_evenement, $lieu, $image, $id_organisation)) {
+        if ($this->eventModel->update($id, $titre, $description, $date_evenement, $heure_evenement, $duree_minutes, $lieu, $image, $id_organisation, $type_evenement, $prix)) {
             $_SESSION['success'] = "Événement modifié avec succès!";
             header('Location: view/Backoffice/evenement.php');
             exit;
