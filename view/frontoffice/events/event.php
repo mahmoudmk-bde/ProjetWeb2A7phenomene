@@ -386,7 +386,7 @@ function normalize_asset_path($img) {
 
                             <div class="game-info"><i class="far fa-user"></i><span><?= $participants ?> participants</span></div>
 
-                            <a href="/projetweb2/view/frontoffice/events/event_details.php?id=<?= $eventId ?>" class="btn btn-primary" style="margin-top: 10px;">
+                            <a href="events/event_details.php?id=<?= $eventId ?>" class="btn btn-primary" style="margin-top: 10px;">
                                 <i class="far fa-eye"></i> Voir l'Événement
                             </a>
                         </div>

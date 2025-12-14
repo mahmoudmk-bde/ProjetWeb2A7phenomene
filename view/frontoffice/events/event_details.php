@@ -94,7 +94,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && isset($e
             $message = 'Veuillez fournir un email valide.';
             $alertType = 'danger';
         } else {
-        $db = (new Database())->getConnection();
+        $db = config::getConnexion();
         try {
             // If user is already logged in, use their session id and skip lookup/creation
             if (isset($_SESSION['user_id']) && $_SESSION['user_id']) {
@@ -188,7 +188,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && isset($e
                     $message = 'Le CVV doit contenir 3 ou 4 chiffres.';
                     $alertType = 'danger';
                 } else {
-                    $db = (new Database())->getConnection();
+                    $db = config::getConnexion();
                     try {
                         $stmt = $db->prepare('SELECT id_utilisateur FROM utilisateur WHERE email = :email LIMIT 1');
                         $stmt->execute([':email' => $email]);
