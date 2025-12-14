@@ -36,7 +36,7 @@ session_start();
             <div class="col-lg-12">
               <nav class="navbar navbar-expand-lg navbar-light">
                 <a class="navbar-brand" href="index.php">
-                  <img href="index.php" src="assets/img/ll.png" alt="logo" />
+                  <img src="assets/img/logo.png" alt="logo" style="height: 45px;" />
                 </a>
                 <button
                   class="navbar-toggler"
@@ -56,10 +56,10 @@ session_start();
                 >
                   <ul class="navbar-nav">
                     <li class="nav-item">
-                      <a class="nav-link" href="index.php">Home</a>
+                      <a class="nav-link" href="index.php">Accueil</a>
                     </li>
                     <li class="nav-item">
-                      <a class="nav-link" href="fighter.html">mission</a>
+                      <a class="nav-link" href="missionlist1.php">mission</a>
                     </li>
                     <li class="nav-item">
                       <a class="nav-link" href="store/index.php">Store</a>
@@ -97,7 +97,7 @@ session_start();
                                 Les associations postent des missions, les gamers les accomplissent.
                             </p>
 
-                            <a href="missionlist.php" class="btn_1 mt-3">Voir les missions</a>
+                            <a href="missionlist1.php" class="btn_1 mt-3">Voir les missions</a>
                             
                             <?php if (!isset($_SESSION['user_id'])): ?>
                                 <a href="inscription.php" class="btn_1 mt-3" style="margin-left: 10px;">Créer un compte</a>
@@ -140,7 +140,7 @@ session_start();
                     <?php if (!isset($_SESSION['user_id'])): ?>
                         <a href="connexion.php" class="btn_1 mt-4">Commencer maintenant</a>
                     <?php else: ?>
-                        <a href="missionlist.php" class="btn_1 mt-4">Voir les missions</a>
+                        <a href="missionlist1.php" class="btn_1 mt-4">Voir les missions</a>
                     <?php endif; ?>
                 </div>
 
