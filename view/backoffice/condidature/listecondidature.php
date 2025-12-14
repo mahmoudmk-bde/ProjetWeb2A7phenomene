@@ -39,6 +39,36 @@ $totalPages = (int) ceil($totalCandidatures / $perPage);
 
 // Garder toutes les candidatures pour les stats
 $allCandidatures = $condC->getAllCondidatures();
+
+// Vérifier si l'export CSV est demandé
+if (isset($_GET['export']) && $_GET['export'] === 'csv') {
+    header('Content-Type: text/csv; charset=utf-8');
+    header('Content-Disposition: attachment; filename=candidatures_' . date('Y-m-d') . '.csv');
+    
+    $output = fopen('php://output', 'w');
+    
+    // En-têtes du CSV
+    fputcsv($output, ['ID', 'Mission', 'Pseudo Gaming', 'Email', 'Niveau d\'expérience', 'Disponibilités', 'Statut', 'Date de candidature']);
+    
+    // Récupérer toutes les candidatures pour l'export
+    $candidaturesExport = $isFiltered ? $condC->getCondidaturesByMission($mission_id) : $allCandidatures;
+    
+    foreach ($candidaturesExport as $c) {
+        fputcsv($output, [
+            $c['id'],
+            html_entity_decode($c['mission_titre']),
+            html_entity_decode($c['pseudo_gaming']),
+            $c['email'],
+            html_entity_decode($c['niveau_experience']),
+            html_entity_decode($c['disponibilites']),
+            html_entity_decode($c['statut']),
+            $c['date_candidature'] ?? date('Y-m-d H:i:s')
+        ]);
+    }
+    
+    fclose($output);
+    exit();
+}
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -58,6 +88,35 @@ $allCandidatures = $condC->getAllCondidatures();
             margin-bottom: 30px;
             flex-wrap: wrap;
             gap: 15px;
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .btn-export {
+            background: linear-gradient(45deg, #28a745, #20c997);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            padding: 10px 20px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .btn-export:hover {
+            background: linear-gradient(45deg, #20c997, #17a2b8);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(32, 201, 151, 0.4);
+            color: white;
         }
         
         .candidatures-stats {
@@ -307,6 +366,21 @@ $allCandidatures = $condC->getAllCondidatures();
             .candidature-grid {
                 grid-template-columns: repeat(1, 1fr);
             }
+            
+            .candidatures-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .header-actions {
+                width: 100%;
+                margin-top: 15px;
+            }
+            
+            .btn-export {
+                width: 100%;
+                justify-content: center;
+            }
         }
 
         .back-btn {
@@ -376,6 +450,14 @@ $allCandidatures = $condC->getAllCondidatures();
             <?php if ($isFiltered): ?>
                 <a href="listecondidature.php" class="back-btn">
                     <i class="fas fa-arrow-left"></i> Voir toutes les candidatures
+                </a>
+            <?php endif; ?>
+        </div>
+        
+        <div class="header-actions">
+            <?php if (!empty($allCandidatures)): ?>
+                <a href="?<?= $mission_id ? 'mission_id=' . $mission_id . '&' : '' ?>export=csv" class="btn-export">
+                    <i class="fas fa-file-csv"></i> Exporter en CSV
                 </a>
             <?php endif; ?>
         </div>

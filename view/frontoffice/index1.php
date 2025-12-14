@@ -642,7 +642,7 @@ foreach ($candidatures as $candidature) {
 <body>
 <div class="body_bg">
     
-    <?php $headerShowUserMenu = true; include 'header_common.php'; ?>
+    <?php include 'header_common.php'; ?>
 
     <!-- Section de bienvenue -->
     <section class="welcome-section fade-in">
