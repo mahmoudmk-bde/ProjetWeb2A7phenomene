@@ -329,7 +329,7 @@ function normalize_asset_path($img) {
     <!-- SECTION EVENTS -->
     <section class="section_padding">
         <div class="container">
-            <div class="mission-grid-enhanced" id="events-row">
+            <div class="row" id="events-row">
             <?php if (!empty($events)): ?>
                 <?php foreach ($events as $ev): ?>
                     <?php
@@ -364,31 +364,79 @@ function normalize_asset_path($img) {
                         $imagePath = "../assets/img/" . $image;
                         $eventId = $ev['id_evenement'] ?? 0;
                     ?>
-                    <div class="mission-card-enhanced" data-theme="<?= htmlspecialchars($theme) ?>" data-type="<?= htmlspecialchars($type) ?>" data-date="<?= $ev['date_evenement'] ?? '' ?>">
-                        <div class="game-card-img">
-                            <img src="<?= $imagePath ?>" alt="<?= htmlspecialchars($theme) ?>">
-                        </div>
-                        <div class="game-card-body">
-                            <h3 class="game-title"><?= $title ?></h3>
-                            <div class="game-info"><i class="fas fa-tag"></i><span><?= htmlspecialchars($theme) ?></span></div>
-                            <div class="game-info"><i class="fas fa-map-marker-alt"></i><span><?= $lieu ?></span></div>
-                            <div class="game-info"><i class="far fa-calendar-alt"></i><span><?= $date ?></span><?php if ($time): ?><span class="time-sep">•</span><i class="far fa-clock"></i><span><?= $time ?></span><?php endif; ?></div>
-
-                            <div style="display: flex; align-items: center; gap: 8px; margin: 15px 0; padding: 10px; background: rgba(255, 74, 87, 0.1); border-radius: 8px; border-left: 3px solid #ff4a57;">
+                    <div class="col-lg-4 col-md-6 event-item" data-theme="<?= htmlspecialchars($theme) ?>" data-type="<?= htmlspecialchars($type) ?>" data-date="<?= $ev['date_evenement'] ?? '' ?>">
+                        <div class="game-card store-card">
+                            <!-- Image de l'événement -->
+                            <div class="game-card-img">
+                                <img src="<?= $imagePath ?>" alt="<?= htmlspecialchars($theme) ?>">
+                                
+                                <!-- Badge de catégorie/type -->
+                                <div class="game-badge">
+                                    <?= ucfirst($theme) ?>
+                                </div>
+                                
+                                <!-- Badge de prix/gratuit -->
                                 <?php if ($isPaid): ?>
-                                    <i class="fas fa-ticket-alt" style="color: #ff4a57; font-size: 1.1rem;"></i>
-                                    <span style="color: rgba(255,255,255,0.9); font-weight: 600; font-size: 0.95rem;">Prix: <?= number_format($prix, 0) ?> TND</span>
+                                    <div class="stock-badge">Payant</div>
                                 <?php else: ?>
-                                    <i class="fas fa-check-circle" style="color: #28a745; font-size: 1.1rem;"></i>
-                                    <span style="color: rgba(255,255,255,0.9); font-weight: 600; font-size: 0.95rem;">Gratuit</span>
+                                    <div class="stock-badge">Gratuit</div>
                                 <?php endif; ?>
                             </div>
-
-                            <div class="game-info"><i class="far fa-user"></i><span><?= $participants ?> participants</span></div>
-
-                            <a href="event_details.php?id=<?= $eventId ?>" class="btn btn-primary" style="margin-top: 10px;">
-                                <i class="far fa-eye"></i> Voir l'Événement
-                            </a>
+                            
+                            <!-- Corps de la carte -->
+                            <div class="game-card-body">
+                                <h5 class="game-title">
+                                    <?= $title ?>
+                                </h5>
+                                
+                                <div class="game-partner">
+                                    <i class="fas fa-map-marker-alt"></i> <?= $lieu ?>
+                                </div>
+                                
+                                <div class="game-info">
+                                    <span class="game-category">
+                                        <i class="far fa-calendar"></i> <?= $date ?>
+                                    </span>
+                                    <?php if ($time): ?>
+                                        <span class="game-age">
+                                            <i class="fas fa-clock"></i> <?= $time ?>
+                                        </span>
+                                    <?php endif; ?>
+                                </div>
+                                
+                                <div class="game-platform" style="display: flex; gap: 8px; margin: 8px 0;">
+                                    <?php if ($isPaid): ?>
+                                        <span style="background: #ff4a57; color: white; padding: 4px 10px; border-radius: 12px; font-size: 0.85rem; font-weight: 600;">
+                                            <?= number_format($prix, 0) ?> TND
+                                        </span>
+                                    <?php else: ?>
+                                        <span style="background: #28a745; color: white; padding: 4px 10px; border-radius: 12px; font-size: 0.85rem; font-weight: 600;">
+                                            Gratuit
+                                        </span>
+                                    <?php endif; ?>
+                                    <span style="background: rgba(255,255,255,0.1); color: white; padding: 4px 10px; border-radius: 12px; font-size: 0.85rem;">
+                                        <i class="fas fa-users"></i> <?= $participants ?> participants
+                                    </span>
+                                </div>
+                                
+                                <a href="event_details.php?id=<?= $eventId ?>" class="btn-view-game">
+                                    <i class="far fa-eye"></i> Voir l'Événement
+                                </a>
+                                
+                                <div class="game-foot">
+                                    <div class="game-price-inline">
+                                        <?php if ($isPaid): ?>
+                                            <?= number_format($prix, 0) ?> TND
+                                        <?php else: ?>
+                                            Gratuit
+                                        <?php endif; ?>
+                                    </div>
+                                    <div class="game-stats">
+                                        <span><?= isset($ev['vues']) ? (int)$ev['vues'] : 0 ?> vues</span>
+                                        <span>0 likes</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 <?php endforeach; ?>

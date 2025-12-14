@@ -2,11 +2,15 @@
 require_once __DIR__ . '/../../../model/evenementModel.php';
 require_once __DIR__ . '/../../../model/participationModel.php';
 require_once __DIR__ . '/../../../db_config.php';
+require_once __DIR__ . '/../../../controller/feedbackcontroller.php';
+require_once __DIR__ . '/../../../controller/LikeController.php';
 
 if (session_status() === PHP_SESSION_NONE) session_start();
 
 $eventModel = new EvenementModel();
 $participationModel = new ParticipationModel();
+$feedbackcontroller = new feedbackcontroller();
+$likeController = new LikeController();
 
 $themeMap = [
     1 => 'Sport',
@@ -46,25 +50,58 @@ if (!isset($event)) {
             $message = 'Événement introuvable.';
         } else {
             // Increment views (standalone access)
-            $eventModel->incrementViews($event_id);
-            $event['vues'] = ($event['vues'] ?? 0) + 1;
+            @$eventModel->incrementViews($event_id);
+            // Refresh event data from database to get updated vues count
+            $event = $eventModel->getById($event_id);
         }
     }
 } elseif (isset($event)) {
     // Si l'événement est passé par le contrôleur, s'assurer que event_id est correct
     $event_id = $event['id_evenement'];
+    // Increment views on first load
+    @$eventModel->incrementViews($event_id);
+    // Refresh to get updated count
+    $event = $eventModel->getById($event_id);
 }
 
 if (isset($event)) {
     $participants = $participationModel->getEventParticipants($event_id);
+    $participantCount = $eventModel->countParticipants($event_id);
     $isRegistered = isset($_SESSION['user_id']) ? $participationModel->isUserRegistered($_SESSION['user_id'], $event_id) : false;
     $price = isset($event['prix']) ? (float)$event['prix'] : 0;
     $isPaidEvent = ($event['type_evenement'] === 'payant') && $price > 0;
+    
+    // Feedback & Rating System
+    $feedbackStats = $feedbackcontroller->getFeedbackStats($event_id);
+    $averageRating = $feedbackStats['avg_rating'] ? round($feedbackStats['avg_rating'], 1) : 0;
+    $totalFeedbacks = $feedbackStats['total_feedbacks'] ?? 0;
+    $feedbacks = $feedbackcontroller->getFeedbacksByMission($event_id);
+    
+    // Check if user already gave feedback
+    $userFeedback = null;
+    if (isset($_SESSION['user_id'])) {
+        $userFeedback = $feedbackcontroller->getUserFeedback($event_id, $_SESSION['user_id']);
+    }
+    
+    // Like system
+    $isLiked = false;
+    $likeCount = $likeController->getLikeCount($event_id);
+    if (isset($_SESSION['user_id'])) {
+        $isLiked = $likeController->hasUserLiked($event_id, $_SESSION['user_id']);
+    }
 } else {
     $participants = [];
+    $participantCount = 0;
     $isRegistered = false;
     $price = 0;
     $isPaidEvent = false;
+    $feedbackStats = ['avg_rating' => 0, 'total_feedbacks' => 0];
+    $averageRating = 0;
+    $totalFeedbacks = 0;
+    $feedbacks = [];
+    $userFeedback = null;
+    $isLiked = false;
+    $likeCount = 0;
 }
 
 // User-defined limit for sold out logic
@@ -255,6 +292,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && isset($e
         $participants = $participationModel->getEventParticipants($event_id);
         $isRegistered = isset($_SESSION['user_id']) ? $participationModel->isUserRegistered($_SESSION['user_id'], $event_id) : false;
 }
+
+// Handle feedback form submission
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_feedback'])) {
+    if (isset($_SESSION['user_id'])) {
+        $rating = intval($_POST['rating']);
+        $commentaire = trim($_POST['commentaire']);
+        
+        if ($rating >= 1 && $rating <= 5) {
+            if ($feedbackcontroller->addFeedback($event_id, $_SESSION['user_id'], $rating, $commentaire)) {
+                header("Location: event_details.php?id=$event_id&success=1");
+                exit();
+            } else {
+                $error = "Erreur lors de l'ajout du feedback";
+            }
+        } else {
+            $error = "La note doit être entre 1 et 5";
+        }
+    } else {
+        header("Location: connexion.php?redirect=" . urlencode("events/event_details.php?id=$event_id"));
+        exit();
+    }
+}
 ?>
 <?php require_once 'lang/lang_config.php'; ?>
 <!doctype html>
@@ -394,6 +453,122 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && isset($e
         .mr-3 { margin-left: 1rem !important; margin-right: 0 !important; }
         .info-col:not(:last-child)::after { left: 0; right: auto; }
         <?php endif; ?>
+        
+        /* Enhanced card and feedback styles */
+        .enhanced-card {
+            background: rgba(255,255,255,0.05);
+            padding: 40px;
+            border-radius: 15px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .btn-like {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-like:hover {
+            background: rgba(255, 74, 87, 0.2);
+            border-color: #ff4a57;
+            transform: translateY(-2px);
+        }
+        
+        .btn-like.liked {
+            background: linear-gradient(135deg, #ff4a57 0%, #ff6b6b 100%);
+            border-color: #ff4a57;
+        }
+        
+        .rating-summary {
+            background: rgba(255,255,255,0.05);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+        
+        .average-rating {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #ffd700;
+        }
+        
+        .feedback-form {
+            background: rgba(255,255,255,0.05);
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+        
+        .star-rating {
+            display: flex;
+            flex-direction: row-reverse;
+            justify-content: flex-end;
+        }
+        
+        .star-rating input {
+            display: none;
+        }
+        
+        .star-rating label {
+            color: #ddd;
+            font-size: 1.8rem;
+            padding: 5px;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        
+        .star-rating label:hover,
+        .star-rating label:hover ~ label {
+            color: #ffd700;
+        }
+        
+        .star-rating input:checked ~ label,
+        .star-rating input:checked + label {
+            color: #ffd700;
+        }
+        
+        .feedback-item {
+            background: rgba(255,255,255,0.03);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .btn-enhanced {
+            background: linear-gradient(135deg, #ff4a57 0%, #ff6b6b 100%);
+            color: white;
+            padding: 12px 30px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            display: inline-block;
+            cursor: pointer;
+        }
+        
+        .btn-enhanced:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 74, 87, 0.4);
+            color: white;
+            text-decoration: none;
+        }
+        
+        @keyframes heartBeat {
+            0%, 100% { transform: scale(1); }
+            25% { transform: scale(1.2); }
+            50% { transform: scale(1.1); }
+        }
     </style>
 </head>
 
@@ -575,7 +750,172 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && isset($e
             </div>
         </section>
 
-        <footer class="footer_part">
+        <!-- FEEDBACK SECTION -->
+        <section class="section_padding" style="background: linear-gradient(135deg, #1f2235 0%, #2d325a 100%); padding: 50px 0;">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-10 mx-auto">
+                        <!-- Like and Share Buttons -->
+                        <div style="display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; margin-bottom: 40px;">
+                            <button id="likeBtn" class="btn-like <?= $isLiked ? 'liked' : '' ?>" 
+                                    data-event-id="<?= $event_id ?>"
+                                    <?= !isset($_SESSION['user_id']) ? 'onclick="alert(\'Vous devez être connecté pour liker\')"' : '' ?>>
+                                <i class="fas fa-heart"></i>
+                                <span id="likeCount"><?= $likeCount ?></span>
+                                <span class="like-text">J'aime</span>
+                            </button>
+                        </div>
+
+                        <!-- FEEDBACK SECTION -->
+                        <div class="feedback-section">
+                            <h4 style="color: #ff4a57; margin-bottom: 25px; text-align: center;">
+                                <i class="fas fa-star me-2"></i>Avis sur l'Événement
+                            </h4>
+
+                            <!-- Note moyenne -->
+                            <div class="rating-summary">
+                                <div class="row align-items-center">
+                                    <div class="col-md-4 text-center">
+                                        <div class="average-rating">
+                                            <?= $averageRating ?>
+                                        </div>
+                                        <div class="stars" style="color: #ffd700; font-size: 1.2rem;">
+                                            <?php for ($i = 1; $i <= 5; $i++): ?>
+                                                <i class="fas fa-star<?= $i <= floor($averageRating) ? '' : '-half-alt' ?>"></i>
+                                            <?php endfor; ?>
+                                        </div>
+                                        <div style="color: rgba(255,255,255,0.8); margin-top: 10px;">
+                                            <?= $totalFeedbacks ?> avis
+                                        </div>
+                                    </div>
+                                    <div class="col-md-8">
+                                        <!-- Barres de progression pour chaque note -->
+                                        <?php for ($star = 5; $star >= 1; $star--): ?>
+                                            <?php
+                                            $count = $feedbackStats[$star . '_star'] ?? 0;
+                                            $percentage = $totalFeedbacks > 0 ? ($count / $totalFeedbacks) * 100 : 0;
+                                            ?>
+                                            <div class="rating-bar mb-2">
+                                                <div class="d-flex align-items-center">
+                                                    <span style="color: #ffd700; width: 20px;"><?= $star ?></span>
+                                                    <i class="fas fa-star" style="color: #ffd700; margin: 0 10px;"></i>
+                                                    <div class="progress flex-grow-1" style="height: 8px; background: rgba(255,255,255,0.1);">
+                                                        <div class="progress-bar" style="width: <?= $percentage ?>%; background: #ffd700;"></div>
+                                                    </div>
+                                                    <span style="color: rgba(255,255,255,0.8); margin-left: 10px; min-width: 40px;">
+                                                        <?= $count ?>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        <?php endfor; ?>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Formulaire de feedback (seulement pour les utilisateurs connectés) -->
+                            <?php if (isset($_SESSION['user_id'])): ?>
+                                <div class="feedback-form">
+                                    <h5 style="color: #ff4a57; margin-bottom: 20px;">
+                                        <?= $userFeedback ? 'Modifier votre avis' : 'Donner votre avis' ?>
+                                    </h5>
+                                    
+                                    <?php if (isset($error)): ?>
+                                        <div class="alert alert-danger" style="background: rgba(220,53,69,0.2); border: 1px solid #dc3545; color: #dc3545; padding: 12px; border-radius: 8px;">
+                                            <?= $error ?>
+                                        </div>
+                                    <?php endif; ?>
+                                    
+                                    <?php if (isset($_GET['success'])): ?>
+                                        <div class="alert alert-success" style="background: rgba(40,167,69,0.2); border: 1px solid #28a745; color: #28a745; padding: 12px; border-radius: 8px;">
+                                            Votre avis a été enregistré avec succès !
+                                        </div>
+                                    <?php endif; ?>
+                                    
+                                    <form method="POST">
+                                        <!-- Système de rating -->
+                                        <div class="rating-input mb-3">
+                                            <label style="color: rgba(255,255,255,0.8); margin-bottom: 10px; display: block;">Votre note :</label>
+                                            <div class="star-rating">
+                                                <?php for ($i = 5; $i >= 1; $i--): ?>
+                                                    <input type="radio" id="star<?= $i ?>" name="rating" value="<?= $i ?>" 
+                                                           <?= $userFeedback && $userFeedback['rating'] == $i ? 'checked' : '' ?> required>
+                                                    <label for="star<?= $i ?>" title="<?= $i ?> étoiles">
+                                                        <i class="fas fa-star"></i>
+                                                    </label>
+                                                <?php endfor; ?>
+                                            </div>
+                                        </div>
+
+                                        <!-- Commentaire -->
+                                        <div class="mb-3">
+                                            <label for="commentaire" style="color: rgba(255,255,255,0.8); margin-bottom: 10px; display: block;">
+                                                Votre commentaire (optionnel) :
+                                            </label>
+                                            <textarea name="commentaire" id="commentaire" rows="4" 
+                                                      placeholder="Partagez votre expérience avec cet événement..."
+                                                      class="form-control" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3); color: white; resize: none;"><?= $userFeedback ? htmlspecialchars($userFeedback['commentaire']) : '' ?></textarea>
+                                        </div>
+
+                                        <button type="submit" name="submit_feedback" class="btn-enhanced">
+                                            <i class="fas fa-paper-plane me-2"></i>
+                                            <?= $userFeedback ? 'Modifier mon avis' : 'Publier mon avis' ?>
+                                        </button>
+                                    </form>
+                                </div>
+                            <?php else: ?>
+                                <div class="alert alert-info text-center" style="background: rgba(0,123,255,0.1); border: 1px solid rgba(0,123,255,0.3); color: #8bb9ff; padding: 15px; border-radius: 8px;">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    <a href="connexion.php?redirect=<?= urlencode("events/event_details.php?id=$event_id") ?>" style="color: #ff4a57; text-decoration: underline; font-weight: 600;">
+                                        Connectez-vous
+                                    </a> pour donner votre avis sur cet événement.
+                                </div>
+                            <?php endif; ?>
+
+                            <!-- Liste des feedbacks -->
+                            <?php if (!empty($feedbacks)): ?>
+                                <div class="feedbacks-list" style="margin-top: 30px;">
+                                    <h5 style="color: #ff4a57; margin-bottom: 20px;">Avis des participants (<?= $totalFeedbacks ?>)</h5>
+                                    
+                                    <?php foreach ($feedbacks as $feedback): ?>
+                                        <div class="feedback-item">
+                                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                                <div>
+                                                    <strong style="color: white;"><?= htmlspecialchars($feedback['prenom'] . ' ' . $feedback['nom']) ?></strong>
+                                                    <div class="stars" style="color: #ffd700; margin-top: 5px;">
+                                                        <?php for ($i = 1; $i <= 5; $i++): ?>
+                                                            <i class="fas fa-star<?= $i <= $feedback['rating'] ? '' : '-o' ?>" style="font-size: 0.9rem;"></i>
+                                                        <?php endfor; ?>
+                                                        <span style="color: rgba(255,255,255,0.8); margin-left: 8px; font-size: 0.9rem;">
+                                                            (<?= $feedback['rating'] ?>/5)
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <small style="color: rgba(255,255,255,0.8);">
+                                                    <?= date('d/m/Y à H:i', strtotime($feedback['date_feedback'])) ?>
+                                                </small>
+                                            </div>
+                                            
+                                            <?php if (!empty($feedback['commentaire'])): ?>
+                                                <p style="color: rgba(255,255,255,0.8); margin: 10px 0 0 0; line-height: 1.5; font-size: 0.95rem;">
+                                                    "<?= nl2br(htmlspecialchars($feedback['commentaire'])) ?>"
+                                                </p>
+                                            <?php endif; ?>
+                                        </div>
+                                    <?php endforeach; ?>
+                                </div>
+                            <?php elseif ($totalFeedbacks == 0): ?>
+                                <div class="text-center" style="color: rgba(255,255,255,0.8); padding: 40px;">
+                                    <i class="fas fa-comments fa-3x mb-3" style="opacity: 0.5;"></i>
+                                    <p>Aucun avis pour le moment. Soyez le premier à donner votre feedback !</p>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    
+    <footer class="footer_part">
             <div class="footer_top">
                 <div class="container">
                     <div class="row">
@@ -870,5 +1210,44 @@ document.addEventListener('DOMContentLoaded', function () {
             participationErrors.innerHTML = '';
         }
     });
+
+    // Like Button Handler
+    const likeBtn = document.getElementById('likeBtn');
+    if (likeBtn && likeBtn.getAttribute('data-event-id')) {
+        likeBtn.addEventListener('click', function() {
+            const eventId = this.getAttribute('data-event-id');
+            const formData = new FormData();
+            formData.append('event_id', eventId);
+
+            fetch('../../controller/LikeController.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    likeBtn.classList.toggle('liked');
+                    document.getElementById('likeCount').textContent = data.count;
+                } else if (data.error === 'not_logged_in') {
+                    alert('Vous devez être connecté pour liker cet événement');
+                }
+            })
+            .catch(error => console.error('Like error:', error));
+        });
+    }
+
+    // Copy to Clipboard Function
+    function copyToClipboard() {
+        const url = window.location.href;
+        navigator.clipboard.writeText(url).then(() => {
+            const toast = document.createElement('div');
+            toast.className = 'toast show';
+            toast.textContent = '✅ Lien copié dans le presse-papiers!';
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }).catch(err => alert('Erreur lors de la copie du lien'));
+    }
 });
 </script>
+</body>
+</html>

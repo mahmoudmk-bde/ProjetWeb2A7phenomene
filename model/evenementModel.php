@@ -120,13 +120,13 @@ class EvenementModel {
 
     public function countParticipants($event_id) {
         $query = "SELECT COUNT(*) as count FROM participation 
-                  WHERE id_evenement = :event_id AND statut = 'acceptée'";
+                  WHERE id_evenement = :event_id";
         
         $stmt = $this->conn->prepare($query);
         $stmt->execute([':event_id' => $event_id]);
         
         $result = $stmt->fetch();
-        return $result['count'];
+        return isset($result['count']) ? (int)$result['count'] : 0;
     }
     private function columnExists($table, $column) {
         try {
