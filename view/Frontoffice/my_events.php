@@ -35,7 +35,8 @@ $userId = (int) $_SESSION['user_id'];
 $history = $participationModel->getUserParticipations($userId);
 ?>
 <!doctype html>
-<html lang="fr">
+<?php require_once 'lang/lang_config.php'; ?>
+<html lang="<?= get_current_lang() ?>" dir="<?= get_dir() ?>">
 
 <head>
     <meta charset="utf-8">
@@ -52,6 +53,14 @@ $history = $participationModel->getUserParticipations($userId);
     <link rel="stylesheet" href="css/slick.css">
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/event-custom.css">
+    <?php if (get_dir() === 'rtl'): ?>
+    <style>
+        body { text-align: right; direction: rtl; }
+        .navbar-nav { margin-right: auto; margin-left: 0 !important; }
+        .dropdown-menu { text-align: right; }
+        .main_menu .navbar .navbar-nav .nav-item .nav-link { padding: 33px 20px; }
+    </style>
+    <?php endif; ?>
 </head>
 
 <body>
@@ -70,22 +79,22 @@ $history = $participationModel->getUserParticipations($userId);
                             <div class="collapse navbar-collapse main-menu-item" id="navbarSupportedContent">
                                 <ul class="navbar-nav">
                                     <li class="nav-item">
-                                        <a class="nav-link" href="index.php">Home</a>
+                                        <a class="nav-link" href="index.php"><?= __('home') ?></a>
                                     </li>
                                     <li class="nav-item">
-                                        <a class="nav-link" href="fighter.html">fighter</a>
+                                        <a class="nav-link" href="fighter.html"><?= __('fighter') ?></a>
                                     </li>
                                     <li class="nav-item">
-                                        <a class="nav-link" href="team.html">team</a>
+                                        <a class="nav-link" href="team.html"><?= __('team') ?></a>
                                     </li>
                                     <li class="nav-item dropdown">
                                         <a class="nav-link dropdown-toggle" href="blog.html" id="navbarDropdown"
                                             role="button" data-toggle="dropdown" aria-haspopup="true"
                                             aria-expanded="false">
-                                            Blog
+                                            <?= __('blog') ?>
                                         </a>
                                         <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                                            <a class="dropdown-item" href="blog.html"> blog</a>
+                                            <a class="dropdown-item" href="blog.html"><?= __('blog') ?></a>
                                             <a class="dropdown-item" href="single-blog.html">Single blog</a>
                                         </div>
                                     </li>
@@ -93,27 +102,38 @@ $history = $participationModel->getUserParticipations($userId);
                                         <a class="nav-link dropdown-toggle" href="blog.html" id="navbarDropdown1"
                                             role="button" data-toggle="dropdown" aria-haspopup="true"
                                             aria-expanded="false">
-                                            pages
+                                            <?= __('pages') ?>
                                         </a>
                                         <div class="dropdown-menu" aria-labelledby="navbarDropdown1">
                                             <a class="dropdown-item" href="elements.html">Elements</a>
                                         </div>
                                     </li>
                                     <li class="nav-item">
-                                        <a class="nav-link" href="contact.html">Contact</a>
+                                        <a class="nav-link" href="contact.html"><?= __('contact') ?></a>
                                     </li>
                                     <li class="nav-item">
-                                        <a class="nav-link" href="addreclamation.php">Réclamer</a>
+                                        <a class="nav-link" href="addreclamation.php"><?= __('reclaim') ?></a>
                                     </li>
                                     <li class="nav-item">
-                                        <a class="nav-link" href="event.php">Evénement</a>
+                                        <a class="nav-link" href="event.php"><?= __('events') ?></a>
                                     </li>
                                     <li class="nav-item active">
-                                        <a class="nav-link" href="my_events.php">Mes événements</a>
+                                        <a class="nav-link" href="my_events.php"><?= __('my_events') ?></a>
+                                    </li>
+                                    <!-- Language Selector -->
+                                    <li class="nav-item dropdown">
+                                        <a class="nav-link dropdown-toggle" href="#" id="langDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            <i class="fas fa-globe"></i> <?= strtoupper(get_current_lang()) ?>
+                                        </a>
+                                        <div class="dropdown-menu" aria-labelledby="langDropdown">
+                                            <a class="dropdown-item" href="?lang=fr">Français</a>
+                                            <a class="dropdown-item" href="?lang=en">English</a>
+                                            <a class="dropdown-item" href="?lang=ar">العربية</a>
+                                        </div>
                                     </li>
                                 </ul>
                             </div>
-                            <a href="event.php" class="btn_1 d-none d-sm-block">Explorer</a>
+                            <a href="event.php" class="btn_1 d-none d-sm-block"><?= __('all_events') ?></a>
                         </nav>
                     </div>
                 </div>
@@ -157,13 +177,20 @@ $history = $participationModel->getUserParticipations($userId);
                             $paymentLabel = $isPaid ? ($item['mode_paiement'] ?? 'Carte') : 'Gratuit';
                         ?>
                         <div class="col-lg-4 col-md-6 mb-4">
-                            <div class="game-card store-card">
-                                <div class="game-card-img">
+                            <div class="event-card">
+                                <div class="event-card-image">
                                     <img src="<?= htmlspecialchars($img) ?>" alt="<?= htmlspecialchars($item['titre']) ?>">
+                                    <div class="event-overlay">
+                                        <a href="event_details.php?id=<?= $item['id_evenement'] ?>" class="event-btn-details">Voir détails</a>
+                                    </div>
                                     <?php if ($isPaid): ?>
-                                        <div class="game-price"><?= number_format($item['prix'], 0) ?> TND</div>
+                                        <div class="event-price-badge">
+                                             <span class="custom-badge-price"><?= number_format($item['prix'], 0) ?> TND</span>
+                                        </div>
                                     <?php else: ?>
-                                        <div class="stock-badge">Gratuit</div>
+                                        <div class="event-price-badge">
+                                            <span class="custom-badge-free">Gratuit</span>
+                                        </div>
                                     <?php endif; ?>
                                 </div>
                                 <div class="game-card-body">
@@ -177,6 +204,7 @@ $history = $participationModel->getUserParticipations($userId);
                                     <div class="game-info mt-2">
                                         <span><i class="fas fa-map-marker-alt"></i><?= htmlspecialchars($item['lieu']) ?></span>
                                         <span><i class="fas fa-stream"></i><?= theme_label($item['id_organisation'], $themeMap) ?></span>
+                                        <span class="ml-2" title="Vues"><i class="far fa-eye"></i> <?= $item['vues'] ?? 0 ?></span>
                                     </div>
                                     <div class="game-foot">
                                         <span class="game-price-inline"><?= $quantity ?> billet(s)</span>
@@ -423,14 +451,19 @@ function theme_label_from_id($id)
                             $montant = $p['montant_total'] ? number_format($p['montant_total'], 2) . ' TND' : 'Gratuit';
                         ?>
                         <div class="col-lg-6 mb-4">
-                            <div class="game-card">
-                                <div class="game-card-img" style="height:220px;">
+                            <div class="event-card">
+                                <div class="event-card-image" style="height:220px;">
                                     <?php
                                         $img = !empty($p['image']) ? $p['image'] : 'img/favicon.png';
-                                        if (strpos($img, 'uploads/events/') === 0) { $img = '/gamingroom/' . $img; }
+                                        $img = normalize_asset_path($img);
                                     ?>
                                     <img src="<?= htmlspecialchars($img) ?>" alt="<?= htmlspecialchars($p['titre']) ?>">
-                                    <div class="game-price"><?= $montant ?></div>
+                                    <div class="event-overlay">
+                                        <a href="event_details.php?id=<?= $p['id_evenement'] ?>" class="event-btn-details">Voir détails</a>
+                                    </div>
+                                    <div class="event-price-badge" style="bottom: 10px; right: 10px;">
+                                        <span class="custom-badge-price"><?= $montant ?></span>
+                                    </div>
                                 </div>
                                 <div class="game-card-body">
                                     <h5 class="game-title"><?= htmlspecialchars($p['titre']) ?></h5>
@@ -447,6 +480,7 @@ function theme_label_from_id($id)
                                         <span class="game-price-inline"><?= $p['quantite'] ?? 1 ?> place(s)</span>
                                         <div class="game-stats">
                                             <span><i class="fas fa-tag"></i><?= theme_label_from_id($p['id_organisation'] ?? 0) ?></span>
+                                            <span class="ml-3"><i class="far fa-eye"></i> <?= $p['vues'] ?? 0 ?></span>
                                         </div>
                                     </div>
                                 </div>

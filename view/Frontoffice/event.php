@@ -4,12 +4,31 @@ if (session_status() === PHP_SESSION_NONE) session_start();
 $eventModel = new EvenementModel();
 $events = $eventModel->getAllEvents();
 
+// Debug: Check if events are empty
+error_log("Events count: " . count($events));
+error_log("Events data: " . print_r($events, true));
+
+$themeMap = [
+    1 => 'Sport',
+    2 => 'Éducation',
+    3 => 'Esport',
+    4 => 'Création',
+    5 => 'Prévention',
+    6 => 'Coaching',
+    7 => 'Compétition'
+];
+
+function theme_label($id, $map) {
+    return $map[$id] ?? 'Autre';
+}
+
 function normalize_event_image($img) {
     return normalize_asset_path($img);
 }
 ?>
 <!doctype html>
-<html lang="zxx">
+<?php require_once 'lang/lang_config.php'; ?>
+<html lang="<?= get_current_lang() ?>" dir="<?= get_dir() ?>">
 
 <head>
     <meta charset="utf-8">
@@ -26,6 +45,14 @@ function normalize_event_image($img) {
     <link rel="stylesheet" href="css/slick.css">
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/event-custom.css">
+    <?php if (get_dir() === 'rtl'): ?>
+    <style>
+        body { text-align: right; direction: rtl; }
+        .navbar-nav { margin-right: auto; margin-left: 0 !important; }
+        .dropdown-menu { text-align: right; }
+        .main_menu .navbar .navbar-nav .nav-item .nav-link { padding: 33px 20px; }
+    </style>
+    <?php endif; ?>
 </head>
 
 <body>
@@ -35,7 +62,7 @@ function normalize_event_image($img) {
                 <div class="row align-items-center">
                     <div class="col-lg-12">
                         <nav class="navbar navbar-expand-lg navbar-light">
-                            <a class="navbar-brand" href="index.html"> <img src="img/logo.png" alt="logo"> </a>
+                            <a class="navbar-brand" href="index.php"> <img src="img/logo.png" alt="logo"> </a>
                             <button class="navbar-toggler" type="button" data-toggle="collapse"
                                 data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
                                 aria-expanded="false" aria-label="Toggle navigation">
@@ -45,22 +72,22 @@ function normalize_event_image($img) {
                             <div class="collapse navbar-collapse main-menu-item" id="navbarSupportedContent">
                                 <ul class="navbar-nav">
                                     <li class="nav-item">
-                                        <a class="nav-link" href="index.html">Home</a>
+                                        <a class="nav-link" href="index.php"><?= __('home') ?></a>
                                     </li>
                                     <li class="nav-item">
-                                        <a class="nav-link" href="fighter.html">fighter</a>
+                                        <a class="nav-link" href="fighter.html"><?= __('fighter') ?></a>
                                     </li>
                                     <li class="nav-item">
-                                        <a class="nav-link" href="team.html">team</a>
+                                        <a class="nav-link" href="team.html"><?= __('team') ?></a>
                                     </li>
                                     <li class="nav-item dropdown">
                                         <a class="nav-link dropdown-toggle" href="blog.html" id="navbarDropdown"
                                             role="button" data-toggle="dropdown" aria-haspopup="true"
                                             aria-expanded="false">
-                                            Blog
+                                            <?= __('blog') ?>
                                         </a>
                                         <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                                            <a class="dropdown-item" href="blog.html"> blog</a>
+                                            <a class="dropdown-item" href="blog.html"><?= __('blog') ?></a>
                                             <a class="dropdown-item" href="single-blog.html">Single blog</a>
                                         </div>
                                     </li>
@@ -68,27 +95,38 @@ function normalize_event_image($img) {
                                         <a class="nav-link dropdown-toggle" href="blog.html" id="navbarDropdown1"
                                             role="button" data-toggle="dropdown" aria-haspopup="true"
                                             aria-expanded="false">
-                                            pages
+                                            <?= __('pages') ?>
                                         </a>
                                         <div class="dropdown-menu" aria-labelledby="navbarDropdown1">
                                             <a class="dropdown-item" href="elements.html">Elements</a>
                                         </div>
                                     </li>
                                     <li class="nav-item">
-                                        <a class="nav-link" href="contact.html">Contact</a>
+                                        <a class="nav-link" href="contact.html"><?= __('contact') ?></a>
                                     </li>
                                     <li class="nav-item">
-                                        <a class="nav-link" href="addreclamation.php">Réclamer</a>
+                                        <a class="nav-link" href="addreclamation.php"><?= __('reclaim') ?></a>
                                     </li>
                                     <li class="nav-item">
-                                        <a class="nav-link active" href="event.php">Evénement</a>
+                                        <a class="nav-link active" href="event.php"><?= __('events') ?></a>
                                     </li>
                                     <li class="nav-item">
-                                        <a class="nav-link" href="my_events.php">Mes événements</a>
+                                        <a class="nav-link" href="my_events.php"><?= __('my_events') ?></a>
+                                    </li>
+                                    <!-- Language Selector -->
+                                    <li class="nav-item dropdown">
+                                        <a class="nav-link dropdown-toggle" href="#" id="langDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            <i class="fas fa-globe"></i> <?= strtoupper(get_current_lang()) ?>
+                                        </a>
+                                        <div class="dropdown-menu" aria-labelledby="langDropdown">
+                                            <a class="dropdown-item" href="?lang=fr">Français</a>
+                                            <a class="dropdown-item" href="?lang=en">English</a>
+                                            <a class="dropdown-item" href="?lang=ar">العربية</a>
+                                        </div>
                                     </li>
                                 </ul>
                             </div>
-                            <a href="#" class="btn_1 d-none d-sm-block">Install Now</a>
+                            <a href="#" class="btn_1 d-none d-sm-block"><?= __('install_now') ?></a>
                         </nav>
                     </div>
                 </div>
@@ -101,7 +139,7 @@ function normalize_event_image($img) {
                     <div class="col-lg-8">
                         <div class="banner_text">
                             <div class="banner_text_iner">
-                                <h1>All Events</h1>
+                                <h1><?= __('all_events') ?></h1>
                                 <p>Browse all events — upcoming and past — from the gaming community.</p>
                             </div>
                         </div>
@@ -115,81 +153,106 @@ function normalize_event_image($img) {
                 <div class="row justify-content-center">
                     <div class="col-lg-10">
                         <div class="section_tittle text-center">
-                            <h2>Events</h2>
+                            <h2><?= __('events') ?></h2>
                         </div>
                     </div>
                 </div>
 
-                <div class="row">
+                <div class="row" id="events-row">
 <?php if (!empty($events)): ?>
     <?php foreach ($events as $ev): ?>
         <?php
             $title = htmlspecialchars($ev['titre']);
             $desc = htmlspecialchars($ev['description']);
-            $date = !empty($ev['date_evenement']) ? date('F j, Y', strtotime($ev['date_evenement'])) : '';
+            $date = !empty($ev['date_evenement']) ? date('d M Y', strtotime($ev['date_evenement'])) : '';
             $lieu = htmlspecialchars($ev['lieu']);
             $time = !empty($ev['heure_evenement']) ? substr($ev['heure_evenement'], 0, 5) : null;
-            $duration = !empty($ev['duree_minutes']) ? (int)$ev['duree_minutes'] . ' min' : null;
-            $img = !empty($ev['image']) ? $ev['image'] : 'img/favicon.png';
-            // Normalize older relative image paths
-            if (strpos($img, 'uploads/events/') === 0) { $img = '/gamingroom/' . $img; }
+            $img = !empty($ev['image']) ? $ev['image'] : 'img/default-event.jpg';
+            $img = !empty($ev['image']) ? $ev['image'] : 'img/default-event.jpg';
+            $img = normalize_asset_path($img);
             $participants = (int)$eventModel->countParticipants($ev['id_evenement']);
             $type = isset($ev['type_evenement']) ? $ev['type_evenement'] : 'gratuit';
             $prix = isset($ev['prix']) ? (float)$ev['prix'] : 0;
             $isPaid = ($type === 'payant') && $prix > 0;
         ?>
-        <div class="col-lg-4 col-md-6 mb-4">
-            <div class="game-card store-card">
-                <div class="game-card-img">
-                    <img src="<?= htmlspecialchars($img) ?>" alt="<?= $title ?>">
-                    <?php if ($isPaid): ?>
-                        <div class="game-price"><?= number_format($prix, 0) ?> TND</div>
-                    <?php else: ?>
-                        <div class="stock-badge">Gratuit</div>
-                    <?php endif; ?>
+        <div class="col-lg-4 col-md-6 mb-4" data-theme="<?= htmlspecialchars($ev['id_organisation'] ?? '') ?>" data-type="<?= htmlspecialchars($type) ?>" data-date="<?= $ev['date_evenement'] ?? '' ?>">
+            <div class="event-card">
+                <div class="event-card-image">
+                    <img src="<?= htmlspecialchars($img) ?>" alt="<?= $title ?>" onerror="this.src='img/default-event.jpg'">
+                    <div class="event-overlay">
+                        <a href="event_details.php?id=<?= $ev['id_evenement']; ?>" class="event-btn-details"><?= __('show_details') ?></a>
+                    </div>
+                    <div class="event-price-badge">
+                        <?php if ($isPaid): ?>
+                            <span class="custom-badge-price"><?= number_format($prix, 0) ?> TND</span>
+                        <?php else: ?>
+                            <span class="custom-badge-free">GRATUIT</span>
+                        <?php endif; ?>
+                    </div>
                 </div>
-                <div class="game-card-body">
-                    <h5 class="game-title"><?= $title ?></h5>
-                    <p class="game-platform mb-1">
-                        <i class="far fa-calendar-alt mr-1"></i><?= $date ?>
-                        &nbsp;•&nbsp;
-                        <i class="fas fa-map-marker-alt mr-1"></i><?= $lieu ?>
-                    </p>
-                    <p class="game-platform">
-                        <?php if ($time): ?>
-                            <i class="far fa-clock mr-1"></i><?= $time ?>
-                        <?php endif; ?>
-                        <?php if ($duration): ?>
-                            &nbsp;•&nbsp;
-                            <i class="fas fa-stopwatch mr-1"></i><?= $duration ?>
-                        <?php endif; ?>
-                    </p>
-                    <p class="game-description"><?= (strlen($desc) > 160) ? substr($desc,0,160).'...' : $desc; ?></p>
-                    <div class="game-foot">
-                        <span class="game-price-inline">
-                            <?php if ($isPaid): ?>
-                                <?= number_format($prix, 0) ?> TND
-                            <?php else: ?>
-                                Gratuit
+                <div class="event-card-info">
+                    <h4 class="event-title"><?= $title ?></h4>
+                    <div class="event-meta">
+                        <div class="event-meta-item">
+                            <i class="far fa-calendar-alt"></i>
+                            <span><?= $date ?></span>
+                            <?php if ($time): ?>
+                                <span class="time-sep">•</span>
+                                <i class="far fa-clock"></i>
+                                <span><?= $time ?></span>
                             <?php endif; ?>
-                        </span>
-                        <div class="game-stats">
-                            <span><i class="far fa-user"></i><?= $participants ?> participants</span>
+                        </div>
+                        <div class="event-meta-item">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span><?= $lieu ?></span>
                         </div>
                     </div>
-                    <a href="event_details.php?id=<?= $ev['id_evenement']; ?>" class="btn-view-game">Voir les détails</a>
+                    <p class="event-description"><?= (strlen($desc) > 100) ? substr($desc,0,100).'...' : $desc; ?></p>
+                    <div class="event-footer">
+                        <span class="event-participants">
+                            <i class="far fa-user"></i> <?= $participants ?>
+                        </span>
+                        <span class="event-participants ml-3" title="<?= ($ev['vues'] ?? 0) . ' vues' ?>">
+                            <i class="far fa-eye"></i> <?= $ev['vues'] ?? 0 ?>
+                        </span>
+                    </div>
                 </div>
             </div>
         </div>
     <?php endforeach; ?>
 <?php else: ?>
     <div class="col-12">
-        <div class="single_war_text text-center">
-            <h4>No events found</h4>
-            <p>There are currently no events to display.</p>
+        <div class="event-card no-events">
+            <h4>Aucun événement trouvé</h4>
+            <p>Revenez bientôt pour découvrir nos prochains événements</p>
         </div>
     </div>
 <?php endif; ?>
+                </div>
+
+                <div class="row mt-5">
+                    <div class="col-12">
+                        <div class="event-search-container">
+                            <div class="search-wrapper">
+                                <div class="search-icon">
+                                    <i class="fas fa-search"></i>
+                                </div>
+                                <input 
+                                    id="event-search" 
+                                    class="event-search-input" 
+                                    type="text" 
+                                    placeholder="Rechercher par nom ou type d'événement..." 
+                                    autocomplete="off"
+                                />
+                                <div class="search-clear" id="search-clear" style="display:none;">
+                                    <i class="fas fa-times"></i>
+                                </div>
+                            </div>
+                            <div class="search-results-info" id="search-results-info" style="display:none;">
+                                <span id="result-count">0</span> événement(s) trouvé(s)
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
             </div>
@@ -276,6 +339,116 @@ function normalize_event_image($img) {
     <!-- swiper js -->
     <script src="js/swiper.min.js"></script>
     <!-- swiper js -->
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const interpretBtn = document.getElementById('smart-interpret');
+        const resetBtn = document.getElementById('filter-reset');
+        const smartQuery = document.getElementById('smart-query');
+        const items = document.querySelectorAll('#events-row > [data-theme]');
+
+        // Export PHP theme map to JS
+        const THEME_MAP = <?= json_encode($themeMap, JSON_HEX_TAG) ?>;
+
+        function applyFilter() {
+            // no-op when called without parsed filter; keep for compatibility
+        }
+
+        function filterByParsed(parsed) {
+            const theme = parsed.theme || '';
+            const type = parsed.type || '';
+            const date = parsed.date || '';
+
+            items.forEach(item => {
+                const itTheme = item.getAttribute('data-theme') || '';
+                const itType = item.getAttribute('data-type') || '';
+                const itDate = item.getAttribute('data-date') || '';
+                let visible = true;
+
+                if (theme && String(itTheme) !== String(theme)) visible = false;
+                if (type && String(itType) !== String(type)) visible = false;
+                if (date && String(itDate) !== String(date)) visible = false;
+
+                item.style.display = visible ? '' : 'none';
+            });
+        }
+        }
+
+        // Simple natural-language parser for the smart query input
+        function parseSmartQuery(query) {
+            // returns { theme:'', type:'', date:'' }
+            const out = { theme: '', type: '', date: '' };
+            if (!query) return out;
+            const q = query.toLowerCase();
+
+            // detect type keywords
+            if (q.includes('gratuit') || q.includes('free')) out.type = 'gratuit';
+            if (q.includes('payant') || q.includes('pay') || q.includes('payé')) out.type = 'payant';
+
+            // detect relative dates: aujourd'hui, demain, prochain(s)
+            if (q.includes("aujourd")) {
+                out.date = (new Date()).toISOString().slice(0,10);
+            } else if (q.includes('demain')) {
+                const d = new Date(); d.setDate(d.getDate()+1);
+                out.date = d.toISOString().slice(0,10);
+            } else {
+                // look for explicit yyyy-mm-dd or dd-mm-yyyy
+                const iso = q.match(/(20\d{2}-\d{2}-\d{2})/);
+                if (iso) out.date = iso[1];
+                else {
+                    const dmy = q.match(/(\d{2}[-\/]\d{2}[-\/]20\d{2})/);
+                    if (dmy) {
+                        const parts = dmy[1].split(/[-\/]/);
+                        // assume dd-mm-yyyy
+                        out.date = parts[2] + '-' + parts[1] + '-' + parts[0];
+                    }
+                }
+            }
+
+            // detect theme by matching any theme label or id
+            for (const [id, label] of Object.entries(THEME_MAP)) {
+                const lab = String(label).toLowerCase();
+                if (q.includes(lab)) { out.theme = String(id); break; }
+            }
+
+            // fallback: if user typed exact theme id
+            const idMatch = q.match(/\b(\d+)\b/);
+            if (!out.theme && idMatch) {
+                const cand = idMatch[1];
+                if (THEME_MAP[cand]) out.theme = cand;
+            }
+
+            return out;
+        }
+
+        function applySmartQuery(q) {
+            const parsed = parseSmartQuery(q || '');
+            filterByParsed(parsed);
+        }
+
+        if (interpretBtn) interpretBtn.addEventListener('click', function (e) {
+            e.preventDefault();
+            applySmartQuery(smartQuery.value.trim());
+        });
+
+        if (resetBtn) resetBtn.addEventListener('click', function (e) {
+            e.preventDefault();
+            if (smartQuery) smartQuery.value = '';
+            // show all
+            items.forEach(i => i.style.display = '');
+        });
+
+        // allow Enter to interpret as well
+        if (smartQuery) {
+            smartQuery.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    applySmartQuery(smartQuery.value.trim());
+                }
+            });
+        }
+    });
+    </script>
     <script src="js/masonry.pkgd.js"></script>
     <!-- particles js -->
     <script src="js/owl.carousel.min.js"></script>
@@ -291,6 +464,91 @@ function normalize_event_image($img) {
     <script src="js/mail-script.js"></script>
     <!-- custom js -->
     <script src="js/custom.js"></script>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // ===== SEARCH FUNCTIONALITY =====
+        const searchInput = document.getElementById('event-search');
+        const searchClear = document.getElementById('search-clear');
+        const searchResultsInfo = document.getElementById('search-results-info');
+        const resultCount = document.getElementById('result-count');
+        const allItems = document.querySelectorAll('#events-row [data-theme]');
+
+        // Real-time search function
+        function filterEvents(searchTerm) {
+            const term = searchTerm.toLowerCase().trim();
+            let visibleCount = 0;
+
+            allItems.forEach(card => {
+                const title = card.querySelector('.event-title')?.textContent.toLowerCase() || '';
+                const type = card.getAttribute('data-type')?.toLowerCase() || '';
+                const description = card.querySelector('.event-description')?.textContent.toLowerCase() || '';
+                const location = card.querySelector('.event-meta')?.textContent.toLowerCase() || '';
+
+                // Check if search term matches title, type, description or location
+                const matches = 
+                    title.includes(term) || 
+                    type.includes(term) || 
+                    description.includes(term) || 
+                    location.includes(term);
+
+                if (term === '' || matches) {
+                    card.classList.remove('hidden');
+                    card.style.display = '';
+                    visibleCount++;
+                } else {
+                    card.classList.add('hidden');
+                    card.style.display = 'none';
+                }
+            });
+
+            // Update results info
+            if (term !== '') {
+                searchResultsInfo.style.display = 'block';
+                resultCount.textContent = visibleCount;
+            } else {
+                searchResultsInfo.style.display = 'none';
+            }
+            
+            // Reset carousel to first position when filtering
+            currentIndex = 0;
+            updateCarouselPosition();
+        }
+
+        // Event listeners
+        searchInput.addEventListener('input', function(e) {
+            const searchTerm = e.target.value;
+            
+            // Show/hide clear button
+            if (searchTerm.length > 0) {
+                searchClear.style.display = 'flex';
+            } else {
+                searchClear.style.display = 'none';
+            }
+
+            filterEvents(searchTerm);
+        });
+
+        // Clear button functionality
+        searchClear.addEventListener('click', function() {
+            searchInput.value = '';
+            searchClear.style.display = 'none';
+            searchResultsInfo.style.display = 'none';
+            filterEvents('');
+            searchInput.focus();
+        });
+
+        // Optional: Clear search on Escape key
+        searchInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                searchInput.value = '';
+                searchClear.style.display = 'none';
+                searchResultsInfo.style.display = 'none';
+                filterEvents('');
+            }
+        });
+    });
+    </script>
 </body>
 
 </html>

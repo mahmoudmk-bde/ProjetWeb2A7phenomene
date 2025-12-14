@@ -1,5 +1,6 @@
+<?php require_once 'lang/lang_config.php'; ?>
 <!doctype html>
-<html lang="zxx">
+<html lang="<?= get_current_lang() ?>" dir="<?= get_dir() ?>">
 
 <head>
     <meta charset="utf-8">
@@ -16,6 +17,14 @@
     <link rel="stylesheet" href="css/slick.css">
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/event-custom.css">
+    <?php if (get_dir() === 'rtl'): ?>
+    <style>
+        body { text-align: right; direction: rtl; }
+        .navbar-nav { margin-right: auto; margin-left: 0 !important; }
+        .dropdown-menu { text-align: right; }
+        .main_menu .navbar .navbar-nav .nav-item .nav-link { padding: 33px 20px; }
+    </style>
+    <?php endif; ?>
 </head>
 
 <body>
@@ -35,22 +44,22 @@
                             <div class="collapse navbar-collapse main-menu-item" id="navbarSupportedContent">
                                 <ul class="navbar-nav">
                                     <li class="nav-item">
-                                        <a class="nav-link" href="index.html">Home</a>
+                                        <a class="nav-link" href="index.php"><?= __('home') ?></a>
                                     </li>
                                     <li class="nav-item">
-                                        <a class="nav-link" href="fighter.html">fighter</a>
+                                        <a class="nav-link" href="fighter.html"><?= __('fighter') ?></a>
                                     </li>
                                     <li class="nav-item">
-                                        <a class="nav-link" href="team.html">team</a>
+                                        <a class="nav-link" href="team.html"><?= __('team') ?></a>
                                     </li>
                                     <li class="nav-item dropdown">
                                         <a class="nav-link dropdown-toggle" href="blog.html" id="navbarDropdown"
                                             role="button" data-toggle="dropdown" aria-haspopup="true"
                                             aria-expanded="false">
-                                            Blog
+                                            <?= __('blog') ?>
                                         </a>
                                         <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                                            <a class="dropdown-item" href="blog.html"> blog</a>
+                                            <a class="dropdown-item" href="blog.html"><?= __('blog') ?></a>
                                             <a class="dropdown-item" href="single-blog.html">Single blog</a>
                                         </div>
                                     </li>
@@ -58,27 +67,37 @@
                                         <a class="nav-link dropdown-toggle" href="blog.html" id="navbarDropdown1"
                                             role="button" data-toggle="dropdown" aria-haspopup="true"
                                             aria-expanded="false">
-                                            pages
+                                            <?= __('pages') ?>
                                         </a>
                                         <div class="dropdown-menu" aria-labelledby="navbarDropdown1">
                                             <a class="dropdown-item" href="elements.html">Elements</a>
                                         </div>
                                     </li>
                                     <li class="nav-item">
-                                        <a class="nav-link" href="contact.html">Contact</a>
+                                        <a class="nav-link" href="contact.html"><?= __('contact') ?></a>
                                     </li>
                                     <li class="nav-item">
-                                        <a class="nav-link" href="addreclamation.php">Réclamer</a>
+                                        <a class="nav-link" href="addreclamation.php"><?= __('reclaim') ?></a>
                                     </li>
                                     <li class="nav-item">
-                                        <a class="nav-link" href="event.php">Evénement</a>
+                                        <a class="nav-link" href="event.php"><?= __('events') ?></a>
                                     </li>
                                     <li class="nav-item">
-                                        <a class="nav-link" href="my_events.php">Mes événements</a>
+                                        <a class="nav-link" href="my_events.php"><?= __('my_events') ?></a>
+                                    </li>
+                                    <li class="nav-item dropdown">
+                                        <a class="nav-link dropdown-toggle" href="#" id="langDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            <i class="fas fa-globe"></i> <?= strtoupper(get_current_lang()) ?>
+                                        </a>
+                                        <div class="dropdown-menu" aria-labelledby="langDropdown">
+                                            <a class="dropdown-item" href="?lang=fr">Français</a>
+                                            <a class="dropdown-item" href="?lang=en">English</a>
+                                            <a class="dropdown-item" href="?lang=ar">العربية</a>
+                                        </div>
                                     </li>
                                 </ul>
                             </div>
-                            <a href="#" class="btn_1 d-none d-sm-block">Install Now</a>
+                            <a href="#" class="btn_1 d-none d-sm-block"><?= __('install_now') ?></a>
                         </nav>
                     </div>
                 </div>
@@ -170,12 +189,12 @@
                     </div>
                     <div class="col-md-7 col-lg-6 col-xl-5">
                         <div class="about_us_text">
-                            <h2>Find out about us in history</h2>
+                            <h2><?= __('find_out_about_us') ?></h2>
                             <p>Lorem ipsum dolor sit amet, consectetur adipiscing
                                 elit sed do eiusmod tempor incididunt ut labore et
                                 dolore magna aliqua. </p>
-                            <a href="#" class="btn_1">Install Now</a>
-                            <a href="#" class="btn_1">Watch Tutorial</a>
+                            <a href="#" class="btn_1"><?= __('install_now') ?></a>
+                            <a href="#" class="btn_1"><?= __('watch_tutorial') ?></a>
                         </div>
                     </div>
                 </div>
@@ -187,7 +206,7 @@
                 <div class="row justify-content-center">
                     <div class="col-lg-8">
                         <div class="section_tittle text-center">
-                            <h2>Tous les événements</h2>
+                            <h2><?= __('all_events') ?></h2>
                         </div>
                     </div>
                 </div>
@@ -212,15 +231,15 @@
                                     <div class="card-body">
                                         <h5 class="card-title"><?= htmlspecialchars($ev['titre']) ?></h5>
                                         <p class="card-text text-muted"><?= !empty($ev['date_evenement']) ? date('d/m/Y', strtotime($ev['date_evenement'])) : '' ?> — <?= htmlspecialchars($ev['lieu']) ?></p>
-                                        <p class="card-text">Participants: <span class="badge participants-badge"><?= $count ?></span></p>
-                                        <a href="event_details.php?id=<?= $ev['id_evenement'] ?>" class="btn btn-sm btn-outline-light">Show details</a>
+                                        <p class="card-text"><?= __('participants') ?>: <span class="badge participants-badge"><?= $count ?></span></p>
+                                        <a href="event_details.php?id=<?= $ev['id_evenement'] ?>" class="btn btn-sm btn-outline-light"><?= __('show_details') ?></a>
                                     </div>
                                 </div>
                             </div>
                         <?php endforeach; ?>
                     <?php else: ?>
                         <div class="col-12">
-                            <div class="alert alert-info">Aucun événement disponible pour le moment.</div>
+                            <div class="alert alert-info"><?= __('no_events') ?></div>
                         </div>
                     <?php endif; ?>
                 </div>
@@ -319,7 +338,7 @@
                 <div class="row justify-content-center">
                     <div class="col-lg-8">
                         <div class="section_tittle text-center">
-                            <h2>Latest War Fight</h2>
+                            <h2><?= __('latest_war_fight') ?></h2>
                         </div>
                     </div>
                 </div>
@@ -517,7 +536,7 @@
                 <div class="row justify-content-center">
                     <div class="col-lg-8">
                         <div class="section_tittle text-center">
-                            <h2>Upcoming Fighter</h2>
+                            <h2><?= __('upcoming_fighter') ?></h2>
                         </div>
                     </div>
                 </div>
@@ -541,21 +560,21 @@
                 <div class="row justify-content-center">
                     <div class="col-lg-6">
                         <div class="section_tittle text-center">
-                            <h2>Pricing plans</h2>
+                            <h2><?= __('pricing_plans') ?></h2>
                         </div>
                     </div>
                 </div>
                 <div class="row justify-content-center">
                     <div class="col-lg-3 col-sm-6">
                         <div class="single_pricing_part">
-                            <p>Silver Package</p>
+                            <p><?= __('silver_package') ?></p>
                             <h3>$50.00</h3>
                             <ul>
                                 <li>2GB Bandwidth</li>
                                 <li>Two Account</li>
                                 <li>15GB Storage</li>
                             </ul>
-                            <a href="#" class="btn_2">Choose Plane</a>
+                            <a href="#" class="btn_2"><?= __('choose_plane') ?></a>
                         </div>
                     </div>
                     <div class="col-lg-3 col-sm-6">
@@ -603,7 +622,7 @@
                         </div>
                         <div class="col-sm-6 col-lg-3">
                             <div class="single_footer_part">
-                                <h4>Contact Info</h4>
+                                <h4><?= __('contact_info') ?></h4>
                                 <p>Address : Your address goes
                                     here, your demo address.
                                     Bangladesh.</p>
@@ -613,19 +632,19 @@
                         </div>
                         <div class="col-sm-6 col-lg-3">
                             <div class="single_footer_part">
-                                <h4>Important Link</h4>
+                                <h4><?= __('important_link') ?></h4>
                                 <ul class="list-unstyled">
                                     <li><a href=""> WHMCS-bridge</a></li>
-                                    <li><a href="">Search Domain</a></li>
-                                    <li><a href="">My Account</a></li>
-                                    <li><a href="">Shopping Cart</a></li>
-                                    <li><a href="">Our Shop</a></li>
+                                    <li><a href=""><?= __('search_domain') ?></a></li>
+                                    <li><a href=""><?= __('my_account') ?></a></li>
+                                    <li><a href=""><?= __('shopping_cart') ?></a></li>
+                                    <li><a href=""><?= __('our_shop') ?></a></li>
                                 </ul>
                             </div>
                         </div>
                         <div class="col-sm-6 col-lg-3">
                             <div class="single_footer_part">
-                                <h4>Newsletter</h4>
+                                <h4><?= __('newsletter') ?></h4>
                                 <p>Heaven fruitful doesn't over lesser in days. Appear creeping seasons deve behold
                                     bearing
                                     days

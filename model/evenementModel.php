@@ -30,15 +30,19 @@ class EvenementModel {
     }
 
     public function getAllEvents() {
-        $query = "SELECT e.* 
-                  FROM evenement e 
-                  LEFT JOIN participation p ON p.id_evenement = e.id_evenement 
-                  ORDER BY e.date_evenement DESC";
-        
-        $stmt = $this->conn->prepare($query);
-        $stmt->execute();
-        
-        return $stmt->fetchAll();
+        try {
+            $query = "SELECT e.* 
+                      FROM evenement e 
+                      ORDER BY e.date_evenement DESC";
+            
+            $stmt = $this->conn->prepare($query);
+            $stmt->execute();
+            
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Error in getAllEvents: " . $e->getMessage());
+            return [];
+        }
     }
  
     public function getById($id) {
@@ -124,6 +128,11 @@ class EvenementModel {
         
         $result = $stmt->fetch();
         return $result['count'];
+    }
+    public function incrementViews($id) {
+        $query = "UPDATE evenement SET vues = vues + 1 WHERE id_evenement = :id";
+        $stmt = $this->conn->prepare($query);
+        return $stmt->execute([':id' => $id]);
     }
 }
 ?>

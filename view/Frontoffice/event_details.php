@@ -30,13 +30,23 @@ $message = '';
 $alertType = 'info';
 $event_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 
-if ($event_id <= 0) {
-    $message = 'Identifiant d’événement invalide.';
-} else {
-    $event = $eventModel->getById($event_id);
-    if (!$event) {
-        $message = 'Événement introuvable.';
+// Si $event n'est pas déjà défini par le contrôleur
+if (!isset($event)) {
+    if ($event_id <= 0) {
+        $message = 'Identifiant d’événement invalide.';
+    } else {
+        $event = $eventModel->getById($event_id);
+        if (!$event) {
+            $message = 'Événement introuvable.';
+        } else {
+            // Increment views (standalone access)
+            $eventModel->incrementViews($event_id);
+            $event['vues'] = ($event['vues'] ?? 0) + 1;
+        }
     }
+} elseif (isset($event)) {
+    // Si l'événement est passé par le contrôleur, s'assurer que event_id est correct
+    $event_id = $event['id_evenement'];
 }
 
 if (isset($event)) {
@@ -51,49 +61,70 @@ if (isset($event)) {
     $isPaidEvent = false;
 }
 
+// User-defined limit for sold out logic
+$eventLimit = 50; // You can change this value
+
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && isset($event) && $event) {
     $action = $_POST['action'];
 
     if ($action === 'guest_participate') {
         $prenom = secure_data($_POST['prenom'] ?? '');
         $nom = secure_data($_POST['nom'] ?? '');
-    $email = isset($_POST['email']) ? filter_var($_POST['email'], FILTER_SANITIZE_EMAIL) : '';
+        $email = isset($_POST['email']) ? filter_var($_POST['email'], FILTER_SANITIZE_EMAIL) : '';
 
-    if (empty($prenom) || empty($nom) || empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $message = 'Veuillez fournir un prénom, un nom et un email valides.';
+        // Validation du prénom
+        if (empty($prenom) || strlen($prenom) < 2) {
+            $message = 'Le prénom doit contenir au moins 2 caractères.';
             $alertType = 'danger';
-    } else {
+        }
+        // Validation du nom
+        elseif (empty($nom) || strlen($nom) < 2) {
+            $message = 'Le nom doit contenir au moins 2 caractères.';
+            $alertType = 'danger';
+        }
+        // Validation de l'email
+        elseif (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $message = 'Veuillez fournir un email valide.';
+            $alertType = 'danger';
+        } else {
         $db = (new Database())->getConnection();
         try {
-            $stmt = $db->prepare('SELECT id_utilisateur FROM utilisateur WHERE email = :email LIMIT 1');
-            $stmt->execute([':email' => $email]);
-            $row = $stmt->fetch();
-            if ($row && isset($row['id_utilisateur'])) {
-                $user_id = (int)$row['id_utilisateur'];
+            // If user is already logged in, use their session id and skip lookup/creation
+            if (isset($_SESSION['user_id']) && $_SESSION['user_id']) {
+                $user_id = (int) $_SESSION['user_id'];
             } else {
-                $ins = $db->prepare('INSERT INTO utilisateur (nom, prenom, email) VALUES (:nom, :prenom, :email)');
-                $ins->execute([':nom' => $nom, ':prenom' => $prenom, ':email' => $email]);
-                $user_id = (int)$db->lastInsertId();
+                $stmt = $db->prepare('SELECT id_utilisateur FROM utilisateur WHERE email = :email LIMIT 1');
+                $stmt->execute([':email' => $email]);
+                $row = $stmt->fetch();
+                if ($row && isset($row['id_utilisateur'])) {
+                    $user_id = (int)$row['id_utilisateur'];
+                } else {
+                    $ins = $db->prepare('INSERT INTO utilisateur (nom, prenom, email) VALUES (:nom, :prenom, :email)');
+                    $ins->execute([':nom' => $nom, ':prenom' => $prenom, ':email' => $email]);
+                    $user_id = (int)$db->lastInsertId();
+                }
+                // Persist session for future actions
+                $_SESSION['user_id'] = $user_id;
             }
 
             if ($participationModel->isUserRegistered($user_id, $event_id)) {
-                    $message = 'Vous êtes déjà inscrit à cet événement.';
-                    $alertType = 'warning';
+                $message = 'Vous êtes déjà inscrit à cet événement.';
+                $alertType = 'warning';
             } else {
                 $created = $participationModel->create($event_id, $user_id, date('Y-m-d'), 'en attente');
                 if ($created) {
-                    $_SESSION['user_id'] = $user_id;
-                        $message = 'Votre demande a été enregistrée et est en attente de validation.';
-                        $alertType = 'success';
+                    $message = 'Votre demande a été enregistrée et est en attente de validation.';
+                    $alertType = 'success';
                 } else {
-                        $message = 'Impossible d’enregistrer la participation.';
-                        $alertType = 'danger';
-                    }
+                    $message = 'Impossible d’enregistrer la participation.';
+                    $alertType = 'danger';
                 }
-            } catch (Exception $e) {
-                $message = 'Erreur lors de l’enregistrement : ' . $e->getMessage();
-                $alertType = 'danger';
             }
+        } catch (Exception $e) {
+            $message = 'Erreur lors de l’enregistrement : ' . $e->getMessage();
+            $alertType = 'danger';
+        }
         }
     } elseif ($action === 'pay_and_participate') {
         if (!$isPaidEvent) {
@@ -104,74 +135,112 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && isset($e
             $nom = secure_data($_POST['nom'] ?? '');
             $email = isset($_POST['email']) ? filter_var($_POST['email'], FILTER_SANITIZE_EMAIL) : '';
             $quantite = isset($_POST['quantite']) ? (int) $_POST['quantite'] : 1;
-            $quantite = max(1, $quantite);
             $cardNumber = preg_replace('/\D+/', '', $_POST['card_number'] ?? '');
             $cardExp = strtoupper(trim($_POST['card_exp'] ?? ''));
             $cardCvv = preg_replace('/\D+/', '', $_POST['card_cvv'] ?? '');
 
-            $expiryValid = false;
-            if (preg_match('/^(0[1-9]|1[0-2])\/(\d{2})$/', $cardExp, $match)) {
-                $month = (int)$match[1];
-                $year = (int)$match[2] + 2000;
-                $expiryDate = DateTime::createFromFormat('Y-m', sprintf('%04d-%02d', $year, $month));
-                $expiryValid = $expiryDate && $expiryDate >= new DateTime('first day of this month');
-            }
-
-            if (empty($prenom) || empty($nom) || empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                $message = 'Veuillez renseigner vos informations personnelles.';
+            // Validation du prénom
+            if (empty($prenom) || strlen($prenom) < 2) {
+                $message = 'Le prénom doit contenir au moins 2 caractères.';
                 $alertType = 'danger';
-            } elseif (strlen($cardNumber) < 13 || strlen($cardNumber) > 19) {
+            }
+            // Validation du nom
+            elseif (empty($nom) || strlen($nom) < 2) {
+                $message = 'Le nom doit contenir au moins 2 caractères.';
+                $alertType = 'danger';
+            }
+            // Validation de l'email
+            elseif (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                $message = 'Veuillez fournir un email valide.';
+                $alertType = 'danger';
+            }
+            // Validation de la quantité
+            elseif ($quantite < 1 || $quantite > 100) {
+                $message = 'La quantité doit être entre 1 et 100.';
+                $alertType = 'danger';
+            }
+            // Validation du numéro de carte
+            elseif (strlen($cardNumber) < 13 || strlen($cardNumber) > 19) {
                 $message = 'Le numéro de carte doit contenir entre 13 et 19 chiffres.';
                 $alertType = 'danger';
-            } elseif (!$expiryValid) {
-                $message = 'La date d\'expiration n\'est pas valide (format MM/AA, carte non expirée).';
-                $alertType = 'danger';
-            } elseif (strlen($cardCvv) < 3 || strlen($cardCvv) > 4) {
-                $message = 'Le CVV doit contenir 3 ou 4 chiffres.';
+            }
+            // Validation du format de date d'expiration
+            elseif (!preg_match('/^(0[1-9]|1[0-2])\/(\d{2})$/', $cardExp)) {
+                $message = 'La date d\'expiration doit être au format MM/AA.';
                 $alertType = 'danger';
             } else {
-                $db = (new Database())->getConnection();
-                try {
-                    $stmt = $db->prepare('SELECT id_utilisateur FROM utilisateur WHERE email = :email LIMIT 1');
-                    $stmt->execute([':email' => $email]);
-                    $row = $stmt->fetch();
-                    if ($row && isset($row['id_utilisateur'])) {
-                        $user_id = (int)$row['id_utilisateur'];
-                    } else {
-                        $ins = $db->prepare('INSERT INTO utilisateur (nom, prenom, email) VALUES (:nom, :prenom, :email)');
-                        $ins->execute([':nom' => $nom, ':prenom' => $prenom, ':email' => $email]);
-                        $user_id = (int)$db->lastInsertId();
-                    }
-
-    if ($participationModel->isUserRegistered($user_id, $event_id)) {
-                        $message = 'Vous êtes déjà inscrit à cet événement.';
-                        $alertType = 'warning';
-    } else {
-                        $reference = 'PAY-' . strtoupper(substr(md5(uniqid('', true)), 0, 8));
-                        $montant_total = $quantite * $price;
-                        $created = $participationModel->create(
-                            $event_id,
-                            $user_id,
-                            date('Y-m-d'),
-                            'acceptée',
-                            $quantite,
-                            $montant_total,
-                            'Carte bancaire',
-                            $reference
-                        );
-
-        if ($created) {
-                            $_SESSION['user_id'] = $user_id;
-                            $message = 'Paiement confirmé ! Votre place est maintenant réservée.';
-                            $alertType = 'success';
-        } else {
-                            $message = 'Une erreur est survenue lors du paiement.';
-                            $alertType = 'danger';
-                        }
-                    }
-                } catch (Exception $e) {
-                    $message = 'Erreur de paiement : ' . $e->getMessage();
+                // Vérifier que la carte n'est pas expirée
+                $month = (int)substr($cardExp, 0, 2);
+                $year = (int)substr($cardExp, 3, 2) + 2000;
+                $expiryDate = DateTime::createFromFormat('Y-m', sprintf('%04d-%02d', $year, $month));
+                if (!$expiryDate || $expiryDate < new DateTime('first day of this month')) {
+                    $message = 'La carte est expirée.';
                     $alertType = 'danger';
+                }
+                // Validation du CVV
+                elseif (strlen($cardCvv) < 3 || strlen($cardCvv) > 4) {
+                    $message = 'Le CVV doit contenir 3 ou 4 chiffres.';
+                    $alertType = 'danger';
+                } else {
+                    $db = (new Database())->getConnection();
+                    try {
+                        $stmt = $db->prepare('SELECT id_utilisateur FROM utilisateur WHERE email = :email LIMIT 1');
+                        $stmt->execute([':email' => $email]);
+                        $row = $stmt->fetch();
+                        if ($row && isset($row['id_utilisateur'])) {
+                            $user_id = (int)$row['id_utilisateur'];
+                        } else {
+                            $ins = $db->prepare('INSERT INTO utilisateur (nom, prenom, email) VALUES (:nom, :prenom, :email)');
+                            $ins->execute([':nom' => $nom, ':prenom' => $prenom, ':email' => $email]);
+                            $user_id = (int)$db->lastInsertId();
+                        }
+
+                        // If user is logged in, use session id, otherwise find/create by email
+                        if (isset($_SESSION['user_id']) && $_SESSION['user_id']) {
+                            $user_id = (int) $_SESSION['user_id'];
+                        } else {
+                            $stmt = $db->prepare('SELECT id_utilisateur FROM utilisateur WHERE email = :email LIMIT 1');
+                            $stmt->execute([':email' => $email]);
+                            $row = $stmt->fetch();
+                            if ($row && isset($row['id_utilisateur'])) {
+                                $user_id = (int)$row['id_utilisateur'];
+                            } else {
+                                $ins = $db->prepare('INSERT INTO utilisateur (nom, prenom, email) VALUES (:nom, :prenom, :email)');
+                                $ins->execute([':nom' => $nom, ':prenom' => $prenom, ':email' => $email]);
+                                $user_id = (int)$db->lastInsertId();
+                            }
+                            $_SESSION['user_id'] = $user_id;
+                        }
+
+                        if ($participationModel->isUserRegistered($user_id, $event_id)) {
+                            $message = 'Vous êtes déjà inscrit à cet événement.';
+                            $alertType = 'warning';
+                        } else {
+                            $reference = 'PAY-' . strtoupper(substr(md5(uniqid('', true)), 0, 8));
+                            $montant_total = $quantite * $price;
+                            $created = $participationModel->create(
+                                $event_id,
+                                $user_id,
+                                date('Y-m-d'),
+                                'acceptée',
+                                $quantite,
+                                $montant_total,
+                                'Carte bancaire',
+                                $reference
+                            );
+
+                            if ($created) {
+                                $message = 'Paiement confirmé ! Votre place est maintenant réservée.';
+                                $alertType = 'success';
+                            } else {
+                                $message = 'Une erreur est survenue lors du paiement.';
+                                $alertType = 'danger';
+                            }
+                        }
+                    } catch (Exception $e) {
+                        $message = 'Erreur de paiement : ' . $e->getMessage();
+                        $alertType = 'danger';
+                    }
                 }
             }
         }
@@ -181,8 +250,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && isset($e
         $isRegistered = isset($_SESSION['user_id']) ? $participationModel->isUserRegistered($_SESSION['user_id'], $event_id) : false;
 }
 ?>
+<?php require_once 'lang/lang_config.php'; ?>
 <!doctype html>
-<html lang="fr">
+<html lang="<?= get_current_lang() ?>" dir="<?= get_dir() ?>">
 
 <head>
     <meta charset="utf-8">
@@ -199,6 +269,126 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && isset($e
     <link rel="stylesheet" href="css/slick.css">
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/event-custom.css">
+    <style>
+        /* New Event Page Styles */
+        .ticket-sidebar {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            color: #333;
+        }
+        .ticket-sidebar-header {
+            background-color: #1a1a1a;
+            color: #fff;
+            text-align: center;
+            padding: 10px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            border-bottom: 2px solid #ff0000;
+        }
+        .ticket-sidebar-body {
+            padding: 0;
+        }
+        .ticket-item {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        .ticket-item:last-child {
+            border-bottom: none;
+        }
+        .ticket-row-top {
+            display: flex;
+            justify-content: space-between;
+            color: #888;
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+        }
+        .ticket-row-top i {
+            margin-right: 5px;
+        }
+        .ticket-row-main {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .ticket-name {
+            font-weight: bold;
+            font-size: 1rem;
+        }
+        .ticket-price {
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        .ticket-price sup {
+            font-size: 0.7rem;
+        }
+        .sold-out-badge {
+            background-color: #000;
+            color: #fff;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            display: block;
+            text-align: center;
+            width: 100%;
+        }
+        
+        /* Right Content Styles */
+        .event-top-info-bar {
+            display: flex;
+            justify-content: space-between;
+            background-color: #1a1a1a;
+            padding: 20px 0;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            border-bottom: 1px solid #333;
+        }
+        .info-col {
+            text-align: center;
+            flex: 1;
+            position: relative;
+        }
+        .info-col:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 20%;
+            height: 60%;
+            width: 1px;
+            background-color: #333;
+        }
+        .info-icon {
+            font-size: 2rem;
+            color: #ff0000;
+            margin-bottom: 10px;
+        }
+        .info-text {
+            font-size: 0.9rem;
+            color: #fff;
+        }
+        .event-main-image-container {
+            width: 100%;
+            overflow: hidden;
+            border-radius: 4px;
+        }
+        .user-avatar-placeholder {
+            font-size: 0.8rem;
+        }
+        
+        <?php if (get_dir() === 'rtl'): ?>
+        body { text-align: right; direction: rtl; }
+        .navbar-nav { margin-right: auto; margin-left: 0 !important; }
+        .dropdown-menu { text-align: right; }
+        .main_menu .navbar .navbar-nav .nav-item .nav-link { padding: 33px 20px; }
+        .text-right { text-align: left !important; } 
+        .mr-3 { margin-left: 1rem !important; margin-right: 0 !important; }
+        .info-col:not(:last-child)::after { left: 0; right: auto; }
+        <?php endif; ?>
+    </style>
 </head>
 
 <body>
@@ -208,7 +398,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && isset($e
                 <div class="row align-items-center">
                     <div class="col-lg-12">
                         <nav class="navbar navbar-expand-lg navbar-light">
-                            <a class="navbar-brand" href="index.html"> <img src="img/logo.png" alt="logo"> </a>
+                            <a class="navbar-brand" href="index.php"> <img src="img/logo.png" alt="logo"> </a>
                             <button class="navbar-toggler" type="button" data-toggle="collapse"
                                 data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
                                 aria-expanded="false" aria-label="Toggle navigation">
@@ -218,22 +408,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && isset($e
                             <div class="collapse navbar-collapse main-menu-item" id="navbarSupportedContent">
                                 <ul class="navbar-nav">
                                     <li class="nav-item">
-                                        <a class="nav-link" href="index.html">Home</a>
+                                        <a class="nav-link" href="index.php"><?= __('home') ?></a>
                                     </li>
                                     <li class="nav-item">
-                                        <a class="nav-link" href="fighter.html">fighter</a>
+                                        <a class="nav-link" href="fighter.html"><?= __('fighter') ?></a>
                                     </li>
                                     <li class="nav-item">
-                                        <a class="nav-link" href="team.html">team</a>
+                                        <a class="nav-link" href="team.html"><?= __('team') ?></a>
                                     </li>
                                     <li class="nav-item dropdown">
                                         <a class="nav-link dropdown-toggle" href="blog.html" id="navbarDropdown"
                                             role="button" data-toggle="dropdown" aria-haspopup="true"
                                             aria-expanded="false">
-                                            Blog
+                                            <?= __('blog') ?>
                                         </a>
                                         <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                                            <a class="dropdown-item" href="blog.html"> blog</a>
+                                            <a class="dropdown-item" href="blog.html"><?= __('blog') ?></a>
                                             <a class="dropdown-item" href="single-blog.html">Single blog</a>
                                         </div>
                                     </li>
@@ -241,27 +431,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && isset($e
                                         <a class="nav-link dropdown-toggle" href="blog.html" id="navbarDropdown1"
                                             role="button" data-toggle="dropdown" aria-haspopup="true"
                                             aria-expanded="false">
-                                            pages
+                                            <?= __('pages') ?>
                                         </a>
                                         <div class="dropdown-menu" aria-labelledby="navbarDropdown1">
                                             <a class="dropdown-item" href="elements.html">Elements</a>
                                         </div>
                                     </li>
                                     <li class="nav-item">
-                                        <a class="nav-link" href="contact.html">Contact</a>
+                                        <a class="nav-link" href="contact.html"><?= __('contact') ?></a>
                                     </li>
                                     <li class="nav-item">
-                                        <a class="nav-link" href="addreclamation.php">Réclamer</a>
+                                        <a class="nav-link" href="addreclamation.php"><?= __('reclaim') ?></a>
                                     </li>
                                     <li class="nav-item">
-                                        <a class="nav-link" href="event.php">Evénement</a>
+                                        <a class="nav-link" href="event.php"><?= __('events') ?></a>
                                     </li>
                                     <li class="nav-item">
-                                        <a class="nav-link" href="my_events.php">Mes événements</a>
+                                        <a class="nav-link" href="my_events.php"><?= __('my_events') ?></a>
+                                    </li>
+                                    <!-- Language Selector -->
+                                    <li class="nav-item dropdown">
+                                        <a class="nav-link dropdown-toggle" href="#" id="langDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            <i class="fas fa-globe"></i> <?= strtoupper(get_current_lang()) ?>
+                                        </a>
+                                        <div class="dropdown-menu" aria-labelledby="langDropdown">
+                                            <a class="dropdown-item" href="?id=<?= $event_id ?>&lang=fr">Français</a>
+                                            <a class="dropdown-item" href="?id=<?= $event_id ?>&lang=en">English</a>
+                                            <a class="dropdown-item" href="?id=<?= $event_id ?>&lang=ar">العربية</a>
+                                        </div>
                                     </li>
                                 </ul>
                             </div>
-                            <a href="event.php" class="btn_1 d-none d-sm-block">Tous les événements</a>
+                            <a href="event.php" class="btn_1 d-none d-sm-block"><?= __('all_events') ?></a>
                         </nav>
                     </div>
                 </div>
@@ -294,121 +495,140 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && isset($e
                 <?php endif; ?>
 
                 <?php if (isset($event) && $event): ?>
-                <div class="row">
                     <?php
                         $img = normalize_event_image($event['image'] ?? null);
                         $accepted_count = (int) $eventModel->countParticipants($event_id);
                         $heure = !empty($event['heure_evenement']) ? substr($event['heure_evenement'], 0, 5) : '--:--';
+                        $duree = isset($event['duree_minutes']) ? $event['duree_minutes'] . ' min' : '2 heures';
+                        $isFull = $accepted_count >= $eventLimit;
+                        
+                        // Determine button status
+                        $buttonText = $isPaidEvent ? 'Acheter' : 'Participer';
+                        $buttonClass = 'btn-buy-now';
+                        $buttonDisabled = false;
+                        $badgeText = '';
+                        $badgeClass = '';
+                        
+                        if ($isFull) {
+                            $buttonDisabled = true;
+                            if ($isPaidEvent) {
+                                $badgeText = 'Sold Out';
+                                $badgeClass = 'badge-sold-out';
+                            } else {
+                                $badgeText = 'Complet';
+                                $badgeClass = 'badge-sold-out';
+                            }
+                        }
                     ?>
-                    <div class="col-lg-7">
-                        <div class="game-detail-card mb-4">
-                            <img src="<?= htmlspecialchars($img) ?>" alt="<?= htmlspecialchars($event['titre']) ?>" class="game-main-image img-fluid mb-3">
-                            <div class="info-grid">
-                                <div class="info-item">
-                                    <i class="far fa-calendar-alt"></i>
-                                    <div>
-                                        <div class="info-label">Date</div>
-                                        <strong><?= !empty($event['date_evenement']) ? date('d M Y', strtotime($event['date_evenement'])) : 'À confirmer' ?></strong>
-                                    </div>
-                                </div>
-                                <div class="info-item">
-                                    <i class="far fa-clock"></i>
-                                    <div>
-                                        <div class="info-label">Heure</div>
-                                        <strong><?= $heure ?></strong>
-                                    </div>
-                                </div>
-                                <div class="info-item">
-                                    <i class="fas fa-map-marker-alt"></i>
-                                    <div>
-                                        <div class="info-label">Lieu</div>
-                                        <strong><?= htmlspecialchars($event['lieu']) ?></strong>
-                                    </div>
-                                </div>
-                                <div class="info-item">
-                                    <i class="fas fa-stream"></i>
-                                    <div>
-                                        <div class="info-label">Thème</div>
-                                        <strong><?= theme_label($event['id_organisation'], $themeMap) ?></strong>
-                                    </div>
-                                </div>
+                <div class="row">
+                    <!-- Left Sidebar: Billets -->
+                    <div class="col-lg-4">
+                        <div class="ticket-sidebar">
+                            <div class="ticket-sidebar-header">
+                                - BILLETS -
                             </div>
-                            <p class="description-text mt-3"><?= nl2br(htmlspecialchars($event['description'])) ?></p>
+                            <div class="ticket-sidebar-body">
+                                <div class="ticket-item">
+                                    <div class="ticket-row-top">
+                                        <div class="ticket-date"><i class="far fa-calendar-alt"></i> <?= !empty($event['date_evenement']) ? date('d/m/Y', strtotime($event['date_evenement'])) : '--/--/----' ?></div>
+                                        <div class="ticket-time"><i class="far fa-clock"></i> <?= $heure ?></div>
+                                    </div>
+                                    <div class="ticket-row-main">
+                                        <div class="ticket-name"><?= htmlspecialchars($event['titre']) ?></div>
+                                        <div class="ticket-price">
+                                            <?= $isPaidEvent ? number_format($price, 0) . '<sup>TND</sup>' : 'Gratuit' ?>
+                                        </div>
+                                    </div>
+                                    <div class="ticket-row-bottom">
+                                        <?php if ($isFull): ?>
+                                            <span class="sold-out-badge"><?= $badgeText ?></span>
+                                        <?php else: ?>
+                                            <?php if (!$isRegistered): ?>
+                                                <?php if ($isPaidEvent): ?>
+                                                    <button type="button" class="btn-buy-now btn-sm btn-block" data-toggle="modal" data-target="#paymentModal">
+                                                        Acheter
+                                                    </button>
+                                                <?php else: ?>
+                                                    <button type="button" class="btn-buy-now btn-sm btn-block" data-toggle="modal" data-target="#participateModal">
+                                                        Participer
+                                                    </button>
+                                                <?php endif; ?>
+                                            <?php else: ?>
+                                                <div class="alert alert-success py-1 mb-0 text-center" style="font-size: 0.8rem;">Inscrit</div>
+                                            <?php endif; ?>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                                <!-- Example of another ticket category if needed (commented out) -->
+                                <!-- 
+                                <div class="ticket-item disabled">
+                                    <div class="ticket-row-top">...</div>
+                                    <span class="sold-out-badge">Sold Out</span>
+                                </div>
+                                -->
+                            </div>
                         </div>
 
-                        <div class="game-detail-card">
+                        <!-- Participants Section in Sidebar -->
+                        <div class="game-detail-card mt-4 text-center" style="background-color: #1a1a1a; border-radius: 4px; padding: 15px;">
                             <div class="card-header bg-transparent border-0 px-0">
-                                <h4 class="text-white mb-3">Participants (acceptés)</h4>
+                                <h5 class="mb-3">Participants (<?= $accepted_count ?>/<?= $eventLimit ?>)</h5>
                             </div>
                             <?php if (!empty($participants)): ?>
-                                <div class="list-group list-group-flush mt-2">
+                                <div class="list-group list-group-flush mt-2" style="max-height: 300px; overflow-y: auto;">
                                     <?php foreach ($participants as $p): ?>
-                                        <div class="list-group-item bg-transparent text-light px-0 py-2">
-                                            <div class="d-flex justify-content-between align-items-center">
-                                                <div>
-                                                    <div class="font-weight-bold"><?= htmlspecialchars($p['prenom'] . ' ' . $p['nom']) ?></div>
-                                                    <div class="small text-muted"><?= htmlspecialchars($p['email']) ?></div>
+                                        <div class="list-group-item bg-transparent px-0 py-2 border-bottom-0">
+                                            <div class="d-flex align-items-center justify-content-center">
+                                                <div class="mr-3">
+                                                    <div class="user-avatar-placeholder rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center" style="width: 30px; height: 30px; font-size: 12px;">
+                                                        <?= strtoupper(substr($p['prenom'], 0, 1) . substr($p['nom'], 0, 1)) ?>
+                                                    </div>
                                                 </div>
-                                                <div class="small text-muted"><?= !empty($p['gamer_tag']) ? htmlspecialchars($p['gamer_tag']) : '-' ?></div>
+                                                <div>
+                                                    <div class="font-weight-bold" style="font-size: 0.9rem; color: #fff;"><?= htmlspecialchars($p['prenom'] . ' ' . $p['nom']) ?></div>
+                                                </div>
                                             </div>
                                         </div>
                                     <?php endforeach; ?>
                                 </div>
                             <?php else: ?>
-                                <div class="text-muted">Aucun participant pour le moment.</div>
+                                <div class="text-muted small">Soyez le premier à participer !</div>
                             <?php endif; ?>
                         </div>
                     </div>
-                    <div class="col-lg-5">
-                        <div class="ticket-card mb-4">
-                            <div class="ticket-card-header">
-                                <div>
-                                    <h4>Billetterie</h4>
-                                    <p><?= $isPaidEvent ? 'Réservez votre place en ligne' : 'Participation gratuite' ?></p>
-                                </div>
-                                <span class="badge <?= $isPaidEvent ? 'badge-paid' : 'badge-free' ?>">
-                                    <?= $isPaidEvent ? number_format($price, 0) . ' TND' : 'Gratuit' ?>
-                                </span>
+
+                    <!-- Right Content: Event Details -->
+                    <div class="col-lg-8">
+                        <div class="event-top-info-bar">
+                            <div class="info-col">
+                                <div class="info-icon"><i class="fas fa-building"></i></div>
+                                <div class="info-text"><?= htmlspecialchars($event['lieu']) ?></div>
                             </div>
-                            <div class="ticket-card-body">
-                                <div class="ticket-info">
-                                    <div>
-                                        <div class="ticket-label">Date</div>
-                                        <strong><?= !empty($event['date_evenement']) ? date('d/m/Y', strtotime($event['date_evenement'])) : 'À venir' ?></strong>
-                                    </div>
-                                    <div>
-                                        <div class="ticket-label">Heure</div>
-                                        <strong><?= $heure ?></strong>
-                                    </div>
-                                    <div>
-                                        <div class="ticket-label">Participants</div>
-                                        <strong><?= $accepted_count ?></strong>
-                                    </div>
-                                </div>
-                                <?php if (!$isRegistered): ?>
-                                    <?php if ($isPaidEvent): ?>
-                                        <div class="quantity-wrapper">
-                                            <label>Nombre de billets</label>
-                                            <div class="quantity-control">
-                                                <button class="quantity-btn" type="button" data-direction="down">-</button>
-                                                <input type="number" id="ticketQuantity" value="1" min="1">
-                                                <button class="quantity-btn" type="button" data-direction="up">+</button>
-                                            </div>
-                                        </div>
-                                        <div class="ticket-total">
-                                            <span>Total</span>
-                                            <strong id="ticketTotal"><?= number_format($price, 2) ?> TND</strong>
-                                        </div>
-                                        <button type="button" class="btn-buy-now mt-3" data-toggle="modal" data-target="#paymentModal">Payer maintenant</button>
-                                    <?php else: ?>
-                                        <button type="button" class="btn-buy-now mt-3" data-toggle="modal" data-target="#participateModal">
-                                            Participer gratuitement
-                                        </button>
-                                    <?php endif; ?>
-                                    <small class="text-muted d-block mt-2">Vous recevrez un email de confirmation.</small>
-                                <?php else: ?>
-                                    <div class="alert alert-success mt-3 mb-0">Vous êtes inscrit à cet événement.</div>
-                                <?php endif; ?>
+                            <div class="info-col">
+                                <div class="info-icon"><i class="fas fa-hourglass-half"></i></div>
+                                <div class="info-text"><?= $duree ?></div>
+                            </div>
+                            <div class="info-col">
+                                <div class="info-icon"><i class="far fa-calendar-alt"></i></div>
+                                <div class="info-text"><?= !empty($event['date_evenement']) ? date('d F Y', strtotime($event['date_evenement'])) : '' ?></div>
+                            </div>
+                            <div class="info-col">
+                                <div class="info-icon"><i class="far fa-clock"></i></div>
+                                <div class="info-text"><?= $heure ?></div>
+                            </div>
+                        </div>
+
+                        <div class="event-main-image-container">
+                            <img src="<?= htmlspecialchars($img) ?>" alt="<?= htmlspecialchars($event['titre']) ?>" class="img-fluid w-100">
+                        </div>
+
+                        <div class="event-description mt-4">
+                            <h3 class="mb-3"><?= htmlspecialchars($event['titre']) ?></h3>
+                            <p class="description-text"><?= nl2br(htmlspecialchars($event['description'])) ?></p>
+                            
+                            <div class="mt-3">
+                                <span class="badge badge-light">Vue(s): <?= $event['vues'] ?? 0 ?></span>
+                                <span class="badge badge-light">Thème: <?= theme_label($event['id_organisation'], $themeMap) ?></span>
                             </div>
                         </div>
                     </div>
@@ -605,18 +825,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && isset($e
                     </button>
                 </div>
                 <div class="modal-body">
+                    <div id="participation-errors" class="alert alert-danger d-none"></div>
                     <form method="post" id="participant-modal-form" novalidate>
                         <input type="hidden" name="action" value="guest_participate">
                         <div class="form-group">
-                            <label for="modal_prenom">Prénom</label>
+                            <label for="modal_prenom">Prénom <span class="text-danger">*</span></label>
                             <input type="text" name="prenom" id="modal_prenom" class="form-control" placeholder="Prénom" required>
                         </div>
                         <div class="form-group">
-                            <label for="modal_nom">Nom</label>
+                            <label for="modal_nom">Nom <span class="text-danger">*</span></label>
                             <input type="text" name="nom" id="modal_nom" class="form-control" placeholder="Nom" required>
                         </div>
                         <div class="form-group">
-                            <label for="modal_email">Email</label>
+                            <label for="modal_email">Email <span class="text-danger">*</span></label>
                             <input type="email" name="email" id="modal_email" class="form-control" placeholder="email@example.com" required>
                         </div>
                         <div class="text-right">
@@ -688,3 +909,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && isset($e
 </body>
 
 </html>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const participantForm = document.getElementById('participant-modal-form');
+    const participationErrors = document.getElementById('participation-errors');
+
+    if (!participantForm) return;
+
+    participantForm.addEventListener('submit', function (e) {
+        const prenom = (participantForm.prenom.value || '').trim();
+        const nom = (participantForm.nom.value || '').trim();
+        const email = (participantForm.email.value || '').trim();
+        const errors = [];
+
+        if (prenom.length < 2) errors.push('Le prénom doit contenir au moins 2 caractères.');
+        if (nom.length < 2) errors.push('Le nom doit contenir au moins 2 caractères.');
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.push('Adresse email invalide.');
+
+        if (errors.length) {
+            e.preventDefault();
+            if (participationErrors) {
+                participationErrors.innerHTML = errors.join('<br>');
+                participationErrors.classList.remove('d-none');
+            } else {
+                alert(errors.join('\n'));
+            }
+        } else if (participationErrors) {
+            participationErrors.classList.add('d-none');
+            participationErrors.innerHTML = '';
+        }
+    });
+});
+</script>

@@ -150,6 +150,11 @@ public function editEvent($id) {
             exit;
         }
 
+        // Incrémenter les vues
+        $this->eventModel->incrementViews($id);
+        // Mettre à jour la valeur locale pour l'affichage
+        $event['vues'] = ($event['vues'] ?? 0) + 1;
+
         $participants = $this->participationModel->getEventParticipants($id);
         
         $isRegistered = false;

@@ -1,7 +1,12 @@
 <?php
+// Ensure this file is included within a context that can find the lang config, or use absolute path
+$config_path = __DIR__ . '/../lang/lang_config.php';
+if (file_exists($config_path)) {
+    require_once $config_path;
+}
 ?>
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="<?= get_current_lang() ?>" dir="<?= get_dir() ?>">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
@@ -74,6 +79,82 @@
         .text-success { color: #28a745 !important; }
         .text-warning { color: #ffc107 !important; }
         .text-info { color: #17a2b8 !important; }
+        
+        /* Modal Fixes for Dark Theme */
+        .modal-content {
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+            border: 1px solid var(--primary-color);
+        }
+        .modal-header {
+            border-bottom: 1px solid var(--primary-color);
+            background-color: var(--accent-color);
+        }
+        .modal-footer {
+            border-top: 1px solid var(--primary-color);
+            background-color: var(--accent-color);
+        }
+        .modal-title {
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+        .close {
+            color: var(--text-color);
+            text-shadow: none;
+            opacity: 0.8;
+        }
+        .close:hover {
+            color: var(--primary-color);
+            opacity: 1;
+        }
+
+        /* RTL Support */
+        <?php if (get_dir() === 'rtl'): ?>
+        #sidebar {
+            right: 0;
+            left: auto;
+            border-right: none;
+            border-left: 2px solid var(--primary-color);
+        }
+        
+        #content {
+            margin-left: 0;
+            margin-right: var(--sidebar-width);
+        }
+        
+        #sidebar.active {
+            margin-right: -250px;
+        }
+        
+        #content.active {
+            margin-right: 0;
+        }
+
+        #sidebar ul li a {
+            border-left: none;
+            border-right: 4px solid transparent;
+        }
+        
+        #sidebar ul li a:hover, 
+        #sidebar ul li.active > a {
+            border-left: none;
+            border-right: 4px solid var(--primary-color);
+        }
+
+        #sidebar ul li a i {
+            margin-right: 0;
+            margin-left: 10px;
+        }
+
+        .dropdown-menu {
+            text-align: right;
+        }
+
+        .ml-auto {
+            margin-left: 0 !important;
+            margin-right: auto !important;
+        }
+        <?php endif; ?>
     </style>
 </head>
 <body>
@@ -85,34 +166,34 @@
 
         <ul class="list-unstyled components">
             <li>
-                <a href="index.php"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+                <a href="index.php"><i class="fas fa-tachometer-alt"></i> <?= __('dashboard') ?></a>
             </li>
             <li>
-                <a href="#"><i class="fas fa-tasks"></i> Gestion des Missions</a>
+                <a href="#"><i class="fas fa-tasks"></i> <?= __('missions') ?></a>
             </li>
             <li>
-                <a href="#"><i class="fas fa-gamepad"></i> Système de Gamification</a>
+                <a href="#"><i class="fas fa-gamepad"></i> <?= __('gamification') ?></a>
             </li>
             <li>
-                <a href="../listReclamation.php"><i class="fas fa-exclamation-circle"></i> Réclamations</a>
+                <a href="#"><i class="fas fa-exclamation-circle"></i> <?= __('reclamations') ?></a>
             </li>
             <li>
-                <a href="evenement.php"><i class="fas fa-calendar-alt"></i> Événements</a>
+                <a href="evenement.php"><i class="fas fa-calendar-alt"></i> <?= __('events') ?></a>
             </li>
             <li>
-                <a href="participation_history.php"><i class="fas fa-history"></i> Historique participants</a>
+                <a href="participation_history.php"><i class="fas fa-history"></i> <?= __('participation_history') ?? 'Historique participation' ?></a>
             </li>
             <li>
-                <a href="#"><i class="fas fa-graduation-cap"></i> Contenu Éducatif</a>
+                <a href="#"><i class="fas fa-graduation-cap"></i> <?= __('education') ?></a>
             </li>
             <li>
-                <a href="#"><i class="fas fa-users"></i> Utilisateurs</a>
+                <a href="#"><i class="fas fa-users"></i> <?= __('users') ?></a>
             </li>
             <li>
-                <a href="#"><i class="fas fa-chart-bar"></i> Analytics</a>
+                <a href="#"><i class="fas fa-chart-bar"></i> <?= __('analytics') ?></a>
             </li>
             <li>
-                <a href="#"><i class="fas fa-cog"></i> Paramètres</a>
+                <a href="settings.php"><i class="fas fa-cog"></i> <?= __('settings') ?></a>
             </li>
         </ul>
     </nav>
@@ -133,10 +214,10 @@
                                 <i class="fas fa-user-circle" style="color: var(--primary-color);"></i> Administrateur
                             </a>
                             <div class="dropdown-menu">
-                                <a class="dropdown-item" href="#"><i class="fas fa-user"></i> Mon Profil</a>
-                                <a class="dropdown-item" href="#"><i class="fas fa-cog"></i> Paramètres</a>
+                                <a class="dropdown-item" href="#"><i class="fas fa-user"></i> <?= __('admin_profile') ?></a>
+                                <a class="dropdown-item" href="settings.php"><i class="fas fa-cog"></i> <?= __('settings') ?></a>
                                 <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="#"><i class="fas fa-sign-out-alt"></i> Déconnexion</a>
+                                <a class="dropdown-item" href="#"><i class="fas fa-sign-out-alt"></i> <?= __('logout') ?></a>
                             </div>
                         </li>
                     </ul>
