@@ -17,6 +17,76 @@ $notifications = $notifications ?? [];
 $notificationCount = $notificationCount ?? 0;
 $notificationTitle = 'Notifications';
 
+// Fallback: si aucune notification fournie par la page, charger un minimum ici
+if (isset($_SESSION['user_id']) && empty($notifications)) {
+    try {
+        require_once __DIR__ . '/../../db_config.php';
+        $pdo = config::getConnexion();
+        $uid = (int) $_SESSION['user_id'];
+
+        // Réponses de réclamations
+        $respStmt = $pdo->prepare("SELECT r.reclamation_id, r.contenu, r.date_response, rec.sujet
+                                    FROM response r
+                                    JOIN reclamation rec ON rec.id = r.reclamation_id
+                                    WHERE rec.utilisateur_id = :uid
+                                    ORDER BY r.date_response DESC
+                                    LIMIT 10");
+        $respStmt->execute(['uid' => $uid]);
+        foreach ($respStmt->fetchAll(PDO::FETCH_ASSOC) as $n) {
+            $notifications[] = [
+                'title' => 'Réponse à votre réclamation',
+                'body' => $n['sujet'] ?? 'Réclamation',
+                'text' => $n['contenu'] ?? '',
+                'date' => $n['date_response'] ?? null,
+                'href' => 'historique_reclamations.php#rec-' . (int)($n['reclamation_id'] ?? 0),
+                'key' => md5(($n['sujet'] ?? '') . '|' . ($n['contenu'] ?? '') . '|' . ($n['date_response'] ?? '') . '|' . ($n['reclamation_id'] ?? ''))
+            ];
+        }
+
+        // Candidatures acceptées
+        $accStmt = $pdo->prepare("SELECT c.mission_id, c.date_candidature, c.statut, m.titre
+                                   FROM candidatures c
+                                   LEFT JOIN missions m ON m.id = c.mission_id
+                                   WHERE c.utilisateur_id = :uid AND c.statut IN ('accepte','acceptee','acceptée')
+                                   ORDER BY c.date_candidature DESC
+                                   LIMIT 10");
+        $accStmt->execute(['uid' => $uid]);
+        foreach ($accStmt->fetchAll(PDO::FETCH_ASSOC) as $n) {
+            $notifications[] = [
+                'title' => 'Candidature acceptée',
+                'body' => $n['titre'] ?? 'Mission',
+                'text' => 'Vous avez été accepté(e) dans cette mission.',
+                'date' => $n['date_candidature'] ?? null,
+                'href' => 'missiondetails.php?id=' . (int)($n['mission_id'] ?? 0),
+                'key' => md5('cand|' . ($n['mission_id'] ?? '') . '|' . ($n['date_candidature'] ?? '') . '|' . ($n['statut'] ?? ''))
+            ];
+        }
+
+        // Nouvelles missions
+        $missStmt = $pdo->query("SELECT id, titre, description, date_creation FROM missions ORDER BY date_creation DESC LIMIT 3");
+        foreach ($missStmt->fetchAll(PDO::FETCH_ASSOC) as $m) {
+            $notifications[] = [
+                'title' => 'Nouvelle mission',
+                'body' => $m['titre'] ?? 'Mission',
+                'text' => $m['description'] ?? '',
+                'date' => $m['date_creation'] ?? null,
+                'href' => 'missiondetails.php?id=' . (int)($m['id'] ?? 0),
+                'key' => md5('mission|' . ($m['id'] ?? '') . '|' . ($m['date_creation'] ?? '') . '|' . ($m['titre'] ?? ''))
+            ];
+        }
+
+        usort($notifications, function($a, $b) {
+            $da = isset($a['date']) ? strtotime($a['date']) : 0;
+            $db = isset($b['date']) ? strtotime($b['date']) : 0;
+            return $db <=> $da;
+        });
+
+        $notificationCount = count($notifications);
+    } catch (Exception $e) {
+        // en cas d'échec, on conserve les valeurs par défaut
+    }
+}
+
 $headerShowUserMenu = isset($headerShowUserMenu) ? (bool)$headerShowUserMenu : false;
 ?>
 <!-- Header -->
@@ -59,13 +129,16 @@ $headerShowUserMenu = isset($headerShowUserMenu) ? (bool)$headerShowUserMenu : f
                                             <div class="notif-empty">Aucune notification pour l'instant</div>
                                         <?php else: ?>
                                             <?php foreach ($notifications as $notif): ?>
-                                                <a class="notif-item" href="historique_reclamations.php#rec-<?= (int)$notif['reclamation_id'] ?>">
-                                                    <div class="notif-title">Réponse à votre réclamation</div>
+                                                <?php $nkey = $notif['key'] ?? md5(($notif['title'] ?? '') . '|' . ($notif['body'] ?? '') . '|' . ($notif['date'] ?? '') . '|' . ($notif['href'] ?? '')); ?>
+                                                <a class="notif-item unread" data-key="<?= htmlspecialchars($nkey) ?>" href="<?= htmlspecialchars($notif['href'] ?? '#') ?>">
+                                                    <div class="notif-title"><?= htmlspecialchars($notif['title'] ?? 'Notification') ?></div>
                                                     <div class="notif-body">
-                                                        <?= htmlspecialchars($notif['sujet'] ?? 'Réclamation') ?>
+                                                        <?= htmlspecialchars($notif['body'] ?? '') ?>
                                                     </div>
-                                                    <div class="notif-text"><?= nl2br(htmlspecialchars($notif['contenu'] ?? '')) ?></div>
-                                                    <div class="notif-date"><?= date('d/m/Y H:i', strtotime($notif['date_response'] ?? 'now')) ?></div>
+                                                    <?php if (!empty($notif['text'])): ?>
+                                                        <div class="notif-text"><?= nl2br(htmlspecialchars($notif['text'])) ?></div>
+                                                    <?php endif; ?>
+                                                    <div class="notif-date"><?= isset($notif['date']) ? date('d/m/Y H:i', strtotime($notif['date'])) : '' ?></div>
                                                 </a>
                                             <?php endforeach; ?>
                                         <?php endif; ?>
@@ -203,6 +276,7 @@ $headerShowUserMenu = isset($headerShowUserMenu) ? (bool)$headerShowUserMenu : f
     .notif-list { max-height:360px; overflow-y:auto; }
     .notif-item { padding:12px 16px; border-bottom:1px solid #f1f1f1; display:block; color:#333; text-decoration:none; }
     .notif-item:last-child { border-bottom:none; }
+    .notif-item.unread { background:#fff7e6; }
     .notif-title { font-weight:700; color:#333; margin-bottom:4px; }
     .notif-body { font-size:0.92rem; color:#555; margin-bottom:4px; }
     .notif-text { font-size:0.9rem; color:#666; }
@@ -240,6 +314,50 @@ document.addEventListener('DOMContentLoaded', function () {
     // Notifications dropdown
     const bell = document.getElementById('notificationBell');
     const notifDropdown = document.getElementById('notificationDropdown');
+    const notifBadge = document.querySelector('.notif-badge');
+    const notifItems = document.querySelectorAll('.notif-item');
+
+    function loadSeen() {
+        try {
+            return JSON.parse(localStorage.getItem('engage_seen_notifs') || '[]');
+        } catch (e) { return []; }
+    }
+
+    function saveSeen(arr) {
+        localStorage.setItem('engage_seen_notifs', JSON.stringify(arr));
+    }
+
+    function updateUnreadUI() {
+        const seen = loadSeen();
+        let unread = 0;
+        notifItems.forEach(item => {
+            const key = item.dataset.key || '';
+            if (key && seen.includes(key)) {
+                item.classList.remove('unread');
+            } else {
+                unread++;
+                item.classList.add('unread');
+            }
+        });
+        if (notifBadge) {
+            if (unread > 0) {
+                notifBadge.textContent = unread;
+                notifBadge.style.display = 'inline-block';
+            } else {
+                notifBadge.style.display = 'none';
+            }
+        }
+    }
+
+    function markSeen(key) {
+        if (!key) return;
+        const seen = loadSeen();
+        if (!seen.includes(key)) {
+            seen.push(key);
+            saveSeen(seen);
+        }
+        updateUnreadUI();
+    }
     if (bell && notifDropdown) {
         bell.addEventListener('click', function(e) {
             e.preventDefault();
@@ -252,5 +370,13 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     }
+
+    notifItems.forEach(item => {
+        item.addEventListener('click', function() {
+            markSeen(item.dataset.key || '');
+        });
+    });
+
+    updateUnreadUI();
 });
 </script>
