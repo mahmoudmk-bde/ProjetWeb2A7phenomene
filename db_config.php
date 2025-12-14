@@ -1,23 +1,35 @@
 <?php
-if (!class_exists('config')) {
-    class config
+class config
+{   
+    private static $pdo = null;
+    
+    public static function getConnexion()
     {
-        public static function getConnexion()
-        {
-            $host = "localhost";
-            $db   = "projetweb3"; 
-            $user = "root";
-            $pass = "";
-
-            $dsn = "mysql:host=$host;dbname=$db;charset=utf8";
-
+        if (!isset(self::$pdo)) {
+            $servername = "localhost";
+            $username = "root";
+            $password = "";
+            $dbname = "projetweb3";
+            $port = 3307; // Vérifiez si c'est bien le bon port
+            
             try {
-                $pdo = new PDO($dsn, $user, $pass);
-                $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-                return $pdo;
+                // Ajout du port dans la chaîne de connexion
+                self::$pdo = new PDO(
+                    "mysql:host=$servername;port=$port;dbname=$dbname",
+                    $username,
+                    $password,
+                    [
+                        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                        PDO::ATTR_EMULATE_PREPARES => false
+                    ]
+                );
+               
             } catch (PDOException $e) {
-                die("Erreur de connexion : " . $e->getMessage());
+                die('Erreur de connexion: ' . $e->getMessage());
             }
         }
+        return self::$pdo;
     }
 }
+?>

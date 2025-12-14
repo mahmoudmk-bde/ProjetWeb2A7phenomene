@@ -45,7 +45,7 @@ if (isset($_SESSION['user_id']) && $headerShowUserMenu) {
 
                     <div class="collapse navbar-collapse main-menu-item" id="navbarSupportedContent">
                         <ul class="navbar-nav ml-auto">
-                            <li class="nav-item"><a class="nav-link" href="index.php">Accueil</a></li>
+                            <li class="nav-item"><a class="nav-link" href="index1.php">Accueil</a></li>
                             <li class="nav-item"><a class="nav-link" href="missionlist.php">Missions</a></li>
                             <li class="nav-item"><a class="nav-link" href="store.php?controller=Store&action=index">Store</a></li>
                             <li class="nav-item"><a class="nav-link" href="store.php?controller=Partenaire&action=index">Partenaires</a></li>
@@ -146,10 +146,10 @@ if (isset($_SESSION['user_id']) && $headerShowUserMenu) {
                                 </div>
                             </div>
                         <?php else: ?>
-                            <a href="index1.php" class="btn_1 d-none d-sm-block">Mon Espace</a>
+                            <a href="connexion.php" class="btn_1 d-none d-sm-block">Mon Espace</a>
                         <?php endif; ?>
                     <?php else: ?>
-                        <a href="connexion.php" class="btn_1 d-none d-sm-block">Se connecter</a>
+                        <a href="connexion.php" class="btn_1 d-none d-sm-block">Se connecterr</a>
                     <?php endif; ?>
                 </nav>
             </div>

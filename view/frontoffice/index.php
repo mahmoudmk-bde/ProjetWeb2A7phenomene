@@ -23,14 +23,63 @@ session_start();
     <link rel="stylesheet" href="assets/css/slick.css">
     <link rel="stylesheet" href="assets/css/style.css">
     <link rel="stylesheet" href="assets/css/custom-frontoffice.css">
+    
 </head>
 
 <body>
 
 <!-- WRAPPER -->
 <div class="body_bg">
+<header class="main_menu single_page_menu">
+        <div class="container">
+          <div class="row align-items-center">
+            <div class="col-lg-12">
+              <nav class="navbar navbar-expand-lg navbar-light">
+                <a class="navbar-brand" href="index.php">
+                  <img href="index.php" src="assets/img/ll.png" alt="logo" />
+                </a>
+                <button
+                  class="navbar-toggler"
+                  type="button"
+                  data-toggle="collapse"
+                  data-target="#navbarSupportedContent"
+                  aria-controls="navbarSupportedContent"
+                  aria-expanded="false"
+                  aria-label="Toggle navigation"
+                >
+                  <span class="menu_icon"><i class="fas fa-bars"></i></span>
+                </button>
 
-    <?php include 'header_common.php'; ?>
+                <div
+                  class="collapse navbar-collapse main-menu-item"
+                  id="navbarSupportedContent"
+                >
+                  <ul class="navbar-nav">
+                    <li class="nav-item">
+                      <a class="nav-link" href="index.php">Home</a>
+                    </li>
+                    <li class="nav-item">
+                      <a class="nav-link" href="fighter.html">mission</a>
+                    </li>
+                    <li class="nav-item">
+                      <a class="nav-link" href="store/index.php">Store</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="team.html">reclamation</a>
+                    </li>
+                    
+                    
+                    
+                  </ul>
+                </div>
+                <a href="connexion.php" class="btn_1 d-none d-sm-block">connexion<a>
+                <a href="inscription.php" class="btn_1 d-none d-sm-block">Inscription</a>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </header>
+    
 
     <!-- HERO SECTION -->
     <section class="banner_part">
@@ -53,7 +102,7 @@ session_start();
                             <?php if (!isset($_SESSION['user_id'])): ?>
                                 <a href="inscription.php" class="btn_1 mt-3" style="margin-left: 10px;">Créer un compte</a>
                             <?php else: ?>
-                                <a href="index1.php" class="btn_1 mt-3" style="margin-left: 10px;">Mon Espace</a>
+                                <a href="connexion.php" class="btn_1 mt-3" style="margin-left: 10px;">Mon Espace</a>
                             <?php endif; ?>
                         </div>
                     </div>
@@ -89,7 +138,7 @@ session_start();
                     </p>
 
                     <?php if (!isset($_SESSION['user_id'])): ?>
-                        <a href="inscription.php" class="btn_1 mt-4">Commencer maintenant</a>
+                        <a href="connexion.php" class="btn_1 mt-4">Commencer maintenant</a>
                     <?php else: ?>
                         <a href="missionlist.php" class="btn_1 mt-4">Voir les missions</a>
                     <?php endif; ?>
