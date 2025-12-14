@@ -12,10 +12,11 @@ class Utilisateur {
     private ?string $rp1;
     private ?string $q2;
     private ?string $rp2;
+    private ?string $img;
 
     public function __construct(
         $prenom, $nom, $dt_naiss, $mail, $num, $mdp, $typee,
-        $q1, $rp1, $q2, $rp2
+        $q1, $rp1, $q2, $rp2, $img = null
     ) {
         $this->prenom = $prenom;
         $this->nom = $nom;
@@ -31,6 +32,7 @@ class Utilisateur {
         $this->rp1 = $rp1;
         $this->q2 = $q2;
         $this->rp2 = $rp2;
+        $this->img = $img;
     }
 
     public function getPrenom() { return $this->prenom; }
@@ -49,5 +51,6 @@ class Utilisateur {
     public function getRp1() { return $this->rp1; }
     public function getQ2() { return $this->q2; }
     public function getRp2() { return $this->rp2; }
+    public function getImg() { return $this->img; }
 }
 ?>

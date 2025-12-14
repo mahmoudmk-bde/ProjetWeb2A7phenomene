@@ -32,9 +32,9 @@ class UtilisateurController {
    public function addUtilisateur(Utilisateur $u)
 {
     $sql = "INSERT INTO utilisateur 
-        (prenom, nom, dt_naiss, mail, num, mdp, typee, q1, rp1, q2, rp2)
+        (prenom, nom, dt_naiss, mail, num, mdp, typee, q1, rp1, q2, rp2, img)
         VALUES 
-        (:prenom, :nom, :dt_naiss, :mail, :num, :mdp, :typee, :q1, :rp1, :q2, :rp2)";
+        (:prenom, :nom, :dt_naiss, :mail, :num, :mdp, :typee, :q1, :rp1, :q2, :rp2, :img)";
 
     $db = config::getConnexion();
 
@@ -51,7 +51,8 @@ class UtilisateurController {
             ':q1' => $u->getQ1(),
             ':rp1' => $u->getRp1(),
             ':q2' => $u->getQ2(),
-            ':rp2' => $u->getRp2()
+            ':rp2' => $u->getRp2(),
+            ':img' => $u->getImg()
         ]);
     } catch (Exception $e) {
         die("Erreur lors de l'ajout : " . $e->getMessage());
@@ -71,6 +72,7 @@ class UtilisateurController {
                     num = :num,
                     mdp = :mdp,
                     typee = :typee,
+                    img = :img
                 WHERE id_util = :id_util'
             );
             
@@ -90,8 +92,8 @@ class UtilisateurController {
                 'mail' => $utilisateur->getMail(),
                 'num' => $utilisateur->getNum(),
                 'mdp' => $utilisateur->getMdp(),
-                'typee' => $utilisateur->getType(), // CORRIGÉ: getType() au lieu de getTypee()
-                
+                'typee' => $utilisateur->getTypee(),
+                'img' => $utilisateur->getImg()
             ]);
             
             return true;
@@ -254,6 +256,27 @@ class UtilisateurController {
             ];
         } catch (Exception $e) {
             error_log('Error getting security questions: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    // Méthode pour mettre à jour uniquement l'image de profil
+    public function updateImage($user_id, $image_filename) {
+        try {
+            $db = config::getConnexion();
+            $query = $db->prepare(
+                'UPDATE utilisateur SET img = :img WHERE id_util = :id_util'
+            );
+            
+            $query->execute([
+                'id_util' => $user_id,
+                'img' => $image_filename
+            ]);
+            
+            return true;
+            
+        } catch (PDOException $e) {
+            error_log('Error updating profile image: ' . $e->getMessage());
             return false;
         }
     }
