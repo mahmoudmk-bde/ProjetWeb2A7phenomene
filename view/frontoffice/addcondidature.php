@@ -320,65 +320,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <body>
 <div class="body_bg">
-    
-    <!-- Header avec menu utilisateur -->
-    <header class="main_menu single_page_menu">
-        <div class="container">
-            <div class="row align-items-center">
-                <div class="col-lg-12">
-                    <nav class="navbar navbar-expand-lg navbar-light">
-                        <a class="navbar-brand" href="index.php">
-                            <img src="assets/img/logo.png" alt="logo" />
-                        </a>
-                        <button class="navbar-toggler" type="button" data-toggle="collapse" 
-                                data-target="#navbarSupportedContent">
-                            <span class="menu_icon"><i class="fas fa-bars"></i></span>
-                        </button>
-
-                        <div class="collapse navbar-collapse main-menu-item" id="navbarSupportedContent">
-                            <ul class="navbar-nav ml-auto">
-                                <li class="nav-item"><a class="nav-link" href="index.php">Accueil</a></li>
-                                <li class="nav-item"><a class="nav-link active" href="missionlist.php">Missions</a></li>
-                                <li class="nav-item"><a class="nav-link" href="#">Gamification</a></li>
-                                <li class="nav-item"><a class="nav-link" href="#">Réclamations</a></li>
-                                <li class="nav-item"><a class="nav-link" href="#">Événements</a></li>
-                                <li class="nav-item"><a class="nav-link" href="#">Quizzes</a></li>
-                                <li class="nav-item"><a class="nav-link" href="contact.php">Contact</a></li>
-                            </ul>
-                        </div>
-
-                        <!-- Menu utilisateur -->
-                        <?php if (isset($_SESSION['user_id']) && isset($_SESSION['user_name'])): ?>
-                            <div class="user-menu d-none d-sm-block">
-                                <div class="user-wrapper" onclick="toggleUserMenu()">
-                                    <span class="user-name"><?php echo htmlspecialchars($_SESSION['user_name']); ?></span>
-                                    <div class="user-avatar">
-                                        <i class="fas fa-user"></i>
-                                    </div>
-                                </div>
-                                <div class="user-dropdown" id="userDropdown">
-                                    <a href="profile.php">
-                                        <i class="fas fa-user me-2"></i>Mon Profil
-                                    </a>
-                                    <a href="settings.php">
-                                        <i class="fas fa-cog me-2"></i>Paramètres
-                                    </a>
-                                    <a href="securite.php">
-                                        <i class="fas fa-shield-alt me-2"></i>Sécurité
-                                    </a>
-                                    <a href="logout.php">
-                                        <i class="fas fa-sign-out-alt me-2"></i>Déconnexion
-                                    </a>
-                                </div>
-                            </div>
-                        <?php else: ?>
-                            <a href="connexion.php" class="btn_1 d-none d-sm-block">Se connecter</a>
-                        <?php endif; ?>
-                    </nav>
-                </div>
-            </div>
-        </div>
-    </header>
+    <?php include 'header_mission.php'; ?>
 
     <!-- Breadcrumb -->
     <section class="breadcrumb_bg">

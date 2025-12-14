@@ -1,3 +1,4 @@
+
 <?php
 // cv.php - sert un CV en mode 'view' (inline) ou 'download' (attachment)
 // Usage: /cv.php?id=123&mode=view|download
@@ -28,72 +29,70 @@ try {
     $cv_rel = str_replace('\\', '/', $row['cv']);
     $cv_rel = ltrim($cv_rel, '/');
 
-    // Chemin physique attendu - utiliser la racine du projet
-    $publicBase = rtrim(str_replace('\\', '/', realpath(__DIR__)), '/');
+    // Définir la racine du projet (depuis le dossier où se trouve cv.php)
+    $projectRoot = realpath(__DIR__ . '/..'); // Remonte d'un niveau si cv.php est dans un sous-dossier
     
-    // Option debug (affiche les chemins résolus) — activer avec ?debug=1
+    // Mode debug
     $debug = isset($_GET['debug']) && $_GET['debug'] == '1';
     
-    // Construire tous les chemins possibles à essayer
+    // Liste des chemins possibles à essayer (du plus spécifique au plus général)
     $possiblePaths = [];
     
-    // 1. Chemin direct tel qu'enregistré dans la DB
-    $possiblePaths[] = $publicBase . '/' . $cv_rel;
+    // 1. Chemin tel qu'enregistré dans la DB (relatif)
+    $possiblePaths[] = $projectRoot . '/' . $cv_rel;
     
-    // 2. Si le chemin contient déjà le chemin complet, l'utiliser tel quel
-    if (strpos($cv_rel, 'view/frontoffice/assets/uploads/cv/') !== false) {
-        $possiblePaths[] = $publicBase . '/' . $cv_rel;
+    // 2. Chemin absolu si déjà stocké en absolu (peu probable)
+    $possiblePaths[] = $cv_rel;
+    
+    // 3. Si le chemin contient 'view/frontoffice/', essayer sans ce préfixe
+    if (strpos($cv_rel, 'view/frontoffice/') === 0) {
+        $withoutView = substr($cv_rel, strlen('view/frontoffice/'));
+        $possiblePaths[] = $projectRoot . '/' . $withoutView;
     }
     
-    // 3. Si le chemin commence par "assets/", essayer tel quel
+    // 4. Si le chemin commence par 'assets/', essayer directement
     if (strpos($cv_rel, 'assets/') === 0) {
-        $possiblePaths[] = $publicBase . '/' . $cv_rel;
+        $possiblePaths[] = $projectRoot . '/' . $cv_rel;
+        // Essayer aussi depuis la racine web
+        $possiblePaths[] = $_SERVER['DOCUMENT_ROOT'] . '/' . $cv_rel;
     }
     
-    // 4. Si le chemin commence par "view/", essayer tel quel
-    if (strpos($cv_rel, 'view/') === 0) {
-        $possiblePaths[] = $publicBase . '/' . $cv_rel;
-    }
-    
-    // 5. Extraire juste le nom du fichier et essayer dans les deux emplacements possibles
+    // 5. Extraire juste le nom du fichier et chercher dans les dossiers communs
     $filename = basename($cv_rel);
-    $possiblePaths[] = $publicBase . '/view/frontoffice/assets/uploads/cv/' . $filename;
-    $possiblePaths[] = $publicBase . '/assets/uploads/cv/' . $filename;
+    $possiblePaths[] = $projectRoot . '/assets/uploads/cv/' . $filename;
+    $possiblePaths[] = $projectRoot . '/view/frontoffice/assets/uploads/cv/' . $filename;
+    $possiblePaths[] = $_SERVER['DOCUMENT_ROOT'] . '/assets/uploads/cv/' . $filename;
+    $possiblePaths[] = $_SERVER['DOCUMENT_ROOT'] . '/view/frontoffice/assets/uploads/cv/' . $filename;
     
-    // 6. Si le chemin contient juste le nom du fichier, essayer les deux emplacements
-    if ($cv_rel === $filename || strpos($cv_rel, '/') === false) {
-        $possiblePaths[] = $publicBase . '/view/frontoffice/assets/uploads/cv/' . $cv_rel;
-        $possiblePaths[] = $publicBase . '/assets/uploads/cv/' . $cv_rel;
-    }
+    // 6. Chemin relatif depuis la racine web
+    $possiblePaths[] = $_SERVER['DOCUMENT_ROOT'] . '/' . $cv_rel;
     
-    // Supprimer les doublons
+    // Nettoyer et dédupliquer les chemins
+    $possiblePaths = array_map(function($path) {
+        return str_replace('\\', '/', $path);
+    }, $possiblePaths);
     $possiblePaths = array_unique($possiblePaths);
     
-    $realFile = false;
-    $triedPaths = [];
-    foreach ($possiblePaths as $path) {
-        $path = str_replace('\\', '/', $path);
-        $triedPaths[] = $path;
-        $resolved = realpath($path);
-        if ($resolved !== false && is_file($resolved) && is_readable($resolved)) {
-            $realFile = str_replace('\\', '/', $resolved);
-            break;
-        }
-    }
-
     if ($debug) {
         header('Content-Type: text/plain; charset=utf-8');
         echo "=== CV Debug Info ===\n";
         echo "CV path from DB: " . htmlspecialchars($row['cv']) . "\n";
         echo "cv_rel (normalized): " . htmlspecialchars($cv_rel) . "\n";
-        echo "publicBase: " . htmlspecialchars($publicBase) . "\n";
-        echo "filename extracted: " . htmlspecialchars($filename) . "\n";
+        echo "projectRoot: " . htmlspecialchars($projectRoot) . "\n";
+        echo "DOCUMENT_ROOT: " . htmlspecialchars($_SERVER['DOCUMENT_ROOT']) . "\n";
         echo "\nPossible paths tried:\n";
-        foreach ($triedPaths as $i => $p) {
-            $exists = file_exists($p);
-            $resolved = realpath($p);
-            echo "  " . ($i + 1) . ". " . $p . "\n";
-            echo "     -> exists: " . ($exists ? "YES" : "NO");
+    }
+    
+    $realFile = false;
+    $triedPaths = [];
+    foreach ($possiblePaths as $path) {
+        $triedPaths[] = $path;
+        $resolved = realpath($path);
+        
+        if ($debug) {
+            $exists = file_exists($path);
+            echo "  - " . $path . "\n";
+            echo "    -> exists: " . ($exists ? "YES" : "NO");
             if ($resolved !== false) {
                 echo " | resolved: " . $resolved;
                 echo " | is_file: " . (is_file($resolved) ? "YES" : "NO");
@@ -101,50 +100,51 @@ try {
             }
             echo "\n";
         }
-        echo "\nrealFile (final): " . var_export($realFile, true) . "\n";
-        if ($realFile === false) {
-            echo "\nERROR: File not found after trying all paths!\n";
+        
+        if ($resolved !== false && is_file($resolved) && is_readable($resolved)) {
+            $realFile = $resolved;
+            if ($debug) echo "    *** SELECTED THIS PATH ***\n";
+            break;
         }
+    }
+
+    if ($debug) {
+        echo "\nrealFile (final): " . var_export($realFile, true) . "\n";
         exit;
     }
 
     // Vérifier que le fichier existe
-    if ($realFile === false || !is_file($realFile) || !is_readable($realFile)) {
+    if ($realFile === false) {
         http_response_code(404);
-        echo "File not found. CV path in DB: " . htmlspecialchars($row['cv']) . ". Add ?debug=1 to URL for details.";
+        echo "File not found. CV path in DB: " . htmlspecialchars($row['cv']) . ".\n";
+        echo "Add ?debug=1 to URL for details.\n";
+        echo "Tried paths:\n";
+        foreach ($triedPaths as $i => $path) {
+            echo "- " . htmlspecialchars($path) . "\n";
+        }
         exit;
     }
 
-    // Sécurité : s'assurer que le fichier réside bien sous un dossier autorisé
-    // Autoriser les fichiers dans assets/uploads/cv ou view/frontoffice/assets/uploads/cv
-    $allowedPatterns = [
-        '/assets/uploads/cv/',
-        '/view/frontoffice/assets/uploads/cv/'
+    // Sécurité : vérifier que le fichier est dans un dossier autorisé
+    $allowedDirs = [
+        strtolower(realpath($projectRoot . '/assets/uploads/cv')),
+        strtolower(realpath($projectRoot . '/view/frontoffice/assets/uploads/cv')),
+        strtolower(realpath($_SERVER['DOCUMENT_ROOT'] . '/assets/uploads/cv')),
+        strtolower(realpath($_SERVER['DOCUMENT_ROOT'] . '/view/frontoffice/assets/uploads/cv'))
     ];
     
-    $allowedMatch = false;
-    $normalizedRealFile = strtolower($realFile);
-    foreach ($allowedPatterns as $pattern) {
-        if (strpos($normalizedRealFile, strtolower($pattern)) !== false) {
-            $allowedMatch = true;
+    $allowed = false;
+    $fileDir = strtolower(dirname($realFile));
+    foreach ($allowedDirs as $allowedDir) {
+        if ($allowedDir && strpos($fileDir, $allowedDir) === 0) {
+            $allowed = true;
             break;
         }
     }
     
-    // Si le chemin contient "uploads/cv", on l'autorise aussi (plus flexible)
-    if (!$allowedMatch && strpos($normalizedRealFile, 'uploads/cv') !== false) {
-        $allowedMatch = true;
-    }
-
-    if (!$allowedMatch) {
+    if (!$allowed) {
         http_response_code(403);
-        if ($debug) {
-            echo "\nAccess denied. File path does not match allowed patterns.\n";
-            echo "Allowed patterns: " . implode(', ', $allowedPatterns) . "\n";
-            echo "File path: " . $realFile . "\n";
-        } else {
-            echo "Access denied.";
-        }
+        echo "Access denied. File not in allowed directory.";
         exit;
     }
 
@@ -164,7 +164,7 @@ try {
     if ($mode === 'download') {
         header('Content-Disposition: attachment; filename="' . rawurldecode($basename) . '"');
     } else {
-        // View inline when the browser can display it (pdf, images), otherwise fallback to attachment
+        // View inline when the browser can display it
         $inlineTypes = [
             'application/pdf',
             'image/jpeg',
@@ -180,23 +180,11 @@ try {
     }
 
     // Stream the file
-    $fp = fopen($realFile, 'rb');
-    if ($fp) {
-        while (!feof($fp)) {
-            echo fread($fp, 8192);
-            flush();
-        }
-        fclose($fp);
-        exit;
-    } else {
-        http_response_code(500);
-        echo "Unable to open file.";
-        exit;
-    }
+    readfile($realFile);
+    exit;
 
 } catch (Exception $e) {
     http_response_code(500);
     echo "Server error: " . htmlspecialchars($e->getMessage());
     exit;
 }
-
