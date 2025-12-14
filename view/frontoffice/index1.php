@@ -10,10 +10,12 @@ if (!isset($_SESSION['user_id'])) {
 include '../../controller/utilisateurcontroller.php';
 include '../../controller/condidaturecontroller.php';
 include '../../controller/ReclamationController.php';
+include '../../controller/ResponseController.php';
 
 $utilisateurController = new UtilisateurController();
 $condidatureController = new CondidatureController();
 $reclamationController = new ReclamationController();
+$responseController = new ResponseController();
 
 $user_id = $_SESSION['user_id'];
 $current_user = $utilisateurController->showUtilisateur($user_id);
@@ -38,6 +40,17 @@ $sessionUserType = $_SESSION['user_type'] ?? ($current_user['typee'] ?? 'user');
 $candidatures = $condidatureController->getCandidaturesByUser($user_id);
 // Récupérer les réclamations de l'utilisateur
 $reclamations = $reclamationController->getReclamationsByUser($user_id);
+
+// Notifications (réponses aux réclamations de l'utilisateur)
+$notifications = [];
+$notificationCount = 0;
+try {
+    $notifications = $responseController->getNotificationsForUser($user_id, 10);
+    $notificationCount = count($notifications);
+} catch (Exception $e) {
+    $notifications = [];
+    $notificationCount = 0;
+}
 
 // Compter les statuts
 $stats = [
