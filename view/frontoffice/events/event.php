@@ -1,554 +1,511 @@
 <?php
+session_start();
 require_once __DIR__ . '/../../../model/evenementModel.php';
-if (session_status() === PHP_SESSION_NONE) session_start();
+require_once __DIR__ . '/../../../db_config.php';
+
 $eventModel = new EvenementModel();
 $events = $eventModel->getAllEvents();
 
-// Debug: Check if events are empty
-error_log("Events count: " . count($events));
-error_log("Events data: " . print_r($events, true));
-
-$themeMap = [
-    1 => 'Sport',
-    2 => 'Éducation',
-    3 => 'Esport',
-    4 => 'Création',
-    5 => 'Prévention',
-    6 => 'Coaching',
-    7 => 'Compétition'
-];
-
-function theme_label($id, $map) {
-    return $map[$id] ?? 'Autre';
-}
-
-function normalize_event_image($img) {
-    return normalize_asset_path($img);
+function normalize_asset_path($img) {
+    if (empty($img)) return '../assets/img/default-event.jpg';
+    $img = trim($img);
+    if (strpos($img, 'http') === 0) return $img;
+    if (strpos($img, '/') === 0) return $img;
+    return 'events/' . $img;
 }
 ?>
-<!doctype html>
-<?php require_once 'lang/lang_config.php'; ?>
-<html lang="<?= get_current_lang() ?>" dir="<?= get_dir() ?>">
-
+<!DOCTYPE html>
+<html lang="fr">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>Events - gaming</title>
-    <link rel="icon" href="img/favicon.png">
-    <link rel="stylesheet" href="css/bootstrap.min.css">
-    <link rel="stylesheet" href="css/animate.css">
-    <link rel="stylesheet" href="css/owl.carousel.min.css">
-    <link rel="stylesheet" href="css/all.css">
-    <link rel="stylesheet" href="css/flaticon.css">
-    <link rel="stylesheet" href="css/themify-icons.css">
-    <link rel="stylesheet" href="css/magnific-popup.css">
-    <link rel="stylesheet" href="css/slick.css">
-    <link rel="stylesheet" href="css/style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Événements – ENGAGE</title>
+    <link rel="icon" href="../assets/img/favicon.png">
+    <link rel="stylesheet" href="../assets/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../assets/css/all.css">
+    <link rel="stylesheet" href="../assets/css/style.css">
     <link rel="stylesheet" href="css/event-custom.css">
-    <?php if (get_dir() === 'rtl'): ?>
+    <link rel="stylesheet" href="../assets/css/custom-frontoffice.css">
     <style>
-        body { text-align: right; direction: rtl; }
-        .navbar-nav { margin-right: auto; margin-left: 0 !important; }
-        .dropdown-menu { text-align: right; }
-        .main_menu .navbar .navbar-nav .nav-item .nav-link { padding: 33px 20px; }
+        :root {
+            --primary: #ff4a57;
+            --primary-light: #ff6b6b;
+            --dark: #1f2235;
+            --dark-light: #2d325a;
+            --text: #ffffff;
+            --text-light: rgba(255,255,255,0.8);
+            --success: #28a745;
+            --warning: #ffc107;
+            --danger: #dc3545;
+        }
+
+        .body_bg {
+            background: linear-gradient(135deg, var(--dark) 0%, var(--dark-light) 100%);
+            min-height: 100vh;
+        }
+
+        /* Event Card Styles */
+        .event-card-enhanced {
+            background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .event-card-enhanced:hover {
+            transform: translateY(-8px);
+            border-color: rgba(255,74,87,0.3);
+            box-shadow: 0 15px 40px rgba(255,74,87,0.15);
+        }
+
+        .event-card-image {
+            position: relative;
+            width: 100%;
+            height: 200px;
+            overflow: hidden;
+            background: linear-gradient(135deg, rgba(255,74,87,0.2), rgba(255,107,107,0.1));
+        }
+
+        .event-card-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .event-card-enhanced:hover .event-card-image img {
+            transform: scale(1.05);
+        }
+
+        .event-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(31, 34, 53, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .event-card-enhanced:hover .event-overlay {
+            opacity: 1;
+        }
+
+        .event-btn-details {
+            background: linear-gradient(135deg, #ff4a57 0%, #ff6b6b 100%);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-block;
+        }
+
+        .event-btn-details:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 20px rgba(255,74,87,0.3);
+            color: white;
+        }
+
+        .event-price-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+        }
+
+        .custom-badge-price,
+        .custom-badge-free {
+            display: inline-block;
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.85rem;
+        }
+
+        .custom-badge-price {
+            background: linear-gradient(135deg, rgba(255,74,87,0.9) 0%, rgba(255,107,107,0.9) 100%);
+            color: white;
+        }
+
+        .custom-badge-free {
+            background: linear-gradient(135deg, rgba(40,167,69,0.9) 0%, rgba(34,197,94,0.9) 100%);
+            color: white;
+        }
+
+        .event-card-info {
+            padding: 20px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .event-title {
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 1.15rem;
+            margin-bottom: 12px;
+            line-height: 1.4;
+        }
+
+        .event-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 12px;
+            color: rgba(255,255,255,0.7);
+            font-size: 0.9rem;
+        }
+
+        .event-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .event-meta-item i {
+            color: #ff4a57;
+            min-width: 16px;
+        }
+
+        .time-sep {
+            margin: 0 4px;
+        }
+
+        .event-description {
+            color: rgba(255,255,255,0.6);
+            font-size: 0.9rem;
+            margin-bottom: 12px;
+            flex-grow: 1;
+            line-height: 1.5;
+        }
+
+        .event-footer {
+            display: flex;
+            align-items: center;
+            padding-top: 12px;
+            border-top: 1px solid rgba(255,255,255,0.08);
+            color: rgba(255,255,255,0.7);
+            font-size: 0.9rem;
+        }
+
+        .event-participants {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .event-participants i {
+            color: #ff4a57;
+        }
+
+        .no-events {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .no-events h4 {
+            color: #ffffff;
+            margin-bottom: 10px;
+        }
+
+        .no-events p {
+            color: rgba(255,255,255,0.6);
+        }
+
+        /* Search Styles */
+        .event-search-container {
+            margin-top: 40px;
+        }
+
+        .search-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 12px;
+            padding: 0 16px;
+            transition: all 0.3s ease;
+        }
+
+        .search-wrapper:focus-within {
+            background: rgba(255,255,255,0.1);
+            border-color: rgba(255,74,87,0.3);
+            box-shadow: 0 8px 20px rgba(255,74,87,0.1);
+        }
+
+        .search-icon {
+            color: rgba(255,255,255,0.5);
+            margin-right: 12px;
+            font-size: 1.1rem;
+        }
+
+        .event-search-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: #ffffff;
+            font-size: 1rem;
+            padding: 14px 0;
+            outline: none;
+        }
+
+        .event-search-input::placeholder {
+            color: rgba(255,255,255,0.4);
+        }
+
+        .search-clear {
+            cursor: pointer;
+            color: rgba(255,255,255,0.5);
+            transition: color 0.3s ease;
+            padding: 4px 8px;
+        }
+
+        .search-clear:hover {
+            color: rgba(255,255,255,0.8);
+        }
+
+        .search-results-info {
+            margin-top: 12px;
+            color: rgba(255,255,255,0.6);
+            font-size: 0.9rem;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            .event-card-image {
+                height: 150px;
+            }
+
+            .event-title {
+                font-size: 1rem;
+            }
+
+            .event-search-input {
+                font-size: 0.9rem;
+            }
+        }
+
+        /* Ensure buttons are clickable and no overlay blocks clicks */
+        .mission-card-enhanced, .game-card-body { position: relative; }
+        .mission-card-enhanced::after { pointer-events: none; }
+        .event-overlay { pointer-events: none; }
+        .event-card-enhanced .event-overlay { pointer-events: none; }
+        .btn.btn-primary { position: relative; z-index: 2; }
     </style>
-    <?php endif; ?>
 </head>
-
 <body>
-    <div class="body_bg">
-        <header class="main_menu single_page_menu">
-            <div class="container">
-                <div class="row align-items-center">
-                    <div class="col-lg-12">
-                        <nav class="navbar navbar-expand-lg navbar-light">
-                            <a class="navbar-brand" href="index.php"> <img src="img/logo.png" alt="logo"> </a>
-                            <button class="navbar-toggler" type="button" data-toggle="collapse"
-                                data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
-                                aria-expanded="false" aria-label="Toggle navigation">
-                                <span class="menu_icon"><i class="fas fa-bars"></i></span>
-                            </button>
+<div class="body_bg">
+    <?php include __DIR__ . '/../header_common.php'; ?>
 
-                            <div class="collapse navbar-collapse main-menu-item" id="navbarSupportedContent">
-                                <ul class="navbar-nav">
-                                    <li class="nav-item">
-                                        <a class="nav-link" href="index.php"><?= __('home') ?></a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link" href="fighter.html"><?= __('fighter') ?></a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link" href="team.html"><?= __('team') ?></a>
-                                    </li>
-                                    <li class="nav-item dropdown">
-                                        <a class="nav-link dropdown-toggle" href="blog.html" id="navbarDropdown"
-                                            role="button" data-toggle="dropdown" aria-haspopup="true"
-                                            aria-expanded="false">
-                                            <?= __('blog') ?>
-                                        </a>
-                                        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                                            <a class="dropdown-item" href="blog.html"><?= __('blog') ?></a>
-                                            <a class="dropdown-item" href="single-blog.html">Single blog</a>
-                                        </div>
-                                    </li>
-                                    <li class="nav-item dropdown">
-                                        <a class="nav-link dropdown-toggle" href="blog.html" id="navbarDropdown1"
-                                            role="button" data-toggle="dropdown" aria-haspopup="true"
-                                            aria-expanded="false">
-                                            <?= __('pages') ?>
-                                        </a>
-                                        <div class="dropdown-menu" aria-labelledby="navbarDropdown1">
-                                            <a class="dropdown-item" href="elements.html">Elements</a>
-                                        </div>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link" href="contact.html"><?= __('contact') ?></a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link" href="addreclamation.php"><?= __('reclaim') ?></a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link active" href="event.php"><?= __('events') ?></a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link" href="my_events.php"><?= __('my_events') ?></a>
-                                    </li>
-                                    <!-- Language Selector -->
-                                    <li class="nav-item dropdown">
-                                        <a class="nav-link dropdown-toggle" href="#" id="langDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                            <i class="fas fa-globe"></i> <?= strtoupper(get_current_lang()) ?>
-                                        </a>
-                                        <div class="dropdown-menu" aria-labelledby="langDropdown">
-                                            <a class="dropdown-item" href="?lang=fr">Français</a>
-                                            <a class="dropdown-item" href="?lang=en">English</a>
-                                            <a class="dropdown-item" href="?lang=ar">العربية</a>
-                                        </div>
-                                    </li>
-                                </ul>
-                            </div>
-                            <a href="#" class="btn_1 d-none d-sm-block"><?= __('install_now') ?></a>
-                        </nav>
-                    </div>
-                </div>
-            </div>
-        </header>
+    <!-- BREADCRUMB + HERO -->
+    <section class="breadcrumb_bg">
+        <div class="container">
+            <div class="breadcrumb_iner_item text-center">
+                <h1 class="design-title">📅 Tous Les Événements</h1>
+                <p class="design-subtitle">Découvrez et participez aux événements de notre communauté</p>
 
-        <section class="banner_part">
-            <div class="container">
-                <div class="row align-items-center justify-content-between">
-                    <div class="col-lg-8">
-                        <div class="banner_text">
-                            <div class="banner_text_iner">
-                                <h1><?= __('all_events') ?></h1>
-                                <p>Browse all events — upcoming and past — from the gaming community.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section class="Latest_War section_padding">
-            <div class="container">
-                <div class="row justify-content-center">
-                    <div class="col-lg-10">
-                        <div class="section_tittle text-center">
-                            <h2><?= __('events') ?></h2>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="row" id="events-row">
-<?php if (!empty($events)): ?>
-    <?php foreach ($events as $ev): ?>
-        <?php
-            $title = htmlspecialchars($ev['titre']);
-            $desc = htmlspecialchars($ev['description']);
-            $date = !empty($ev['date_evenement']) ? date('d M Y', strtotime($ev['date_evenement'])) : '';
-            $lieu = htmlspecialchars($ev['lieu']);
-            $time = !empty($ev['heure_evenement']) ? substr($ev['heure_evenement'], 0, 5) : null;
-            $img = !empty($ev['image']) ? $ev['image'] : 'img/default-event.jpg';
-            $img = !empty($ev['image']) ? $ev['image'] : 'img/default-event.jpg';
-            $img = normalize_asset_path($img);
-            $participants = (int)$eventModel->countParticipants($ev['id_evenement']);
-            $type = isset($ev['type_evenement']) ? $ev['type_evenement'] : 'gratuit';
-            $prix = isset($ev['prix']) ? (float)$ev['prix'] : 0;
-            $isPaid = ($type === 'payant') && $prix > 0;
-        ?>
-        <div class="col-lg-4 col-md-6 mb-4" data-theme="<?= htmlspecialchars($ev['id_organisation'] ?? '') ?>" data-type="<?= htmlspecialchars($type) ?>" data-date="<?= $ev['date_evenement'] ?? '' ?>">
-            <div class="event-card">
-                <div class="event-card-image">
-                    <img src="<?= htmlspecialchars($img) ?>" alt="<?= $title ?>" onerror="this.src='img/default-event.jpg'">
-                    <div class="event-overlay">
-                        <a href="event_details.php?id=<?= $ev['id_evenement']; ?>" class="event-btn-details"><?= __('show_details') ?></a>
-                    </div>
-                    <div class="event-price-badge">
-                        <?php if ($isPaid): ?>
-                            <span class="custom-badge-price"><?= number_format($prix, 0) ?> TND</span>
-                        <?php else: ?>
-                            <span class="custom-badge-free">GRATUIT</span>
-                        <?php endif; ?>
-                    </div>
-                </div>
-                <div class="event-card-info">
-                    <h4 class="event-title"><?= $title ?></h4>
-                    <div class="event-meta">
-                        <div class="event-meta-item">
-                            <i class="far fa-calendar-alt"></i>
-                            <span><?= $date ?></span>
-                            <?php if ($time): ?>
-                                <span class="time-sep">•</span>
-                                <i class="far fa-clock"></i>
-                                <span><?= $time ?></span>
-                            <?php endif; ?>
-                        </div>
-                        <div class="event-meta-item">
-                            <i class="fas fa-map-marker-alt"></i>
-                            <span><?= $lieu ?></span>
-                        </div>
-                    </div>
-                    <p class="event-description"><?= (strlen($desc) > 100) ? substr($desc,0,100).'...' : $desc; ?></p>
-                    <div class="event-footer">
-                        <span class="event-participants">
-                            <i class="far fa-user"></i> <?= $participants ?>
-                        </span>
-                        <span class="event-participants ml-3" title="<?= ($ev['vues'] ?? 0) . ' vues' ?>">
-                            <i class="far fa-eye"></i> <?= $ev['vues'] ?? 0 ?>
-                        </span>
-                    </div>
+                <!-- Stats -->
+                <div class="stats-panel" style="margin-top: 30px;">
+                    <span><i class="fas fa-calendar-alt"></i> <strong><?= count($events) ?></strong> Événements</span>
+                    <span><i class="fas fa-users"></i> Communauté Engagée</span>
+                    <span><i class="fas fa-globe"></i> Multi-Thématiques</span>
+                    <span><i class="fas fa-heart"></i> Impact Social</span>
                 </div>
             </div>
         </div>
-    <?php endforeach; ?>
-<?php else: ?>
-    <div class="col-12">
-        <div class="event-card no-events">
-            <h4>Aucun événement trouvé</h4>
-            <p>Revenez bientôt pour découvrir nos prochains événements</p>
+    </section>
+
+    <!-- SECTION EVENTS -->
+    <section class="section_padding">
+        <div class="container">
+            <div class="mission-grid-enhanced" id="events-row">
+            <?php if (!empty($events)): ?>
+                <?php foreach ($events as $ev): ?>
+                    <?php
+                        $title = htmlspecialchars($ev['titre'] ?? 'Événement');
+                        $desc = htmlspecialchars($ev['description'] ?? '');
+                        $date = !empty($ev['date_evenement']) ? date('d/m/Y', strtotime($ev['date_evenement'])) : '';
+                        $lieu = htmlspecialchars($ev['lieu'] ?? 'Lieu non spécifié');
+                        $time = !empty($ev['heure_evenement']) ? substr($ev['heure_evenement'], 0, 5) : null;
+                        $img = normalize_asset_path($ev['image'] ?? '');
+                        $participants = (int)$eventModel->countParticipants($ev['id_evenement'] ?? 0);
+                        $type = isset($ev['type_evenement']) ? $ev['type_evenement'] : 'gratuit';
+                        $prix = isset($ev['prix']) ? (float)$ev['prix'] : 0;
+                        $isPaid = ($type === 'payant') && $prix > 0;
+                        $theme = strtolower(trim($ev['theme'] ?? 'evenement'));
+                        $images = [
+                            "sport" => "sport.png",
+                            "éducation" => "education.png",
+                            "education" => "education.png",
+                            "esport" => "valorant.png",
+                            "valorant" => "valorant.png",
+                            "minecraft" => "minecraft.png",
+                            "création" => "roblox.png",
+                            "creation" => "roblox.png",
+                            "prévention" => "sante.png",
+                            "prevention" => "sante.png",
+                            "coaching" => "coaching.png",
+                            "compétition" => "cyber.png",
+                            "competition" => "cyber.png",
+                            "evenement" => "default.png",
+                        ];
+                        $image = $images[$theme] ?? "default.png";
+                        $imagePath = "../assets/img/" . $image;
+                        $eventId = $ev['id_evenement'] ?? 0;
+                    ?>
+                    <div class="mission-card-enhanced" data-theme="<?= htmlspecialchars($theme) ?>" data-type="<?= htmlspecialchars($type) ?>" data-date="<?= $ev['date_evenement'] ?? '' ?>">
+                        <div class="game-card-img">
+                            <img src="<?= $imagePath ?>" alt="<?= htmlspecialchars($theme) ?>">
+                        </div>
+                        <div class="game-card-body">
+                            <h3 class="game-title"><?= $title ?></h3>
+                            <div class="game-info"><i class="fas fa-tag"></i><span><?= htmlspecialchars($theme) ?></span></div>
+                            <div class="game-info"><i class="fas fa-map-marker-alt"></i><span><?= $lieu ?></span></div>
+                            <div class="game-info"><i class="far fa-calendar-alt"></i><span><?= $date ?></span><?php if ($time): ?><span class="time-sep">•</span><i class="far fa-clock"></i><span><?= $time ?></span><?php endif; ?></div>
+
+                            <div style="display: flex; align-items: center; gap: 8px; margin: 15px 0; padding: 10px; background: rgba(255, 74, 87, 0.1); border-radius: 8px; border-left: 3px solid #ff4a57;">
+                                <?php if ($isPaid): ?>
+                                    <i class="fas fa-ticket-alt" style="color: #ff4a57; font-size: 1.1rem;"></i>
+                                    <span style="color: rgba(255,255,255,0.9); font-weight: 600; font-size: 0.95rem;">Prix: <?= number_format($prix, 0) ?> TND</span>
+                                <?php else: ?>
+                                    <i class="fas fa-check-circle" style="color: #28a745; font-size: 1.1rem;"></i>
+                                    <span style="color: rgba(255,255,255,0.9); font-weight: 600; font-size: 0.95rem;">Gratuit</span>
+                                <?php endif; ?>
+                            </div>
+
+                            <div class="game-info"><i class="far fa-user"></i><span><?= $participants ?> participants</span></div>
+
+                            <a href="/projetweb2/view/frontoffice/events/event_details.php?id=<?= $eventId ?>" class="btn btn-primary" style="margin-top: 10px;">
+                                <i class="far fa-eye"></i> Voir l'Événement
+                            </a>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            <?php else: ?>
+                <div class="col-12">
+                    <div class="event-card-enhanced no-events">
+                        <h4>Aucun événement trouvé</h4>
+                        <p>Revenez bientôt pour découvrir nos prochains événements</p>
+                    </div>
+                </div>
+            <?php endif; ?>
+            </div>
+
+            <div class="row mt-5">
+                <div class="col-12">
+                    <div class="event-search-container">
+                        <div class="search-wrapper">
+                            <div class="search-icon">
+                                <i class="fas fa-search"></i>
+                            </div>
+                            <input 
+                                id="event-search" 
+                                class="event-search-input" 
+                                type="text" 
+                                placeholder="Rechercher par nom ou lieu..." 
+                                autocomplete="off"
+                            />
+                            <div class="search-clear" id="search-clear" style="display:none;">
+                                <i class="fas fa-times"></i>
+                            </div>
+                        </div>
+                        <div class="search-results-info" id="search-results-info" style="display:none;">
+                            <span id="result-count">0</span> événement(s) trouvé(s)
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
-    </div>
-<?php endif; ?>
-                </div>
+    </section>
 
-                <div class="row mt-5">
-                    <div class="col-12">
-                        <div class="event-search-container">
-                            <div class="search-wrapper">
-                                <div class="search-icon">
-                                    <i class="fas fa-search"></i>
-                                </div>
-                                <input 
-                                    id="event-search" 
-                                    class="event-search-input" 
-                                    type="text" 
-                                    placeholder="Rechercher par nom ou type d'événement..." 
-                                    autocomplete="off"
-                                />
-                                <div class="search-clear" id="search-clear" style="display:none;">
-                                    <i class="fas fa-times"></i>
-                                </div>
-                            </div>
-                            <div class="search-results-info" id="search-results-info" style="display:none;">
-                                <span id="result-count">0</span> événement(s) trouvé(s)
-                            </div>
-                        </div>
-                    </div>
-                </div>
+</div>
 
-            </div>
-        </section>
+<!-- jquery plugins -->
+<script src="../assets/js/jquery-1.12.1.min.js"></script>
+<script src="../assets/js/popper.min.js"></script>
+<script src="../assets/js/bootstrap.min.js"></script>
+<script src="../assets/js/jquery.magnific-popup.js"></script>
 
-        <!--::footer_part start::-->
-        <footer class="footer_part">
-            <div class="footer_top">
-                <div class="container">
-                    <div class="row">
-                        <div class="col-sm-6 col-lg-3">
-                            <div class="single_footer_part">
-                                <a href="index.html" class="footer_logo_iner"> <img src="img/logo.png" alt="#"> </a>
-                                <p>Heaven fruitful doesn't over lesser days appear creeping seasons so behold bearing days open</p>
-                            </div>
-                        </div>
-                        <div class="col-sm-6 col-lg-3">
-                            <div class="single_footer_part">
-                                <h4>Contact Info</h4>
-                                <p>Address : Your address goes here, your demo address. Bangladesh.</p>
-                                <p>Phone : +8880 44338899</p>
-                                <p>Email : info@colorlib.com</p>
-                            </div>
-                        </div>
-                        <div class="col-sm-6 col-lg-3">
-                            <div class="single_footer_part">
-                                <h4>Important Link</h4>
-                                <ul class="list-unstyled">
-                                    <li><a href=""> WHMCS-bridge</a></li>
-                                    <li><a href="">Search Domain</a></li>
-                                    <li><a href="">My Account</a></li>
-                                </ul>
-                            </div>
-                        </div>
-                        <div class="col-sm-6 col-lg-3">
-                            <div class="single_footer_part">
-                                <h4>Newsletter</h4>
-                                <p>Heaven fruitful doesn't over lesser in days. Appear creeping seasons deve behold bearing days open</p>
-                                <div id="mc_embed_signup">
-                                    <form target="_blank" action="#" method="get" class="subscribe_form relative mail_part">
-                                        <input type="email" name="email" placeholder="Email Address" class="placeholder hide-on-focus">
-                                        <button type="submit" class="email_icon newsletter-submit button-contactForm"><i class="far fa-paper-plane"></i></button>
-                                        <div class="mt-10 info"></div>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="copygight_text">
-                <div class="container">
-                    <div class="row align-items-center">
-                        <div class="col-lg-8">
-                            <div class="copyright_text">
-                                <P>Copyright &copy;<script>document.write(new Date().getFullYear());</script> All rights reserved | This template is made with <i class="ti-heart" aria-hidden="true"></i> by <a href="https://colorlib.com" target="_blank">Colorlib</a></P>
-                            </div>
-                        </div>
-                        <div class="col-lg-4">
-                            <div class="footer_icon social_icon">
-                                <ul class="list-unstyled">
-                                    <li><a href="#" class="single_social_icon"><i class="fab fa-facebook-f"></i></a></li>
-                                    <li><a href="#" class="single_social_icon"><i class="fab fa-twitter"></i></a></li>
-                                    <li><a href="#" class="single_social_icon"><i class="fas fa-globe"></i></a></li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </footer>
-        <!--::footer_part end::-->
-    </div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('event-search');
+    const searchClear = document.getElementById('search-clear');
+    const searchResultsInfo = document.getElementById('search-results-info');
+    const resultCount = document.getElementById('result-count');
+    const allItems = document.querySelectorAll('#events-row [data-theme]');
 
+    function filterEvents(searchTerm) {
+        const term = searchTerm.toLowerCase().trim();
+        let visibleCount = 0;
 
-    <!-- jquery plugins here-->
-    <script src="js/jquery-1.12.1.min.js"></script>
-    <!-- popper js -->
-    <script src="js/popper.min.js"></script>
-    <!-- bootstrap js -->
-    <script src="js/bootstrap.min.js"></script>
-    <!-- easing js -->
-    <script src="js/jquery.magnific-popup.js"></script>
-    <!-- swiper js -->
-    <script src="js/swiper.min.js"></script>
-    <!-- swiper js -->
+        allItems.forEach(card => {
+            const title = card.querySelector('.event-title')?.textContent.toLowerCase() || '';
+            const location = card.querySelector('.event-meta')?.textContent.toLowerCase() || '';
+            const description = card.querySelector('.event-description')?.textContent.toLowerCase() || '';
 
-    <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const interpretBtn = document.getElementById('smart-interpret');
-        const resetBtn = document.getElementById('filter-reset');
-        const smartQuery = document.getElementById('smart-query');
-        const items = document.querySelectorAll('#events-row > [data-theme]');
+            const matches = 
+                title.includes(term) || 
+                location.includes(term) || 
+                description.includes(term);
 
-        // Export PHP theme map to JS
-        const THEME_MAP = <?= json_encode($themeMap, JSON_HEX_TAG) ?>;
-
-        function applyFilter() {
-            // no-op when called without parsed filter; keep for compatibility
-        }
-
-        function filterByParsed(parsed) {
-            const theme = parsed.theme || '';
-            const type = parsed.type || '';
-            const date = parsed.date || '';
-
-            items.forEach(item => {
-                const itTheme = item.getAttribute('data-theme') || '';
-                const itType = item.getAttribute('data-type') || '';
-                const itDate = item.getAttribute('data-date') || '';
-                let visible = true;
-
-                if (theme && String(itTheme) !== String(theme)) visible = false;
-                if (type && String(itType) !== String(type)) visible = false;
-                if (date && String(itDate) !== String(date)) visible = false;
-
-                item.style.display = visible ? '' : 'none';
-            });
-        }
-        }
-
-        // Simple natural-language parser for the smart query input
-        function parseSmartQuery(query) {
-            // returns { theme:'', type:'', date:'' }
-            const out = { theme: '', type: '', date: '' };
-            if (!query) return out;
-            const q = query.toLowerCase();
-
-            // detect type keywords
-            if (q.includes('gratuit') || q.includes('free')) out.type = 'gratuit';
-            if (q.includes('payant') || q.includes('pay') || q.includes('payé')) out.type = 'payant';
-
-            // detect relative dates: aujourd'hui, demain, prochain(s)
-            if (q.includes("aujourd")) {
-                out.date = (new Date()).toISOString().slice(0,10);
-            } else if (q.includes('demain')) {
-                const d = new Date(); d.setDate(d.getDate()+1);
-                out.date = d.toISOString().slice(0,10);
+            if (term === '' || matches) {
+                card.style.display = '';
+                visibleCount++;
             } else {
-                // look for explicit yyyy-mm-dd or dd-mm-yyyy
-                const iso = q.match(/(20\d{2}-\d{2}-\d{2})/);
-                if (iso) out.date = iso[1];
-                else {
-                    const dmy = q.match(/(\d{2}[-\/]\d{2}[-\/]20\d{2})/);
-                    if (dmy) {
-                        const parts = dmy[1].split(/[-\/]/);
-                        // assume dd-mm-yyyy
-                        out.date = parts[2] + '-' + parts[1] + '-' + parts[0];
-                    }
-                }
+                card.style.display = 'none';
             }
-
-            // detect theme by matching any theme label or id
-            for (const [id, label] of Object.entries(THEME_MAP)) {
-                const lab = String(label).toLowerCase();
-                if (q.includes(lab)) { out.theme = String(id); break; }
-            }
-
-            // fallback: if user typed exact theme id
-            const idMatch = q.match(/\b(\d+)\b/);
-            if (!out.theme && idMatch) {
-                const cand = idMatch[1];
-                if (THEME_MAP[cand]) out.theme = cand;
-            }
-
-            return out;
-        }
-
-        function applySmartQuery(q) {
-            const parsed = parseSmartQuery(q || '');
-            filterByParsed(parsed);
-        }
-
-        if (interpretBtn) interpretBtn.addEventListener('click', function (e) {
-            e.preventDefault();
-            applySmartQuery(smartQuery.value.trim());
         });
 
-        if (resetBtn) resetBtn.addEventListener('click', function (e) {
-            e.preventDefault();
-            if (smartQuery) smartQuery.value = '';
-            // show all
-            items.forEach(i => i.style.display = '');
-        });
-
-        // allow Enter to interpret as well
-        if (smartQuery) {
-            smartQuery.addEventListener('keydown', function (e) {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    applySmartQuery(smartQuery.value.trim());
-                }
-            });
+        if (term !== '') {
+            searchResultsInfo.style.display = 'block';
+            resultCount.textContent = visibleCount;
+        } else {
+            searchResultsInfo.style.display = 'none';
         }
+    }
+
+    searchInput.addEventListener('input', function(e) {
+        const searchTerm = e.target.value;
+        
+        if (searchTerm.length > 0) {
+            searchClear.style.display = 'flex';
+        } else {
+            searchClear.style.display = 'none';
+        }
+
+        filterEvents(searchTerm);
     });
-    </script>
-    <script src="js/masonry.pkgd.js"></script>
-    <!-- particles js -->
-    <script src="js/owl.carousel.min.js"></script>
-    <script src="js/jquery.nice-select.min.js"></script>
-    <!-- slick js -->
-    <script src="js/slick.min.js"></script>
-    <script src="js/jquery.counterup.min.js"></script>
-    <script src="js/waypoints.min.js"></script>
-    <script src="js/contact.js"></script>
-    <script src="js/jquery.ajaxchimp.min.js"></script>
-    <script src="js/jquery.form.js"></script>
-    <script src="js/jquery.validate.min.js"></script>
-    <script src="js/mail-script.js"></script>
-    <!-- custom js -->
-    <script src="js/custom.js"></script>
 
-    <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // ===== SEARCH FUNCTIONALITY =====
-        const searchInput = document.getElementById('event-search');
-        const searchClear = document.getElementById('search-clear');
-        const searchResultsInfo = document.getElementById('search-results-info');
-        const resultCount = document.getElementById('result-count');
-        const allItems = document.querySelectorAll('#events-row [data-theme]');
+    searchClear.addEventListener('click', function() {
+        searchInput.value = '';
+        searchClear.style.display = 'none';
+        searchResultsInfo.style.display = 'none';
+        filterEvents('');
+        searchInput.focus();
+    });
 
-        // Real-time search function
-        function filterEvents(searchTerm) {
-            const term = searchTerm.toLowerCase().trim();
-            let visibleCount = 0;
-
-            allItems.forEach(card => {
-                const title = card.querySelector('.event-title')?.textContent.toLowerCase() || '';
-                const type = card.getAttribute('data-type')?.toLowerCase() || '';
-                const description = card.querySelector('.event-description')?.textContent.toLowerCase() || '';
-                const location = card.querySelector('.event-meta')?.textContent.toLowerCase() || '';
-
-                // Check if search term matches title, type, description or location
-                const matches = 
-                    title.includes(term) || 
-                    type.includes(term) || 
-                    description.includes(term) || 
-                    location.includes(term);
-
-                if (term === '' || matches) {
-                    card.classList.remove('hidden');
-                    card.style.display = '';
-                    visibleCount++;
-                } else {
-                    card.classList.add('hidden');
-                    card.style.display = 'none';
-                }
-            });
-
-            // Update results info
-            if (term !== '') {
-                searchResultsInfo.style.display = 'block';
-                resultCount.textContent = visibleCount;
-            } else {
-                searchResultsInfo.style.display = 'none';
-            }
-            
-            // Reset carousel to first position when filtering
-            currentIndex = 0;
-            updateCarouselPosition();
-        }
-
-        // Event listeners
-        searchInput.addEventListener('input', function(e) {
-            const searchTerm = e.target.value;
-            
-            // Show/hide clear button
-            if (searchTerm.length > 0) {
-                searchClear.style.display = 'flex';
-            } else {
-                searchClear.style.display = 'none';
-            }
-
-            filterEvents(searchTerm);
-        });
-
-        // Clear button functionality
-        searchClear.addEventListener('click', function() {
+    searchInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
             searchInput.value = '';
             searchClear.style.display = 'none';
             searchResultsInfo.style.display = 'none';
             filterEvents('');
-            searchInput.focus();
-        });
-
-        // Optional: Clear search on Escape key
-        searchInput.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                searchInput.value = '';
-                searchClear.style.display = 'none';
-                searchResultsInfo.style.display = 'none';
-                filterEvents('');
-            }
-        });
+        }
     });
-    </script>
-</body>
+});
+</script>
 
+</body>
 </html>

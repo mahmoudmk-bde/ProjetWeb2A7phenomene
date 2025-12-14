@@ -95,8 +95,8 @@ $headerShowUserMenu = isset($headerShowUserMenu) ? (bool)$headerShowUserMenu : f
         <div class="row align-items-center">
             <div class="col-lg-12">
                 <nav class="navbar navbar-expand-lg navbar-light">
-                    <a class="navbar-brand" href="<?= isset($_SESSION['user_id']) ? 'index1.php' : 'index.php' ?>">
-                        <img src="assets/img/logo.png" alt="logo" style="height: 45px;" />
+                    <a class="navbar-brand" href="<?= isset($_SESSION['user_id']) ? '/projetweb2/view/frontoffice/index1.php' : '/projetweb2/view/frontoffice/index.php' ?>">
+                        <img src="/projetweb2/view/frontoffice/assets/img/logo.png" alt="logo" style="height: 45px;" />
                     </a>
                     <button class="navbar-toggler" type="button" data-toggle="collapse" 
                             data-target="#navbarSupportedContent">
@@ -105,11 +105,11 @@ $headerShowUserMenu = isset($headerShowUserMenu) ? (bool)$headerShowUserMenu : f
 
                     <div class="collapse navbar-collapse main-menu-item" id="navbarSupportedContent">
                         <ul class="navbar-nav ml-auto">
-                            <li class="nav-item"><a class="nav-link" href="index.php">Accueil</a></li>
-                            <li class="nav-item"><a class="nav-link" href="missionlist.php">Missions</a></li>
-                            <li class="nav-item"><a class="nav-link" href="store.php?controller=Store&action=index">Store</a></li>
-                            <li class="nav-item"><a class="nav-link" href="store.php?controller=Partenaire&action=index">Partenaires</a></li>
-                            <li class="nav-item"><a class="nav-link" href="events/event.php">Événements</a></li>
+                            <li class="nav-item"><a class="nav-link" href="/projetweb2/view/frontoffice/index.php">Accueil</a></li>
+                            <li class="nav-item"><a class="nav-link" href="/projetweb2/view/frontoffice/missionlist.php">Missions</a></li>
+                            <li class="nav-item"><a class="nav-link" href="/projetweb2/view/frontoffice/store.php?controller=Store&action=index">Store</a></li>
+                            <li class="nav-item"><a class="nav-link" href="/projetweb2/view/frontoffice/store.php?controller=Partenaire&action=index">Partenaires</a></li>
+                            <li class="nav-item"><a class="nav-link" href="/projetweb2/view/frontoffice/events/event.php">Événements</a></li>
                             <?php if (isset($_SESSION['user_id'])): ?>
                             <li class="nav-item notification-item">
                                 <a class="nav-link notification-bell" href="#" id="notificationBell">

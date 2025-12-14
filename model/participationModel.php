@@ -1,12 +1,11 @@
 <?php
-require_once __DIR__ . '/../config.php';
+require_once __DIR__ . '/../db_config.php';
 
 class ParticipationModel {
     private $conn;
 
     public function __construct() {
-        $database = new Database();
-        $this->conn = $database->getConnection();
+        $this->conn = config::getConnexion();
     }
 
     public function create($id_evenement, $id_volontaire, $date_participation, $statut, $quantite = 1, $montant_total = null, $mode_paiement = null, $reference_paiement = null) {
@@ -42,9 +41,9 @@ class ParticipationModel {
     }
 
     public function getEventParticipants($event_id) {
-        $query = "SELECT p.*, u.nom, u.prenom, u.email, u.gamer_tag 
+        $query = "SELECT p.*, u.nom, u.prenom, u.mail AS email, u.gamer_tag 
                   FROM participation p 
-                  JOIN utilisateur u ON p.id_volontaire = u.id_utilisateur 
+                  JOIN utilisateur u ON p.id_volontaire = u.id_util 
                   WHERE p.id_evenement = :event_id AND p.statut = 'acceptée'";
         
         $stmt = $this->conn->prepare($query);
@@ -54,9 +53,9 @@ class ParticipationModel {
     }
 
     public function getEventParticipations($event_id) {
-        $query = "SELECT p.*, u.nom, u.prenom, u.email, u.gamer_tag, e.titre as evenement_titre
+        $query = "SELECT p.*, u.nom, u.prenom, u.mail AS email, u.gamer_tag, e.titre as evenement_titre
                   FROM participation p 
-                  JOIN utilisateur u ON p.id_volontaire = u.id_utilisateur 
+                  JOIN utilisateur u ON p.id_volontaire = u.id_util 
                   JOIN evenement e ON p.id_evenement = e.id_evenement 
                   WHERE p.id_evenement = :event_id 
                   ORDER BY p.date_participation DESC";
@@ -105,10 +104,10 @@ class ParticipationModel {
     }
 
     public function getAllParticipationsWithUsers() {
-        $query = "SELECT p.*, e.titre, e.date_evenement, e.heure_evenement, e.duree_minutes, e.lieu, u.nom, u.prenom, u.email, e.type_evenement, e.prix
+        $query = "SELECT p.*, e.titre, e.date_evenement, e.heure_evenement, e.duree_minutes, e.lieu, u.nom, u.prenom, u.mail AS email, e.type_evenement, e.prix
                   FROM participation p
                   JOIN evenement e ON p.id_evenement = e.id_evenement
-                  JOIN utilisateur u ON p.id_volontaire = u.id_utilisateur
+                  JOIN utilisateur u ON p.id_volontaire = u.id_util
                   ORDER BY p.date_participation DESC";
 
         $stmt = $this->conn->prepare($query);

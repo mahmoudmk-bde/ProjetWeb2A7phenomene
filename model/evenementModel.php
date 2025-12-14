@@ -1,12 +1,11 @@
 <?php
-require_once __DIR__ . '/../config.php';
+require_once __DIR__ . '/../db_config.php';
 
 class EvenementModel {
     private $conn;
 
     public function __construct() {
-        $database = new Database();
-        $this->conn = $database->getConnection();
+        $this->conn = config::getConnexion();
     }
 
     public function create($titre, $description, $date_evenement, $heure_evenement, $duree_minutes, $lieu, $image, $id_organisation, $type_evenement = 'gratuit', $prix = null) {
@@ -129,10 +128,34 @@ class EvenementModel {
         $result = $stmt->fetch();
         return $result['count'];
     }
+    private function columnExists($table, $column) {
+        try {
+            $sql = "SELECT COUNT(*) AS cnt FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = :table AND COLUMN_NAME = :column";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute([':table' => $table, ':column' => $column]);
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            return isset($row['cnt']) && (int)$row['cnt'] > 0;
+        } catch (PDOException $e) {
+            // If metadata query fails, assume column doesn't exist to avoid fatal
+            error_log('columnExists check failed: ' . $e->getMessage());
+            return false;
+        }
+    }
+
     public function incrementViews($id) {
-        $query = "UPDATE evenement SET vues = vues + 1 WHERE id_evenement = :id";
-        $stmt = $this->conn->prepare($query);
-        return $stmt->execute([':id' => $id]);
+        // Safely increment views only if the "vues" column exists
+        if ($this->columnExists('evenement', 'vues')) {
+            try {
+                $query = "UPDATE evenement SET vues = COALESCE(vues, 0) + 1 WHERE id_evenement = :id";
+                $stmt = $this->conn->prepare($query);
+                return $stmt->execute([':id' => $id]);
+            } catch (PDOException $e) {
+                error_log('incrementViews failed: ' . $e->getMessage());
+                return false;
+            }
+        }
+        // Column missing: no-op to prevent fatal errors
+        return false;
     }
 }
 ?>

@@ -27,6 +27,14 @@ function theme_label($id, $map) {
     return $map[$id] ?? 'Thématique';
 }
 
+function normalize_asset_path($img) {
+    if (empty($img)) return 'img/favicon.png';
+    $img = trim($img);
+    if (strpos($img, 'http') === 0) return $img;
+    if (strpos($img, '/') === 0) return $img;
+    return 'events/' . $img;
+}
+
 function normalize_event_image($img) {
     return normalize_asset_path($img);
 }
@@ -41,17 +49,17 @@ $history = $participationModel->getUserParticipations($userId);
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>Mes événements - gaming</title>
-    <link rel="icon" href="img/favicon.png">
-    <link rel="stylesheet" href="css/bootstrap.min.css">
-    <link rel="stylesheet" href="css/animate.css">
-    <link rel="stylesheet" href="css/owl.carousel.min.css">
-    <link rel="stylesheet" href="css/all.css">
-    <link rel="stylesheet" href="css/flaticon.css">
-    <link rel="stylesheet" href="css/themify-icons.css">
-    <link rel="stylesheet" href="css/magnific-popup.css">
-    <link rel="stylesheet" href="css/slick.css">
-    <link rel="stylesheet" href="css/style.css">
+    <title><?= __('my_events') ?></title>
+    <link rel="icon" href="../assets/img/favicon.png">
+    <link rel="stylesheet" href="../assets/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../assets/css/animate.css">
+    <link rel="stylesheet" href="../assets/css/owl.carousel.min.css">
+    <link rel="stylesheet" href="../assets/css/all.css">
+    <link rel="stylesheet" href="../assets/css/flaticon.css">
+    <link rel="stylesheet" href="../assets/css/themify-icons.css">
+    <link rel="stylesheet" href="../assets/css/magnific-popup.css">
+    <link rel="stylesheet" href="../assets/css/slick.css">
+    <link rel="stylesheet" href="../assets/css/style.css">
     <link rel="stylesheet" href="css/event-custom.css">
     <?php if (get_dir() === 'rtl'): ?>
     <style>
@@ -63,82 +71,7 @@ $history = $participationModel->getUserParticipations($userId);
     <?php endif; ?>
 </head>
 
-<body>
-    <div class="body_bg">
-        <header class="main_menu single_page_menu">
-            <div class="container">
-                <div class="row align-items-center">
-                    <div class="col-lg-12">
-                        <nav class="navbar navbar-expand-lg navbar-light">
-                            <a class="navbar-brand" href="index.php"> <img src="img/logo.png" alt="logo"> </a>
-                            <button class="navbar-toggler" type="button" data-toggle="collapse"
-                                data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
-                                aria-expanded="false" aria-label="Toggle navigation">
-                                <span class="menu_icon"><i class="fas fa-bars"></i></span>
-                            </button>
-                            <div class="collapse navbar-collapse main-menu-item" id="navbarSupportedContent">
-                                <ul class="navbar-nav">
-                                    <li class="nav-item">
-                                        <a class="nav-link" href="index.php"><?= __('home') ?></a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link" href="fighter.html"><?= __('fighter') ?></a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link" href="team.html"><?= __('team') ?></a>
-                                    </li>
-                                    <li class="nav-item dropdown">
-                                        <a class="nav-link dropdown-toggle" href="blog.html" id="navbarDropdown"
-                                            role="button" data-toggle="dropdown" aria-haspopup="true"
-                                            aria-expanded="false">
-                                            <?= __('blog') ?>
-                                        </a>
-                                        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                                            <a class="dropdown-item" href="blog.html"><?= __('blog') ?></a>
-                                            <a class="dropdown-item" href="single-blog.html">Single blog</a>
-                                        </div>
-                                    </li>
-                                    <li class="nav-item dropdown">
-                                        <a class="nav-link dropdown-toggle" href="blog.html" id="navbarDropdown1"
-                                            role="button" data-toggle="dropdown" aria-haspopup="true"
-                                            aria-expanded="false">
-                                            <?= __('pages') ?>
-                                        </a>
-                                        <div class="dropdown-menu" aria-labelledby="navbarDropdown1">
-                                            <a class="dropdown-item" href="elements.html">Elements</a>
-                                        </div>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link" href="contact.html"><?= __('contact') ?></a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link" href="addreclamation.php"><?= __('reclaim') ?></a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link" href="event.php"><?= __('events') ?></a>
-                                    </li>
-                                    <li class="nav-item active">
-                                        <a class="nav-link" href="my_events.php"><?= __('my_events') ?></a>
-                                    </li>
-                                    <!-- Language Selector -->
-                                    <li class="nav-item dropdown">
-                                        <a class="nav-link dropdown-toggle" href="#" id="langDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                            <i class="fas fa-globe"></i> <?= strtoupper(get_current_lang()) ?>
-                                        </a>
-                                        <div class="dropdown-menu" aria-labelledby="langDropdown">
-                                            <a class="dropdown-item" href="?lang=fr">Français</a>
-                                            <a class="dropdown-item" href="?lang=en">English</a>
-                                            <a class="dropdown-item" href="?lang=ar">العربية</a>
-                                        </div>
-                                    </li>
-                                </ul>
-                            </div>
-                            <a href="event.php" class="btn_1 d-none d-sm-block"><?= __('all_events') ?></a>
-                        </nav>
-                    </div>
-                </div>
-            </div>
-        </header>
+        <?php include __DIR__ . '/../header_common.php'; ?>
 
         <section class="profile-header">
             <div class="container">
