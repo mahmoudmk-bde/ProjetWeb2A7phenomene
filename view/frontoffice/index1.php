@@ -655,9 +655,7 @@ foreach ($candidatures as $candidature) {
                 <a href="missionlist.php" class="action-btn">
                     <i class="fas fa-search me-2"></i>Explorer les Missions
                 </a>
-                <a href="profile.php" class="action-btn secondary">
-                    <i class="fas fa-user me-2"></i>Mon Profil
-                </a>
+                
             <?php endif; ?>
         </div>
     </section>
