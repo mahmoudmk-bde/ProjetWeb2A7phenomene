@@ -1,5 +1,4 @@
 <?php
-session_start();
 // Use forward slashes which PHP handles correctly on Windows
 // From view/backoffice/reclamation/ we need to go up 3 levels to reach project root
 $base_dir = str_replace('\\', '/', __DIR__) . '/../../../';
@@ -12,15 +11,6 @@ $list = $recCtrl->listReclamations();
 
 // Message de succès après suppression
 $successMessage = isset($_GET['deleted']) && $_GET['deleted'] == 1 ? 'Réclamation supprimée avec succès !' : null;
-// Message de succès après suppression (GET) ou après envoi de réponse (session flash)
-$successMessage = null;
-if (isset($_GET['deleted']) && $_GET['deleted'] == 1) {
-    $successMessage = 'Réclamation supprimée avec succès !';
-}
-if (isset($_SESSION['flash_success'])) {
-    $successMessage = $_SESSION['flash_success'];
-    unset($_SESSION['flash_success']);
-}
 ?>
 <!DOCTYPE html>
 <html lang="fr">

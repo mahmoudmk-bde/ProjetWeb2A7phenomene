@@ -294,7 +294,7 @@ $likesCount = $likeController->getLikesCountForMissions($missionIds);
 
                 // Images PNG selon le thème
                 $images = [
-                    "sport" => "assets/img/sport.png",
+                    "sport" => "sport.png",
                     "football" => "tournoi.png",
                     "fifa" => "tournoi.png",
                     "éducation" => "education.png",

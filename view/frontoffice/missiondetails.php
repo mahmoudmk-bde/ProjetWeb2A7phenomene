@@ -15,13 +15,6 @@ $condidatureController = new condidaturecontroller();
 $utilisateurController = new UtilisateurController();
 $likeController = new LikeController();
 
-// Mark notification as read if coming from notification link
-if (isset($_GET['candidature_id']) && isset($_SESSION['user_id'])) {
-    require_once __DIR__ . '/../../controller/NotificationController.php';
-    $notifCtrl = new NotificationController();
-    $notifCtrl->markCandidatureAsRead($_GET['candidature_id'], $_SESSION['user_id']);
-}
-
 if (!isset($_GET['id']) || empty($_GET['id'])) {
     die("<h2 style='color:white;text-align:center;margin-top:50px;'>❌ ID de mission manquant</h2>");
 }
@@ -118,15 +111,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_feedback'])) {
         $commentaire = trim($_POST['commentaire']);
         
         if ($rating >= 1 && $rating <= 5) {
-            try {
-                if ($feedbackcontroller->addFeedback($id, $_SESSION['user_id'], $rating, $commentaire)) {
-                    header("Location: missiondetails.php?id=$id&success=1");
-                    exit();
-                } else {
-                    $error = "Erreur lors de l'ajout du feedback";
-                }
-            } catch (Exception $e) {
-                $error = $e->getMessage();
+            if ($feedbackcontroller->addFeedback($id, $_SESSION['user_id'], $rating, $commentaire)) {
+                header("Location: missiondetails.php?id=$id&success=1");
+                exit();
+            } else {
+                $error = "Erreur lors de l'ajout du feedback";
             }
         } else {
             $error = "La note doit être entre 1 et 5";

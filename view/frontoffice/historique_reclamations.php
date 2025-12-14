@@ -16,13 +16,6 @@ $reclamationController = new ReclamationController();
 $responseController = new ResponseController();
 $utilCtrl = new UtilisateurController();
 
-// Mark notification as read if coming from notification link
-if (isset($_GET['reclamation_id'])) {
-    require_once __DIR__ . '/../../controller/NotificationController.php';
-    $notifCtrl = new NotificationController();
-    $notifCtrl->markResponsesAsRead($_GET['reclamation_id'], $user_id);
-}
-
 $reclamations = $reclamationController->getReclamationsByUser($user_id);
 
 $headerShowUserMenu = true; // instruct header to show dropdown

@@ -1,501 +1,348 @@
 <?php
 session_start();
 include '../../controller/utilisateurcontroller.php';
-require_once __DIR__ . '/../../Model/utilisateur.php';
+require_once __DIR__ . '/../../model/utilisateur.php';
 
-$error = "";
 $utilisateurc = new utilisateurcontroller();
+$error = "";
 
-// AJOUT: Gérer le retour à la connexion depuis le lien
-if (isset($_GET['retour']) && $_GET['retour'] == 1) {
-    session_destroy();
-    header('Location: connexion.php');
-    exit();
-}
-
-// AJOUT: Vérifier si c'est une tentative de vérification 2FA
-if (isset($_POST["verify_2fa_code"])) {
-    $entered_code = $_POST["verification_code"];
-    $user_id = $_SESSION['temp_user_id'] ?? null;
-    
-    if ($user_id && isset($_SESSION['2fa_code']) && isset($_SESSION['2fa_expires'])) {
-        // Vérifier l'expiration
-        if (time() > $_SESSION['2fa_expires']) {
-            $error = "Le code a expiré. Veuillez vous reconnecter.";
-            session_destroy();
-        } 
-        // Vérifier le code
-        else if ($entered_code === $_SESSION['2fa_code']) {
-            // Code correct - compléter la connexion
-            $_SESSION['user_id'] = $_SESSION['temp_user_id'];
-            $_SESSION['user_name'] = $_SESSION['temp_user_name'];
-            $_SESSION['user_type'] = $_SESSION['temp_user_type'];
-            $_SESSION['user_email'] = $_SESSION['temp_user_email'];
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (isset($_POST["mail"]) && isset($_POST["mdp"])) {
+        if (!empty($_POST["mail"]) && !empty($_POST["mdp"])) {
             
-            // STOCKER L'IMAGE DANS LA SESSION
-            $_SESSION['profile_picture'] = $_SESSION['temp_profile_picture'];
+            $mail = trim($_POST['mail']);
+            $mdp = trim($_POST['mdp']);
             
-            // Nettoyer les variables temporaires
-            unset($_SESSION['2fa_required'], $_SESSION['2fa_user_id'], $_SESSION['2fa_code'], 
-                  $_SESSION['2fa_expires'], $_SESSION['temp_user_id'], $_SESSION['temp_user_name'],
-                  $_SESSION['temp_user_email'], $_SESSION['temp_user_type'], $_SESSION['temp_profile_picture']);
-            
-            // ouvrir index.html
-            if ($_SESSION['user_type'] === 'admin') {
-                header('Location: http://localhost/tache%20utilisateur/view/backoffice/admin.php');
-            } else {
-                header('Location: index1.php');
-            }
-            exit();
-        } else {
-            $error = "Code de vérification incorrect";
-            $show_2fa_form = true;
-        }
-    } else {
-        $error = "Session invalide. Veuillez vous reconnecter.";
-        session_destroy();
-    }
-}
-
-// AJOUT: Afficher le formulaire 2FA si nécessaire
-if (isset($_SESSION['2fa_required']) && $_SESSION['2fa_required']) {
-    $show_2fa_form = true;
-}
-
-// Traitement normal de la connexion
-if (isset($_POST["username"]) && isset($_POST["password"]) && !isset($show_2fa_form)) {
-    if (!empty($_POST["username"]) && !empty($_POST["password"])) {
-        
-        $username = $_POST["username"];
-        $mdp = $_POST["password"];
-        $sql = "";
-        
-        // Vérifier si c'est un email
-        if (filter_var($username, FILTER_VALIDATE_EMAIL)) {
-            if ($utilisateurc->emailExists($username)) {
-                $sql = "SELECT * FROM utilisateur WHERE mail = :identifiant";
-            } else {
-                $error = "Email non trouvé";
-            }
-        } 
-        // Vérifier si c'est un numéro
-        else if (is_numeric($username)) {
-            if ($utilisateurc->numExists($username)) {
-                $sql = "SELECT * FROM utilisateur WHERE num = :identifiant";
-            } else {
-                $error = "Numéro de téléphone non trouvé";
-            }
-        } else {
-            $error = "Veuillez entrer un email ou un numéro de téléphone valide";
-        }
-        
-        // verification s'il nya pas d'erreur
-        if (!empty($sql) && empty($error)) {
-            $db = config::getConnexion();
-            $stmt = $db->prepare($sql);
-            $stmt->execute([
-                ':identifiant' => $username
-            ]);
-            
-            $user = $stmt->fetch(PDO::FETCH_ASSOC);
-            
-            if ($user && (password_verify($mdp, $user['mdp']) || $mdp === $user['mdp'])) {
-                // AJOUT: Vérifier si la 2FA est activée
-                if ($user['auth'] === 'active') {
-                    // Générer un code de vérification à 6 chiffres
-                    $verification_code = str_pad(rand(0, 999999), 6, '0', STR_PAD_LEFT);
-                    
-                    // Stocker les informations de vérification dans la session
-                    $_SESSION['2fa_required'] = true;
-                    $_SESSION['2fa_user_id'] = $user['id_util'];
-                    $_SESSION['2fa_code'] = $verification_code;
-                    $_SESSION['2fa_expires'] = time() + 300; // Expire dans 5 minutes
-                    
-                    // Pour la démonstration, stocker le code dans la session (à retirer en production)
-                    $_SESSION['debug_2fa_code'] = $verification_code;
-                    
-                    // Stocker temporairement les infos utilisateur
-                    $_SESSION['temp_user_id'] = $user['id_util'];
-                    $_SESSION['temp_user_name'] = $user['prenom'] . ' ' . $user['nom'];
-                    $_SESSION['temp_user_type'] = $user['typee'];
-                    $_SESSION['temp_user_email'] = $user['mail'];
-                    $_SESSION['temp_profile_picture'] = $user['img'];
-                    
-                    $show_2fa_form = true;
-                    
-                    // AJOUT: Simuler l'envoi d'email (à remplacer par un vrai envoi)
-                    // $utilisateurc->send2FACode($user['mail'], $verification_code);
-                    
-                } else {
-                    // Connexion réussie sans 2FA
+            // Vérifier d'abord si l'utilisateur existe avec cet email
+            if ($utilisateurc->emailExists($mail)) {
+                // Tentative de connexion
+                $user = $utilisateurc->login($mail, $mdp);
+                
+                if ($user) {
+                    // Connexion réussie
                     $_SESSION['user_id'] = $user['id_util'];
                     $_SESSION['user_name'] = $user['prenom'] . ' ' . $user['nom'];
-                    $_SESSION['user_type'] = $user['typee'];
                     $_SESSION['user_email'] = $user['mail'];
+                    $_SESSION['user_type'] = $user['typee'];
                     
-                    // STOCKER L'IMAGE DANS LA SESSION
-                    $_SESSION['profile_picture'] = $user['img'];
-                    
-                    // ouvrir index.html
-                    if ($user['typee'] === 'admin') {
-                        header('Location: http://localhost/tache%20utilisateur/view/backoffice/admin.php');
+                    // Redirection
+                    if (isset($_GET['redirect'])) {
+                        header('Location: ' . urldecode($_GET['redirect']));
                     } else {
-                        header('Location: index1.php');
+                        header('Location: index.php');
                     }
                     exit();
+                } else {
+                    $error = "Mot de passe incorrect";
                 }
             } else {
-                $error = "Mot de passe incorrect";
+                $error = "Aucun compte trouvé avec cet email";
             }
+        } else {
+            $error = "Veuillez remplir tous les champs";
         }
-    } else {
-        $error = "Veuillez remplir tous les champs";
     }
 }
 ?>
-
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <title>Login</title>
-  <link rel="stylesheet" href="assets/css/connexion.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  <style>
-    /* AJOUT: Styles pour la 2FA */
-    .two-factor-container {
-  margin-top: 30px;
-  animation: fadeIn 0.8s ease-out;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.two-factor-box {
-  background: rgba(255, 255, 255, 0.08);
-  padding: 25px;
-  border-radius: 12px;
-  border-left: 4px solid var(--engage-red);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-  position: relative;
-  overflow: hidden;
-}
-
-.two-factor-box::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(45deg, transparent, rgba(231, 76, 60, 0.05), transparent);
-  z-index: -1;
-}
-
-.verification-code-input {
-  font-size: 28px;
-  letter-spacing: 12px;
-  text-align: center;
-  padding: 18px;
-  margin: 20px 0;
-  background: rgba(26, 26, 46, 0.6);
-  border: 2px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  color: var(--engage-light);
-  width: 100%;
-  box-sizing: border-box;
-  font-weight: 600;
-  transition: all 0.3s ease;
-  outline: none;
-}
-
-.verification-code-input:focus {
-  border-color: var(--engage-red);
-  box-shadow: 0 0 0 4px rgba(231, 76, 60, 0.2);
-  background: rgba(26, 26, 46, 0.8);
-  transform: translateY(-2px);
-}
-
-.verification-code-input::placeholder {
-  color: rgba(255, 255, 255, 0.3);
-  letter-spacing: normal;
-  font-size: 16px;
-}
-
-.timer {
-  color: var(--engage-red);
-  font-weight: 700;
-  margin: 15px 0;
-  font-size: 1.1rem;
-  text-align: center;
-  text-shadow: 0 0 10px rgba(231, 76, 60, 0.3);
-  animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-  0%, 100% {
-    opacity: 0.8;
-  }
-  50% {
-    opacity: 1;
-  }
-}
-
-.debug-code {
-  background: rgba(46, 204, 113, 0.1);
-  padding: 15px;
-  border-radius: 12px;
-  margin: 20px 0;
-  font-family: 'Courier New', monospace;
-  font-size: 20px;
-  text-align: center;
-  color: #2ecc71;
-  border: 1px solid rgba(46, 204, 113, 0.3);
-  letter-spacing: 8px;
-  font-weight: bold;
-  position: relative;
-  overflow: hidden;
-}
-
-.debug-code::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(46, 204, 113, 0.1), transparent);
-  animation: shimmer 3s infinite;
-}
-
-@keyframes shimmer {
-  to {
-    left: 100%;
-  }
-}
-
-.resend-link {
-  color: var(--engage-blue);
-  cursor: pointer;
-  text-decoration: none;
-  font-size: 0.95rem;
-  font-weight: 600;
-  transition: all 0.3s ease;
-  display: inline-block;
-  position: relative;
-  padding: 5px 0;
-}
-
-.resend-link::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 0;
-  height: 2px;
-  background: var(--engage-blue);
-  transition: width 0.3s ease;
-}
-
-.resend-link:hover {
-  color: #5dade2;
-  transform: translateX(5px);
-}
-
-.resend-link:hover::after {
-  width: 100%;
-}
-
-.resend-link:disabled {
-  color: rgba(255, 255, 255, 0.3);
-  cursor: not-allowed;
-  transform: none;
-}
-
-.resend-link:disabled::after {
-  display: none;
-}
-
-/* Style pour le message d'instructions */
-.verification-instruction {
-  color: #bdc3c7;
-  text-align: center;
-  margin-bottom: 20px;
-  font-size: 0.95rem;
-  line-height: 1.5;
-}
-
-/* Style pour le lien Retour à la connexion */
-.retour-link {
-  color: #666;
-  text-decoration: none;
-  display: inline-block;
-  padding: 10px 20px;
-  border: 1px solid #666;
-  border-radius: 5px;
-  margin-top: 15px;
-  transition: all 0.3s ease;
-}
-
-.retour-link:hover {
-  background: #666;
-  color: white;
-}
-
-/* Responsive */
-@media (max-width: 480px) {
-  .two-factor-box {
-    padding: 20px;
-    margin: 0 10px;
-  }
-  
-  .verification-code-input {
-    font-size: 22px;
-    letter-spacing: 8px;
-    padding: 15px;
-  }
-  
-  .debug-code {
-    font-size: 18px;
-    letter-spacing: 6px;
-    padding: 12px;
-  }
-  
-  .retour-link {
-    padding: 8px 16px;
-    font-size: 0.9rem;
-  }
-}
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion - ENGAGE</title>
+    <link rel="stylesheet" href="assets/css/bootstrap.min.css">
+    <link rel="stylesheet" href="assets/css/all.css">
+    <style>
+        .particles-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: linear-gradient(135deg, #1f2235 0%, #2d325a 100%);
+        }
+        
+        .login-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 40px;
+            width: 100%;
+            max-width: 450px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        
+        .login-container h1 {
+            color: #fff;
+            text-align: center;
+            margin-bottom: 30px;
+            font-weight: 700;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+        
+        .form-control {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #fff;
+            border-radius: 8px;
+            padding: 12px 15px;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+        
+        .form-control:focus {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: #ff4a57;
+            box-shadow: 0 0 0 0.2rem rgba(255, 74, 87, 0.25);
+            color: #fff;
+        }
+        
+        .form-control::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+        
+        .password-container {
+            position: relative;
+        }
+        
+        .password-toggle {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.6);
+            cursor: pointer;
+        }
+        
+        .btn-connexion {
+            background: linear-gradient(135deg, #ff4a57 0%, #ff6b6b 100%);
+            border: none;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 8px;
+            width: 100%;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-bottom: 15px;
+        }
+        
+        .btn-connexion:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 74, 87, 0.4);
+        }
+        
+        .btn-inscription {
+            background: transparent;
+            border: 2px solid #ff4a57;
+            color: #ff4a57;
+            padding: 12px 30px;
+            border-radius: 8px;
+            width: 100%;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: block;
+            text-align: center;
+        }
+        
+        .btn-inscription:hover {
+            background: #ff4a57;
+            color: white;
+            text-decoration: none;
+        }
+        
+        .signup {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.7);
+            margin: 20px 0;
+        }
+        
+        .error-message {
+            color: #ff6b6b;
+            font-size: 14px;
+            margin-top: 5px;
+            display: none;
+        }
+        
+        .alert-error {
+            background: rgba(220, 53, 69, 0.2);
+            border: 1px solid #dc3545;
+            color: #dc3545;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .forgot-password {
+            text-align: center;
+            margin-top: 15px;
+        }
+        
+        .forgot-password a {
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        
+        .forgot-password a:hover {
+            color: #ff4a57;
+            text-decoration: underline;
+        }
+    </style>
 </head>
 <body>
-  <div class="login-container">
-    <h1>Se connecter</h1>
+    <div class="particles-container" id="particles"></div>
+    
+    <div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px;">
+        <div class="login-container">
+            <h1>Connexion</h1>
 
-    <?php if (!empty($error)): ?>
-        <div class="error-message" style="color: red; margin-bottom: 15px; text-align: center;">
-            <?php echo htmlspecialchars($error); ?>
-        </div>
-    <?php endif; ?>
-
-    <?php if (isset($show_2fa_form) && $show_2fa_form): ?>
-        <!-- AJOUT: Formulaire de vérification 2FA -->
-        <div class="two-factor-container">
-            <div class="two-factor-box">
-                <h3>Vérification en deux étapes</h3>
-                <p>Un code de vérification a été envoyé à votre adresse email.</p>
-                
-                <?php if (isset($_SESSION['debug_2fa_code'])): ?>
-                    <div class="debug-code">
-                        Code de test : <?php echo $_SESSION['debug_2fa_code']; ?>
-                    </div>
-                <?php endif; ?>
-                
-                <div class="timer" id="timer">
-                    Le code expirera dans : <span id="countdown">5:00</span>
+            <!-- Afficher le message d'erreur -->
+            <?php if (!empty($error)): ?>
+                <div class="alert-error">
+                    <i class="fas fa-exclamation-circle me-2"></i><?php echo htmlspecialchars($error); ?>
                 </div>
-                
-                <form method="post">
-                    <input type="text" name="verification_code" 
-                           class="verification-code-input" 
-                           placeholder="000000" 
-                           maxlength="6" 
-                           required
-                           pattern="[0-9]{6}"
-                           autocomplete="off">
-                    
-                    <input type="submit" name="verify_2fa_code" value="Vérifier" class="btn" style="width: 100%;">
-                    
-                    <div style="text-align: center; margin-top: 10px;">
-                        <span class="resend-link" onclick="resendCode()">Renvoyer le code</span>
+            <?php endif; ?>
+
+            <form method="post" id="connexionForm">
+                <div class="form-group">
+                    <input type="email" name="mail" id="mail" placeholder="Adresse email" required
+                           value="<?php echo isset($_POST['mail']) ? htmlspecialchars($_POST['mail']) : ''; ?>">
+                    <div class="error-message" id="error-mail"></div>
+                </div>
+
+                <div class="form-group">
+                    <div class="password-container">
+                        <input type="password" name="mdp" id="mdp" placeholder="Mot de passe" required>
+                        <button type="button" class="password-toggle" onclick="togglePassword('mdp')">
+                            <i class="far fa-eye"></i>
+                        </button>
                     </div>
-                </form>
+                    <div class="error-message" id="error-mdp"></div>
+                </div>
+
+                <button type="submit" class="btn-connexion">
+                    SE CONNECTER
+                </button>
+            </form>
+
+            <div class="forgot-password">
+                <a href="mdp.php">Mot de passe oublié ?</a>
             </div>
-            
-            <div style="text-align: center; margin-top: 15px;">
-                <a href="connexion.php?retour=1" class="retour-link">Retour à la connexion</a>
-            </div>
+
+            <p class="signup">Vous n'avez pas de compte ?</p>
+            <a href="inscription.php" class="btn-inscription">S'INSCRIRE</a>
         </div>
-        
-        <script>
-            // Compte à rebours de 5 minutes
-            let timeLeft = 300; // 5 minutes en secondes
+    </div>
+
+    <script>
+        // Fonction pour afficher/masquer le mot de passe
+        function togglePassword(inputId) {
+            const input = document.getElementById(inputId);
+            const icon = input.parentNode.querySelector('i');
             
-            function updateTimer() {
-                const minutes = Math.floor(timeLeft / 60);
-                const seconds = timeLeft % 60;
-                document.getElementById('countdown').textContent = 
-                    `${minutes}:${seconds.toString().padStart(2, '0')}`;
-                
-                if (timeLeft > 0) {
-                    timeLeft--;
-                    setTimeout(updateTimer, 1000);
-                } else {
-                    document.getElementById('timer').innerHTML = 
-                        '<span style="color: red;">Le code a expiré</span>';
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+
+        // Validation du formulaire
+        document.getElementById('connexionForm').addEventListener('submit', function(e) {
+            let isValid = true;
+            
+            // Validation email
+            const email = document.getElementById('mail');
+            const emailError = document.getElementById('error-mail');
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            
+            if (!email.value.trim()) {
+                emailError.textContent = 'Veuillez entrer votre adresse email';
+                emailError.style.display = 'block';
+                isValid = false;
+            } else if (!emailRegex.test(email.value)) {
+                emailError.textContent = 'Veuillez entrer une adresse email valide';
+                emailError.style.display = 'block';
+                isValid = false;
+            } else {
+                emailError.style.display = 'none';
+            }
+            
+            // Validation mot de passe
+            const password = document.getElementById('mdp');
+            const passwordError = document.getElementById('error-mdp');
+            
+            if (!password.value.trim()) {
+                passwordError.textContent = 'Veuillez entrer votre mot de passe';
+                passwordError.style.display = 'block';
+                isValid = false;
+            } else {
+                passwordError.style.display = 'none';
+            }
+            
+            if (!isValid) {
+                e.preventDefault();
+            }
+        });
+
+        // Effacer les erreurs quand l'utilisateur commence à taper
+        document.querySelectorAll('input').forEach(input => {
+            input.addEventListener('input', function() {
+                const errorElement = document.getElementById('error-' + this.id);
+                if (errorElement) {
+                    errorElement.style.display = 'none';
                 }
-            }
-            
-            updateTimer();
-            
-            function resendCode() {
-                // En production, vous enverriez une requête AJAX pour regénérer un code
-                alert('Fonctionnalité de renvoi à implémenter');
-            }
-            
-            // Auto-focus sur le champ code
-            document.addEventListener('DOMContentLoaded', function() {
-                document.querySelector('.verification-code-input').focus();
             });
-        </script>
-        
-    <?php else: ?>
-        <!-- Formulaire de connexion original -->
-        <form method="post">
-            <input type="text" name="username" id="nom" placeholder="Adresse e-mail ou numéro tél "  
-                   value="<?php echo isset($_POST['username']) ? htmlspecialchars($_POST['username']) : ''; ?>">
+        });
 
-            <input type="password" name="password" placeholder="Mot de passe" >
+        // Animation des particules (optionnelle)
+        function createParticles() {
+            const container = document.getElementById('particles');
+            const particleCount = 50;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.style.position = 'absolute';
+                particle.style.width = Math.random() * 3 + 1 + 'px';
+                particle.style.height = particle.style.width;
+                particle.style.background = 'rgba(255, 255, 255, ' + (Math.random() * 0.3 + 0.1) + ')';
+                particle.style.borderRadius = '50%';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                particle.style.animation = `float ${Math.random() * 10 + 10}s linear infinite`;
+                container.appendChild(particle);
+            }
+        }
 
-            <a href="mdp.php" class="forgot">Mot de passe oubliée?</a>
+        // Démarrer l'animation des particules
+        createParticles();
+    </script>
 
-            <input type="submit" value="Se connecter" class="btn">
-        </form>
-
-        <!-- Social Login -->
-        <div class="social-login" style="margin-top: 20px; text-align: center;">
-            <p style="color: #fff; margin-bottom: 10px; font-size: 0.9rem;">Ou se connecter avec</p>
-            <div style="display: flex; justify-content: center; gap: 15px;">
-                <a href="../../controller/social_auth.php?provider=google" title="Google" style="background: #db4437; color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; text-decoration: none; transition: transform 0.2s;"><i class="fab fa-google"></i></a>
-                <a href="../../controller/social_auth.php?provider=facebook" title="Facebook" style="background: #4267B2; color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; text-decoration: none; transition: transform 0.2s;"><i class="fab fa-facebook-f"></i></a>
-                <a href="../../controller/social_auth.php?provider=twitter" title="Twitter" style="background: #1DA1F2; color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; text-decoration: none; transition: transform 0.2s;"><i class="fab fa-twitter"></i></a>
-            </div>
-            <style>
-                .social-login a:hover { transform: scale(1.1); }
-            </style>
-        </div>
-
-        <p class="signup">INSCRIVEZ-VOUS</p>
-        <a href="inscription.php" class="signup-link">S'INSCRIRE</a>
-    <?php endif; ?>
-  </div>
+    <style>
+        @keyframes float {
+            0% {
+                transform: translateY(0) translateX(0);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100vh) translateX(calc(-50vw + 100px * var(--random)));
+                opacity: 0;
+            }
+        }
+    </style>
 </body>
 </html>
-<?php
-// AJOUT: Gérer l'annulation de la 2FA (pour compatibilité)
-if (isset($_GET['cancel']) && $_GET['cancel'] == 1) {
-    session_destroy();
-    header('Location: connexion.php');
-    exit();
-}
-?>

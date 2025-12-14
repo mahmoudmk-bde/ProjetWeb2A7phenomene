@@ -13,23 +13,6 @@ class feedbackcontroller
     // Ajouter ou mettre à jour un feedback
     public function addFeedback($id_mission, $id_utilisateur, $rating, $commentaire)
     {
-        // Vérifier les mots interdits dans le commentaire
-        require_once __DIR__ . '/BadWordController.php';
-        $badWordController = new BadWordController();
-        
-        // Vérifier si l'utilisateur est banni
-        $banInfo = $badWordController->isUserBanned($id_utilisateur);
-        if ($banInfo) {
-            throw new Exception("Vous êtes banni jusqu'au " . date('d/m/Y à H:i', strtotime($banInfo['expires_at'])) . ". Raison: " . ($banInfo['reason'] ?? 'Utilisation de mots interdits'));
-        }
-        
-        // Vérifier si le commentaire contient des mots interdits
-        if (!empty($commentaire) && $badWordController->containsBadWords($commentaire)) {
-            // Bannir l'utilisateur pendant 3 jours
-            $badWordController->banUser($id_utilisateur, "Commentaire contenant des mots interdits");
-            throw new Exception("Votre commentaire contient des mots interdits. Vous avez été banni pendant 3 jours.");
-        }
-        
         try {
             $sql = "INSERT INTO feedback (id_mission, id_utilisateur, rating, commentaire) 
                     VALUES (?, ?, ?, ?)

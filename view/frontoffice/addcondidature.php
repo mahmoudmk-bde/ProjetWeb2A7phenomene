@@ -340,9 +340,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 <li class="nav-item"><a class="nav-link" href="index.php">Accueil</a></li>
                                 <li class="nav-item"><a class="nav-link active" href="missionlist.php">Missions</a></li>
                                 <li class="nav-item"><a class="nav-link" href="#">Gamification</a></li>
+                                <li class="nav-item"><a class="nav-link" href="#">Réclamations</a></li>
                                 <li class="nav-item"><a class="nav-link" href="#">Événements</a></li>
                                 <li class="nav-item"><a class="nav-link" href="#">Quizzes</a></li>
-                                
+                                <li class="nav-item"><a class="nav-link" href="contact.php">Contact</a></li>
                             </ul>
                         </div>
 

@@ -349,7 +349,7 @@ ksort($feedbackRatings);
                 <li><a href="#" onclick="openPage('mission/missionliste.php')">📌 Missions</a></li>
                 <li><a href="#" onclick="openPage('condidature/listecondidature.php')">👥 Candidatures</a></li>
                 <li><a href="#" onclick="openPage('feedback/feedbackliste.php')">⭐ Feedbacks</a></li>
-                
+                <li><a href="#" onclick="showDashboard(); document.getElementById('stats').scrollIntoView({behavior: 'smooth'});">📊 Statistiques</a></li>
             </ul>
         </li>
 
@@ -385,73 +385,7 @@ ksort($feedbackRatings);
         <button id="sidebarCollapse" class="btn btn-dark">
             <i class="fas fa-bars"></i>
         </button>
-
-        <!-- Admin Notifications -->
-        <?php
-        require_once __DIR__ . '/../../controller/NotificationController.php';
-        $notifCtrl = new NotificationController();
-        $adminUnreadCount = $notifCtrl->getAdminUnreadCount();
-        $adminNotifications = $notifCtrl->getAdminNotifications(5);
-        ?>
-        <div class="ml-auto d-flex align-items-center">
-            <!-- Notification Container with explicit relative positioning -->
-            <div class="position-relative mr-4" style="position: relative;">
-                <!-- Toggle Button -->
-                <a href="javascript:void(0);" id="customNotifToggle" class="text-white position-relative" style="text-decoration: none; display: inline-block;">
-                    <i class="fas fa-bell fa-lg"></i>
-                    <?php if ($adminUnreadCount > 0): ?>
-                        <span class="badge badge-danger rounded-circle position-absolute" style="top: -8px; right: -8px; font-size: 0.6rem; padding: 4px 6px; border: 2px solid #2d325a;">
-                            <?= $adminUnreadCount ?>
-                        </span>
-                    <?php endif; ?>
-                </a>
-
-                <!-- Dropdown Menu -->
-                <div id="customNotifMenu" style="display: none; position: absolute; top: 140%; right: -10px; width: 350px; max-height: 450px; overflow-y: auto; background-color: #1f2235; border: 1px solid #2d3047; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 10000;">
-                    <!-- Header -->
-                    <div style="background-color: #ff4a57; padding: 15px; border-top-left-radius: 12px; border-top-right-radius: 12px;">
-                        <h6 class="m-0 text-white font-weight-bold">
-                            <i class="fas fa-bullhorn mr-2"></i> Notifications
-                        </h6>
-                    </div>
-
-                    <!-- Content -->
-                    <div class="p-0">
-                        <?php if (empty($adminNotifications)): ?>
-                            <div class="text-center py-4 text-muted">
-                                <i class="far fa-bell-slash fa-2x mb-2"></i><br>
-                                Aucune nouvelle notification
-                            </div>
-                        <?php else: ?>
-                            <?php foreach ($adminNotifications as $notif): ?>
-                                <a href="#" onclick="openPage('<?= $notif['link'] ?>'); return false;" style="display: block; padding: 15px; color: #fff; text-decoration: none; border-bottom: 1px solid rgba(255,255,255,0.05); transition: background 0.2s;" onmouseover="this.style.backgroundColor='#2d3047'" onmouseout="this.style.backgroundColor='transparent'">
-                                    <div class="d-flex align-items-start">
-                                        <div class="mr-3 mt-1">
-                                        <?php if ($notif['type'] == 'reclamation_new'): ?>
-                                            <i class="fas fa-exclamation-circle fa-lg text-warning"></i>
-                                        <?php elseif ($notif['type'] == 'candidature_new'): ?>
-                                            <i class="fas fa-user-plus fa-lg text-info"></i>
-                                        <?php elseif ($notif['type'] == 'feedback_new'): ?>
-                                            <i class="fas fa-star fa-lg text-warning"></i>
-                                        <?php else: ?>
-                                            <i class="fas fa-check-circle fa-lg text-success"></i>
-                                        <?php endif; ?>
-                                    </div>
-                                        <div class="flex-grow-1">
-                                            <h6 class="mb-1 font-weight-bold" style="font-size: 0.95rem;"><?= htmlspecialchars($notif['title']) ?></h6>
-                                            <p class="mb-1 text-muted" style="font-size: 0.85rem; line-height: 1.4;"><?= htmlspecialchars($notif['message']) ?></p>
-                                            <small class="text-muted" style="font-size: 0.75rem;">
-                                                <i class="far fa-clock mr-1"></i><?= date('d/m/Y H:i', strtotime($notif['created_at'])) ?>
-                                            </small>
-                                        </div>
-                                    </div>
-                                </a>
-                            <?php endforeach; ?>
-                        <?php endif; ?>
-                    </div>
-                </div>
-            </div>
-        </div>
+    </nav>
 
     <div class="container mt-4">
 
@@ -583,49 +517,6 @@ ksort($feedbackRatings);
 </div>
 
 <!-- PASSAGE PHP → JS -->
-
-
-<!-- jQuery + Bootstrap JS -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
-
-<!-- TON JS -->
-<script src="assets/js/back.js"></script>
-<script src="assets/js/charts.js"></script>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Dashboard init
-    showDashboard();
-
-    // Custom Notification Logic
-    var toggleBtn = document.getElementById('customNotifToggle');
-    var menu = document.getElementById('customNotifMenu');
-
-    if (toggleBtn && menu) {
-        toggleBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            
-            if (menu.style.display === 'none' || menu.style.display === '') {
-                menu.style.display = 'block';
-            } else {
-                menu.style.display = 'none';
-            }
-        });
-
-        // Close on outside click
-        document.addEventListener('click', function(e) {
-            if (menu.style.display === 'block' && !menu.contains(e.target) && !toggleBtn.contains(e.target)) {
-                menu.style.display = 'none';
-            }
-        });
-    } else {
-        console.error('Notification elements not found!');
-    }
-});
-</script>
-
 <script>
 window.dashboardData = {
     themesLabels: <?= json_encode(array_keys($themes)) ?>,
@@ -637,7 +528,10 @@ window.dashboardData = {
     feedbackLabels: <?= json_encode(array_keys($feedbackRatings)) ?>,
     feedbackValues: <?= json_encode(array_values($feedbackRatings)) ?>
 };
+</script>
 
+<!-- JS pour ONE PAGE -->
+<script>
 function openPage(page) {
     document.getElementById("dashboardSection").style.display = "none";
     document.getElementById("contentFrame").style.display = "block";
@@ -657,6 +551,14 @@ document.addEventListener('DOMContentLoaded', function() {
     showDashboard();
 });
 </script>
+
+<!-- jQuery + Bootstrap JS -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- TON JS -->
+<script src="assets/js/back.js"></script>
+<script src="assets/js/charts.js"></script>
 
 </body>
 </html>

@@ -16,6 +16,8 @@
     --info: #007bff;
     --card-radius: 12px;
     --transition: all 0.3s ease;
+    --glass: rgba(255, 255, 255, 0.05);
+    --glass-border: rgba(255, 255, 255, 0.1);
 }
 
 /* ============ BASE STYLES ============ */
@@ -96,7 +98,7 @@ a:hover {
 /* ============ BREADCRUMB ============ */
 .breadcrumb_bg {
     background: linear-gradient(135deg, var(--card-bg) 0%, var(--panel) 100%);
-    padding: 60px 0 !important;
+    padding: 80px 0 !important;
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
@@ -114,40 +116,6 @@ a:hover {
 /* ============ SECTIONS ============ */
 .section_padding {
     padding: 80px 0;
-}
-
-/* ============ FILTERS ============ */
-.filter-section {
-    background: var(--panel);
-    padding: 30px;
-    border-radius: var(--card-radius);
-    margin-bottom: 40px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-}
-
-.filter-section h4 {
-    color: #fff;
-    margin-bottom: 20px;
-    font-weight: 700;
-}
-
-.filter-btn {
-    background: var(--card-bg);
-    color: var(--text-light);
-    border: 2px solid rgba(255, 255, 255, 0.05);
-    padding: 8px 16px;
-    margin: 5px;
-    border-radius: 20px;
-    font-weight: 500;
-    transition: var(--transition);
-    cursor: pointer;
-}
-
-.filter-btn:hover,
-.filter-btn.active {
-    background: transparent;
-    border-color: var(--accent);
-    color: var(--accent);
 }
 
 /* ============ STATS PANEL ============ */
@@ -173,10 +141,9 @@ a:hover {
     font-weight: 700;
 }
 
-/* ============ CARD STYLES (Partners, Games) ============ */
-.game-card,
-.partner-card {
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.02) 0%, rgba(0, 0, 0, 0.08) 100%);
+/* ============ CARD STYLES ============ */
+.game-card {
+    background: linear-gradient(180deg, rgba(255,255,255,0.02) 0%, rgba(0,0,0,0.08) 100%);
     border-radius: var(--card-radius);
     overflow: hidden;
     transition: var(--transition);
@@ -187,14 +154,13 @@ a:hover {
     flex-direction: column;
 }
 
-. transform: translateY(-8px);
-box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
-border-color: rgba(255, 74, 87, 0.3);
+.game-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+    border-color: rgba(255, 74, 87, 0.3);
 }
 
-/* Game Card Images */
-.game-card-img,
-.partner-logo-container {
+.game-card-img {
     height: 240px;
     overflow: hidden;
     background: var(--card-bg);
@@ -203,31 +169,25 @@ border-color: rgba(255, 74, 87, 0.3);
     justify-content: center;
 }
 
-.game-card-img img,
-.partner-logo-container img {
+.game-card-img img {
     width: 100%;
     height: 100%;
     object-fit: cover;
     transition: transform 0.3s ease;
 }
 
-.game-card:hover .game-card-img img,
-.partner-card:hover .partner-logo-container img {
+.game-card:hover .game-card-img img {
     transform: scale(1.05);
 }
 
-/* Card Body */
-.game-card-body,
-.partner-body {
+.game-card-body {
     padding: 18px;
     flex: 1;
     display: flex;
     flex-direction: column;
 }
 
-/* Card Titles */
-.game-title,
-.partner-name {
+.game-title {
     color: #fff;
     font-size: 18px;
     font-weight: 700;
@@ -235,38 +195,13 @@ border-color: rgba(255, 74, 87, 0.3);
     line-height: 1.3;
 }
 
-/* Card Subtitle */
-.game-partner,
-.partner-type {
+.game-partner {
     color: var(--muted);
     font-size: 13px;
     margin-bottom: 12px;
 }
 
-.partner-type {
-    display: inline-block;
-    background: rgba(255, 74, 87, 0.15);
-    color: var(--accent);
-    padding: 6px 12px;
-    border-radius: 14px;
-    font-weight: 600;
-}
-
-/* Card Description */
-.game-partner,
-.partner-description {
-    color: var(--muted);
-    font-size: 13px;
-}
-
-.partner-description {
-    margin-bottom: 12px;
-    line-height: 1.5;
-}
-
-/* Card Info */
-.game-info,
-.partner-info {
+.game-info {
     display: flex;
     gap: 8px;
     align-items: center;
@@ -275,13 +210,11 @@ border-color: rgba(255, 74, 87, 0.3);
     font-size: 13px;
 }
 
-.game-info i,
-.partner-info i {
+.game-info i {
     color: var(--accent);
     min-width: 16px;
 }
 
-/* Category Badge */
 .game-category {
     background: rgba(255, 255, 255, 0.05);
     color: var(--accent);
@@ -300,54 +233,7 @@ border-color: rgba(255, 74, 87, 0.3);
     font-weight: 600;
 }
 
-/* Game Badges (Price, Stock) */
-.game-badge {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    background: var(--accent);
-    color: #fff;
-    padding: 6px 12px;
-    border-radius: 12px;
-    font-size: 11px;
-    font-weight: 700;
-}
-
-.game-price {
-    position: absolute;
-    bottom: 12px;
-    left: 12px;
-    background: rgba(0, 0, 0, 0.6);
-    color: var(--accent);
-    padding: 8px 16px;
-    border-radius: 12px;
-    font-size: 18px;
-    font-weight: 700;
-}
-
-.stock-badge {
-    position: absolute;
-    top: 12px;
-    left: 12px;
-    background: var(--success);
-    color: #fff;
-    padding: 5px 12px;
-    border-radius: 12px;
-    font-size: 11px;
-    font-weight: 700;
-}
-
-.stock-badge.stock-low {
-    background: #dc3545;
-}
-
-.stock-badge.stock-out {
-    background: #6c757d;
-}
-
-/* ============ BUTTONS ============ */
-.btn-view-game,
-.btn-view-partner {
+.btn-view-game {
     background: linear-gradient(45deg, var(--accent), var(--accent-light));
     border: none;
     color: #fff;
@@ -362,8 +248,7 @@ border-color: rgba(255, 74, 87, 0.3);
     margin-top: auto;
 }
 
-.btn-view-game:hover,
-.btn-view-partner:hover {
+.btn-view-game:hover {
     background: linear-gradient(45deg, var(--accent-light), var(--accent));
     transform: translateY(-2px);
     box-shadow: 0 8px 20px rgba(255, 74, 87, 0.3);
@@ -380,7 +265,6 @@ border-color: rgba(255, 74, 87, 0.3);
     background: linear-gradient(45deg, var(--accent-light), var(--accent)) !important;
 }
 
-/* ============ EMPTY STATE ============ */
 .no-games {
     text-align: center;
     padding: 80px 0;
@@ -404,121 +288,19 @@ border-color: rgba(255, 74, 87, 0.3);
     color: var(--muted);
 }
 
-/* ============ PLATFORM INFO ============ */
-.game-platform {
-    color: var(--muted);
-    font-size: 13px;
-    margin-bottom: 15px;
-}
-
-/* Store card foot: price left, stats right */
-.game-foot {
-    margin-top: 10px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.game-price-inline {
-    background: rgba(0, 0, 0, 0.6);
-    color: var(--accent);
-    padding: 6px 12px;
-    border-radius: 12px;
-    font-weight: 700;
-}
-
-.game-stats {
-    display: flex;
-    gap: 16px;
-    color: var(--muted);
-    font-size: 13px;
-}
-
-.store-card .btn-view-game {
-    margin-top: 8px !important;
-}
-
-/* ============ FOOTER ============ */
-.footer_part {
-    background: var(--panel) !important;
-    border-top: 2px solid rgba(255, 74, 87, 0.2);
-}
-
-.footer_part a {
-    color: var(--muted);
-}
-
-.footer_part a:hover {
-    color: var(--accent);
-}
-
-.footer_top .single_footer_part h4 {
-    color: var(--accent);
-    font-weight: 700;
-    margin-bottom: 15px;
-}
-
-.footer_top .single_footer_part p,
-.footer_top .single_footer_part li {
-    color: var(--muted);
-}
-
-.copygight_text {
-    background: rgba(0, 0, 0, 0.3) !important;
-}
-
-.copyright_text {
-    color: var(--muted);
-}
-
-.social_icon a {
-    background: var(--card-bg);
-    color: var(--accent);
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: var(--transition);
-}
-
-.social_icon a:hover {
-    background: var(--accent);
-    color: #fff;
-}
-
 /* ============ DETAIL PAGE STYLES ============ */
-.profile-header {
-    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 100%);
-    padding: 60px 0;
-    margin-top: 0;
-    color: #fff;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-}
-
-.partner-logo-large,
-.game-main-image {
-    width: 100%;
-    max-width: 150px;
-    height: 150px;
+.game-detail-card {
+    background: var(--panel);
+    padding: 30px;
     border-radius: var(--card-radius);
-    border: 4px solid rgba(255, 255, 255, 0.2);
-    object-fit: cover;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-    margin-bottom: 20px;
+    margin: 20px 0;
+    border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-.game-main-image {
-    max-width: 100%;
-    height: 400px;
-}
-
-.partner-name-large,
 .game-title-main {
     font-size: 2.2rem;
     font-weight: 700;
-    margin: 120px 0;
+    margin: 20px 0;
 }
 
 .partner-type-badge {
@@ -532,8 +314,7 @@ border-color: rgba(255, 74, 87, 0.3);
 }
 
 .info-section,
-.description-section,
-.game-detail-card {
+.description-section {
     background: var(--panel);
     padding: 30px;
     border-radius: var(--card-radius);
@@ -559,48 +340,415 @@ border-color: rgba(255, 74, 87, 0.3);
     min-width: 120px;
 }
 
-.game-info-label {
-    color: var(--muted);
-    font-weight: 600;
-    min-width: 120px;
-}
-
 .game-info-value {
     color: #fff;
 }
 
-.game-price-large {
-    color: var(--accent);
-    font-size: 1.8rem;
-    font-weight: 700;
-}
-
-.rating-stars {
-    color: #ffc107;
-    font-size: 16px;
-}
-
-.btn-buy-now {
-    background: linear-gradient(45deg, var(--accent), var(--accent-light));
-    color: #fff;
-    padding: 15px 30px;
-    border: none;
-    border-radius: 20px;
-    font-size: 1.1rem;
-    cursor: pointer;
-    transition: var(--transition);
+.details-header img {
     width: 100%;
+    height: 300px;
+    object-fit: cover;
+    border-radius: var(--card-radius);
+}
+
+/* ============ CHATBOT STYLES ============ */
+#chatbot-button {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(255, 74, 87, 0.4);
+    z-index: 1000;
+    transition: var(--transition);
+}
+
+#chatbot-button:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 25px rgba(255, 74, 87, 0.6);
+}
+
+#chatbot-box {
+    position: fixed;
+    bottom: 90px;
+    right: 20px;
+    width: 350px;
+    height: 500px;
+    background: var(--panel);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--card-radius);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    display: none;
+    flex-direction: column;
+    z-index: 1000;
+    backdrop-filter: blur(20px);
+}
+
+#chatbot-box.active {
+    display: flex;
+}
+
+#chatbot-header {
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 100%);
+    color: white;
+    padding: 15px 20px;
+    border-radius: var(--card-radius) var(--card-radius) 0 0;
+    font-weight: bold;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#chatbot-close {
+    cursor: pointer;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+#chatbot-close:hover {
+    opacity: 0.8;
+}
+
+#chatbot-messages {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.chatbot-message {
+    padding: 12px 16px;
+    border-radius: 18px;
+    max-width: 80%;
+    word-wrap: break-word;
+}
+
+.user-message {
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 100%);
+    color: white;
+    align-self: flex-end;
+    border-bottom-right-radius: 4px;
+}
+
+.bot-message {
+    background: var(--card-bg);
+    color: var(--text-light);
+    align-self: flex-start;
+    border-bottom-left-radius: 4px;
+    border: 1px solid var(--glass-border);
+}
+
+#chatbot-input-container {
+    display: flex;
+    padding: 15px;
+    border-top: 1px solid var(--glass-border);
+    gap: 10px;
+}
+
+#chatbot-input {
+    flex: 1;
+    padding: 12px 15px;
+    border: 1px solid var(--glass-border);
+    border-radius: 25px;
+    background: var(--card-bg);
+    color: var(--text-light);
+    outline: none;
+}
+
+#chatbot-input:focus {
+    border-color: var(--accent);
+}
+
+#chatbot-send {
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 100%);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#chatbot-send:hover {
+    transform: scale(1.05);
+}
+
+/* ============ STYLES AMÉLIORÉS POUR LES FORMULAIRES ============ */
+.apply-form-container {
+    background: linear-gradient(135deg, var(--panel) 0%, var(--card-bg) 100%);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    padding: 50px;
+    border-radius: var(--card-radius);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.apply-form-container::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: conic-gradient(
+        from 0deg,
+        transparent,
+        rgba(255, 74, 87, 0.1),
+        rgba(77, 138, 255, 0.05),
+        rgba(184, 77, 255, 0.1),
+        transparent
+    );
+    animation: rotate 15s linear infinite;
+    z-index: 1;
+}
+
+.apply-form-container > * {
+    position: relative;
+    z-index: 2;
+}
+
+.form-group {
+    margin-bottom: 30px;
+    position: relative;
+}
+
+.form-label {
+    color: var(--text-light);
     font-weight: 600;
+    margin-bottom: 12px;
+    display: block;
+    font-size: 1rem;
+    transition: var(--transition);
 }
 
-.btn-buy-now:hover {
+.form-control {
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px solid var(--glass-border);
+    color: var(--text-light);
+    padding: 15px 20px;
+    border-radius: 12px;
+    transition: var(--transition);
+    font-size: 1rem;
+    width: 100%;
+    backdrop-filter: blur(10px);
+}
+
+.form-control:focus {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: var(--accent);
+    color: var(--text-light);
+    box-shadow: 0 0 0 4px rgba(255, 74, 87, 0.1);
     transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(255, 74, 87, 0.3);
 }
 
-.btn-buy-now.disabled {
-    pointer-events: none;
-    opacity: 0.6;
+.form-control::placeholder {
+    color: var(--muted);
+    opacity: 0.7;
+}
+
+select.form-control {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ff4a57'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 15px center;
+    background-size: 16px;
+    padding-right: 50px;
+}
+
+textarea.form-control {
+    resize: vertical;
+    min-height: 120px;
+}
+
+/* ============ TITRES DESIGNÉS ============ */
+.design-title {
+    font-size: 3.5rem;
+    font-weight: 800;
+    text-align: center;
+    margin-bottom: 1rem;
+    background: linear-gradient(135deg, #fff 0%, var(--accent-light) 50%, var(--accent) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    position: relative;
+    display: inline-block;
+}
+
+.design-title::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px;
+    height: 4px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    border-radius: 2px;
+}
+
+.design-subtitle {
+    font-size: 1.3rem;
+    color: var(--text-light);
+    text-align: center;
+    margin-bottom: 3rem;
+    opacity: 0.9;
+    font-weight: 400;
+}
+
+/* ============ CARTES AMÉLIORÉES ============ */
+.enhanced-card {
+    background: linear-gradient(135deg, var(--glass) 0%, var(--panel) 100%);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--card-radius);
+    padding: 40px;
+    margin: 20px 0;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 15px 50px rgba(0, 0, 0, 0.2);
+}
+
+.enhanced-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--accent), var(--accent-light), var(--accent));
+}
+
+/* ============ BOUTONS AMÉLIORÉS ============ */
+.btn-enhanced {
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 100%);
+    border: none;
+    color: white;
+    padding: 18px 45px;
+    border-radius: 50px;
+    font-weight: 700;
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    text-decoration: none;
+    cursor: pointer;
+    box-shadow: 0 10px 30px rgba(255, 74, 87, 0.4);
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-enhanced::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.6s;
+}
+
+.btn-enhanced:hover::before {
+    left: 100%;
+}
+
+.btn-enhanced:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 40px rgba(255, 74, 87, 0.6);
+    color: white;
+    text-decoration: none;
+}
+
+.btn-enhanced-secondary {
+    background: transparent;
+    border: 2px solid var(--accent);
+    color: var(--accent);
+    padding: 16px 40px;
+}
+
+.btn-enhanced-secondary:hover {
+    background: var(--accent);
+    color: white;
+}
+
+/* ============ GRID AMÉLIORÉ ============ */
+.mission-grid-enhanced {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+    gap: 30px;
+    margin-top: 40px;
+}
+
+.mission-card-enhanced {
+    background: linear-gradient(135deg, var(--glass) 0%, var(--panel) 100%);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--card-radius);
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+}
+
+.mission-card-enhanced::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, 
+        rgba(255, 74, 87, 0.1) 0%, 
+        transparent 30%,
+        rgba(77, 138, 255, 0.05) 70%,
+        rgba(184, 77, 255, 0.1) 100%);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    z-index: 1;
+}
+
+.mission-card-enhanced:hover::before {
+    opacity: 1;
+}
+
+.mission-card-enhanced:hover {
+    transform: translateY(-10px) scale(1.02);
+    box-shadow: 
+        0 25px 60px rgba(0, 0, 0, 0.3),
+        0 0 0 1px rgba(255, 74, 87, 0.2);
+    border-color: rgba(255, 74, 87, 0.3);
+}
+
+/* ============ ANIMATIONS ============ */
+@keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* ============ RESPONSIVE ============ */
@@ -613,28 +761,51 @@ border-color: rgba(255, 74, 87, 0.3);
         font-size: 1.6rem;
     }
 
-    .game-card-img,
-    .partner-logo-container {
+    .game-card-img {
         height: 180px;
     }
 
-    .profile-header {
-        padding: 40px 0;
-        margin-top: 0;
-    }
-
-    .partner-name-large,
     .game-title-main {
         font-size: 1.6rem;
     }
 
-    .game-main-image {
+    .details-header img {
         height: 250px;
     }
 
-    .filter-btn {
-        padding: 6px 12px;
-        font-size: 0.9rem;
+    .design-title {
+        font-size: 2.5rem;
+    }
+    
+    .apply-form-container {
+        padding: 30px 20px;
+    }
+    
+    .mission-grid-enhanced {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .btn-enhanced {
+        padding: 16px 35px;
+        font-size: 1rem;
+        width: 100%;
+        justify-content: center;
+    }
+
+    #chatbot-box {
+        width: 300px;
+        height: 400px;
+        right: 10px;
+        bottom: 80px;
+    }
+    
+    #chatbot-button {
+        width: 50px;
+        height: 50px;
+        font-size: 20px;
+        bottom: 15px;
+        right: 15px;
     }
 }
 
@@ -644,859 +815,318 @@ border-color: rgba(255, 74, 87, 0.3);
         margin: 10px 0;
     }
 
-    .filter-btn {
-        padding: 5px 10px;
-        margin: 3px;
-        font-size: 0.85rem;
+    .design-title {
+        font-size: 2rem;
+    }
+    
+    .enhanced-card {
+        padding: 25px 20px;
     }
 }
-
-/* ============ GAMING THEME ENHANCEMENTS ============ */
-/* Effet de glow sur les éléments interactifs */
-.game-card:hover,
-.partner-card:hover {
-    animation: pulse-glow 2s ease-in-out infinite;
-}
-
-@keyframes pulse-glow {
-
-    0%,
-    100% {
-        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6), 0 0 0 0 rgba(255, 74, 87, 0.4);
-    }
-
-    50% {
-        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6), 0 0 20px 5px rgba(255, 74, 87, 0.2);
-    }
-}
-
-/* Badge de catégorie avec couleurs spécifiques */
-.game-category.badge-action {
-    background: linear-gradient(135deg, #007bff, #0056b3);
-}
-
-.game-category.badge-aventure {
-    background: linear-gradient(135deg, #28a745, #1e7e34);
-}
-
-.game-category.badge-sport {
-    background: linear-gradient(135deg, #ffc107, #e0a800);
-    color: #212529;
-}
-
-.game-category.badge-strategie {
-    background: linear-gradient(135deg, #6f42c1, #5a32a3);
-}
-
-.game-category.badge-simulation {
-    background: linear-gradient(135deg, #fd7e14, #dc6502);
-}
-
-.game-category.badge-rpg {
-    background: linear-gradient(135deg, #e83e8c, #d91a72);
-}
-
-/* Amélioration des badges de type partenaire */
-.partner-type {
-    position: relative;
-    overflow: hidden;
-}
-
-.partner-type::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-    transition: left 0.5s;
-}
-
-.partner-card:hover .partner-type::before {
-    left: 100%;
-}
-
-/* Animation de chargement pour les images */
+/* === FIX BOUTON NON CLIQUABLE SUR MISSIONLIST === */
+.game-card-img,
 .game-card-img img,
-.partner-logo-container img {
-    animation: fadeIn 0.5s ease-in;
+.game-card-img::after {
+    pointer-events: none !important;
 }
 
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: scale(0.95);
-    }
+.mission-card-enhanced,
+.game-card-body,
+.btn-view-game {
+    pointer-events: auto !important;
+}
+/* >>> FIX ULTIME : débloquer les clics sur les boutons <<< */
 
-    to {
-        opacity: 1;
-        transform: scale(1);
-    }
+.mission-card-enhanced *,
+.mission-card-enhanced *::before,
+.mission-card-enhanced *::after {
+    pointer-events: auto !important;
 }
 
-/* Amélioration du bouton "Rejoindre" */
-.btn_1 {
+.mission-card-enhanced .game-card-img,
+.mission-card-enhanced .game-card-img * {
+    pointer-events: none !important;
+}
+
+.mission-card-enhanced .btn-view-game {
+    pointer-events: auto !important;
+    position: relative;
+    z-index: 999999 !important;
+}
+/* === Corriger la position du titre dans les pages front-office === */
+.breadcrumb_bg {
+    padding-top: 140px !important;  /* descend le titre */
+}
+
+.breadcrumb_iner_item h1,
+.design-title {
+    margin-top: 40px !important;   /* ajoute un espace propre entre le menu et le titre */
+}
+
+.breadcrumb_iner_item {
+    padding-top: 30px !important;
+}
+/* Effet mirror sur le header */
+.profile-header {
     position: relative;
     overflow: hidden;
-    z-index: 1;
 }
 
-.btn_1::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 0;
-    height: 0;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.2);
-    transform: translate(-50%, -50%);
-    transition: width 0.6s, height 0.6s;
-    z-index: -1;
-}
-
-.btn_1:hover::before {
-    width: 300px;
-    height: 300px;
-}
-
-/* Effet de particules sur le header */
 .profile-header::before {
     content: '';
     position: absolute;
     top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-image:
-        radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
-        radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+    left: -100%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(90deg, 
+        transparent, 
+        rgba(255, 255, 255, 0.1), 
+        transparent);
+    transform: skewX(-15deg);
+    animation: headerMirror 4s ease-in-out infinite;
+    z-index: 1;
     pointer-events: none;
 }
 
-/* Amélioration des stats panel */
+@keyframes headerMirror {
+    0%, 100% {
+        left: -100%;
+    }
+    50% {
+        left: 150%;
+    }
+}
+/* ============ MIRROR EFFECT ON CARDS ============ */
+.game-card::before,
+.partner-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(90deg, 
+        transparent, 
+        rgba(255, 255, 255, 0.1), 
+        transparent);
+    transform: skewX(-25deg);
+    transition: left 0.8s ease;
+    z-index: 2;
+    pointer-events: none;
+}
+
+.game-card:hover::before,
+.partner-card:hover::before {
+    left: 150%;
+}
+
+/* Version avec effet rouge */
+.game-card::after,
+.partner-card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 30%;
+    height: 100%;
+    background: linear-gradient(90deg, 
+        transparent, 
+        rgba(255, 74, 87, 0.3), 
+        transparent);
+    transform: skewX(-25deg);
+    transition: left 0.8s ease 0.1s;
+    z-index: 2;
+    pointer-events: none;
+}
+
+.game-card:hover::after,
+.partner-card:hover::after {
+    left: 150%;
+}
+/* Effet mirror sur les images des cartes */
+.game-card-img,
+.partner-logo-container {
+    position: relative;
+    overflow: hidden;
+}
+
+.game-card-img::after,
+.partner-logo-container::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 60%;
+    height: 100%;
+    background: linear-gradient(90deg, 
+        transparent, 
+        rgba(255, 255, 255, 0.4), 
+        transparent);
+    transform: skewX(-15deg);
+    transition: left 0.6s ease;
+    z-index: 3;
+}
+
+.game-card:hover .game-card-img::after,
+.partner-card:hover .partner-logo-container::after {
+    left: 100%;
+}
+/* Effet mirror sur les boutons */
+.btn-view-game,
+.btn-view-partner,
+.btn_1 {
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-view-game::before,
+.btn-view-partner::before,
+.btn_1::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 40%;
+    height: 100%;
+    background: linear-gradient(90deg, 
+        transparent, 
+        rgba(255, 255, 255, 0.6), 
+        transparent);
+    transform: skewX(-25deg);
+    transition: left 0.5s ease;
+    z-index: 2;
+}
+
+.btn-view-game:hover::before,
+.btn-view-partner:hover::before,
+.btn_1:hover::before {
+    left: 100%;
+}
+/* Effet mirror continu sur les sections */
+.mirror-scan {
+    position: relative;
+    overflow: hidden;
+}
+
+.mirror-scan::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 30%;
+    height: 100%;
+    background: linear-gradient(90deg, 
+        transparent, 
+        rgba(255, 74, 87, 0.2), 
+        transparent);
+    transform: skewX(-25deg);
+    animation: continuousMirror 3s ease-in-out infinite;
+    z-index: 1;
+    pointer-events: none;
+}
+
+@keyframes continuousMirror {
+    0% {
+        left: -100%;
+    }
+    100% {
+        left: 150%;
+    }
+}
+
+/* Appliquer aux sections principales */
+.breadcrumb_bg,
+.filter-section,
 .stats-panel {
     position: relative;
     overflow: hidden;
 }
 
+.breadcrumb_bg::before,
+.filter-section::before,
 .stats-panel::before {
     content: '';
     position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(circle, rgba(255, 74, 87, 0.1) 0%, transparent 70%);
-    animation: rotate 20s linear infinite;
-}
-
-@keyframes rotate {
-    from {
-        transform: rotate(0deg);
-    }
-
-    to {
-        transform: rotate(360deg);
-    }
-}
-
-/* ============ HEADER BUTTONS (Cart & Wishlist) ============ */
-.btn-like {
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 44px;
-    height: 44px;
-    min-width: 44px;
-    border-radius: 999px;
-    padding: 0 !important;
-    font-size: 0;
-    background: linear-gradient(45deg, var(--accent), var(--accent-light));
-    border: none;
-    cursor: pointer;
-    transition: var(--transition);
-}
-
-.btn-like::after {
-    content: "\f004";
-    font-family: "Font Awesome 5 Free";
-    font-weight: 900;
-    color: #fff;
-    font-size: 18px;
-    line-height: 1;
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 2;
-}
-
-.btn-like:hover {
-    background: linear-gradient(45deg, var(--accent-light), var(--accent));
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(255, 74, 87, 0.3);
-}
-
-.btn-cart {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-}
-
-.btn-cart::after {
-    content: "\f07a";
-    font-family: "Font Awesome 5 Free";
-    font-weight: 900;
-    color: #fff;
-    font-size: 20px;
-    line-height: 1;
-}
-
-.stats-panel span {
-    position: relative;
+    top: 0;
+    left: -100%;
+    width: 40%;
+    height: 100%;
+    background: linear-gradient(90deg, 
+        transparent, 
+        rgba(255, 255, 255, 0.05), 
+        transparent);
+    transform: skewX(-20deg);
+    animation: sectionMirror 6s ease-in-out infinite;
     z-index: 1;
+    pointer-events: none;
 }
 
-/* Amélioration du footer avec gradient */
-.footer_part {
+@keyframes sectionMirror {
+    0%, 100% {
+        left: -100%;
+    }
+    50% {
+        left: 150%;
+    }
+}
+/* Effet mirror avancé avec glow */
+.advanced-mirror {
     position: relative;
 }
 
-.footer_part::before {
+.advanced-mirror::before {
     content: '';
     position: absolute;
     top: 0;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, var(--accent), transparent);
-}
-
-/* Responsive améliorations */
-@media (max-width: 768px) {
-
-    .game-card:hover,
-    .partner-card:hover {
-        animation: none;
-    }
-
-    .stats-panel::before {
-        animation: none;
-    }
-}
-
-/* ============ ICONS FALLBACK (remove tofu squares) ============ */
-.fa,
-.fas,
-.far,
-.fab,
-i[class^="fa"],
-i[class*=" fa"],
-[class*="ti-"],
-[class*="flaticon-"] {
-    display: none !important;
-}
-
-.fa::before,
-.fas::before,
-.far::before,
-.fab::before,
-[class*="ti-"]::before,
-[class*="flaticon-"]::before {
-    content: none !important;
-}
-
-/* ============ CART PAGE ============ */
-.cart-page .cart-items {
-    padding-right: 15px;
-    max-height: none;
-    overflow: visible;
-}
-
-.cart-page .cart-image {
-    width: 100%;
-    height: 80px;
-    object-fit: cover;
-    border-radius: 8px;
-}
-
-.cart-page .cart-line {
-    align-items: center;
-}
-
-.cart-summary {
-    position: static;
-    top: auto;
-}
-
-@media (max-width: 992px) {
-    .cart-summary {
-        position: static;
-    }
-}
-
-.cart-summary .btn-buy-now {
-    margin-top: 20px;
-}
-
-.cart-section {
-    padding-top: 40px;
-}
-
-.cart-page {
-    align-items: flex-start;
-}
-
-.cart-page .game-card {
-    height: auto;
-}
-
-.main_menu.menu_fixed {
-    position: relative !important;
-    top: auto !important;
-    box-shadow: none !important;
-}
-
-.page-cart .main_menu {
-    display: block !important;
-}
-
-/* Ajustements pour la page du panier sans header/footer */
-.page-cart .body_bg {
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-}
-
-.page-cart .cart-section {
-    flex: 1;
-    padding-top: 60px;
-    padding-bottom: 60px;
-}
-
-.page-cart {
-    overflow-x: hidden;
-    overflow-y: auto;
-}
-
-/* Bouton de retour au store */
-.btn-back-to-store {
-    background: linear-gradient(45deg, var(--accent), var(--accent-light));
-    color: #fff !important;
-    padding: 12px 24px;
-    border-radius: 20px;
-    font-weight: 600;
-    transition: var(--transition);
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    text-decoration: none;
-    border: none;
-    cursor: pointer;
-}
-
-.btn-back-to-store:hover {
-    background: linear-gradient(45deg, var(--accent-light), var(--accent));
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(255, 74, 87, 0.3);
-    color: #fff !important;
-    text-decoration: none;
-}
-
-.btn-back-to-store i {
-    font-size: 14px;
-}
-
-/* Boutons du panier */
-.btn-cart-action {
-    background: linear-gradient(45deg, var(--accent), var(--accent-light));
-    color: #fff !important;
-    padding: 12px 24px;
-    border-radius: 20px;
-    font-weight: 600;
-    transition: var(--transition);
-    text-decoration: none;
-    border: none;
-    cursor: pointer;
-    display: inline-block;
-    font-size: 14px;
-}
-
-.btn-cart-action:hover {
-    background: linear-gradient(45deg, var(--accent-light), var(--accent));
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(255, 74, 87, 0.3);
-    color: #fff !important;
-    text-decoration: none;
-}
-
-.btn-cart-secondary {
-    background: #6c757d !important;
-}
-
-.btn-cart-secondary:hover {
-    background: #5a6268 !important;
-    box-shadow: 0 8px 20px rgba(108, 117, 125, 0.3) !important;
-}
-
-.cart-actions {
-    display: flex;
-    gap: 12px;
-    align-items: center;
-    flex-wrap: wrap;
-}
-
-/* ============ CART BUTTONS ENHANCEMENT - CORRIGÉ ============ */
-
-/* Style principal pour les boutons d'action secondaires */
-.btn-cart-gray {
-    background: linear-gradient(135deg, #6c757d, #5a6268) !important;
-    border: 2px solid rgba(255, 255, 255, 0.15) !important;
-    color: #fff !important;
-    padding: 12px 24px !important;
-    border-radius: 25px !important;
-    font-weight: 600 !important;
-    text-decoration: none !important;
-    transition: var(--transition) !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    cursor: pointer !important;
-    font-size: 14px !important;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
-    position: relative !important;
-    overflow: hidden !important;
-    text-transform: none !important;
-    letter-spacing: 0.3px !important;
-    min-width: 140px !important;
-    height: auto !important;
-    line-height: 1.4 !important;
-    margin: 0 !important;
-}
-
-/* Effet de brillance au survol */
-.btn-cart-gray::before {
-    content: '' !important;
-    position: absolute !important;
-    top: 0 !important;
-    left: -100% !important;
-    width: 100% !important;
-    height: 100% !important;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent) !important;
-    transition: left 0.6s ease !important;
-}
-
-.btn-cart-gray:hover::before {
-    left: 100% !important;
-}
-
-/* États de survol */
-.btn-cart-gray:hover {
-    background: linear-gradient(135deg, #5a6268, #495057) !important;
-    border-color: rgba(255, 255, 255, 0.3) !important;
-    color: #fff !important;
-    transform: translateY(-2px) !important;
-    box-shadow: 0 8px 20px rgba(108, 117, 125, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
-    text-decoration: none !important;
-}
-
-/* État actif */
-.btn-cart-gray:active {
-    transform: translateY(0) !important;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
-}
-
-/* Style spécifique pour le bouton "Vider le panier" */
-a[href*="clearCart"].btn-cart-gray {
-    background: linear-gradient(135deg, #dc3545, #c82333) !important;
-}
-
-a[href*="clearCart"].btn-cart-gray:hover {
-    background: linear-gradient(135deg, #c82333, #bd2130) !important;
-    box-shadow: 0 8px 20px rgba(220, 53, 69, 0.3) !important;
-}
-
-/* Style pour le bouton "Mettre à jour" */
-button[type="submit"].btn-cart-gray {
-    background: linear-gradient(135deg, #28a745, #218838) !important;
-}
-
-button[type="submit"].btn-cart-gray:hover {
-    background: linear-gradient(135deg, #218838, #1e7e34) !important;
-    box-shadow: 0 8px 20px rgba(40, 167, 69, 0.3) !important;
-}
-
-/* Style pour le bouton "Retour au Store" - RESTE EN GRIS */
-a[href*="action=index"].btn-cart-gray {
-    background: linear-gradient(135deg, #6c757d, #5a6268) !important;
-}
-
-a[href*="action=index"].btn-cart-gray:hover {
-    background: linear-gradient(135deg, #5a6268, #495057) !important;
-    box-shadow: 0 8px 20px rgba(108, 117, 125, 0.4) !important;
-}
-
-/* Conteneur des actions du panier */
-.cart-actions {
-    display: flex;
-    gap: 15px;
-    align-items: center;
-    flex-wrap: wrap;
-    margin-top: 25px;
-    padding-top: 20px;
-}
-
-.toast-notice {
-    display: none;
-    position: fixed;
-    top: 100px;
-    right: 20px;
-    background: var(--panel);
-    color: #fff;
-    padding: 10px 16px;
-    border-radius: 8px;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, .3);
-    z-index: 1000;
-}
-
-.overlay-checkout {
-    position: fixed;
-    left: 0;
-    top: 0;
-    width: 100%;
+    left: -100%;
+    width: 50%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.6);
-    display: none;
-    align-items: center;
-    justify-content: center;
-    z-index: 10000;
-}
-
-.overlay-checkout.show {
-    display: flex;
-}
-
-.checkout-modal {
-    background: var(--panel);
-    border-radius: 16px;
-    width: 95%;
-    max-width: 560px;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.checkout-header {
-    padding: 18px 22px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    color: #fff;
-}
-
-.checkout-body {
-    padding: 18px 22px;
-}
-
-.checkout-row {
-    margin-bottom: 14px;
-}
-
-.checkout-label {
-    display: block;
-    margin-bottom: 6px;
-    color: var(--muted);
-    font-size: 13px;
-}
-
-.checkout-input,
-.checkout-select {
-    width: 100%;
-    padding: 10px 12px;
-    background: var(--card-bg);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: 10px;
-    color: #fff;
-}
-
-.checkout-input:focus,
-.checkout-select:focus {
-    outline: none;
-    border-color: var(--accent);
-}
-
-.checkout-error {
-    margin-top: 6px;
-    color: var(--accent);
-    font-size: 12px;
-    min-height: 14px;
-}
-
-.checkout-actions {
-    display: flex;
-    gap: 12px;
-    padding: 16px 22px;
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-
-/* Responsive pour les boutons */
-@media (max-width: 768px) {
-    .cart-actions {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 12px;
-    }
-
-    .btn-cart-gray {
-        min-width: 100% !important;
-        justify-content: center !important;
-        padding: 14px 20px !important;
-    }
-}
-
-@media (max-width: 576px) {
-    .btn-cart-gray {
-        font-size: 13px !important;
-        padding: 12px 16px !important;
-    }
-}
-
-/* Animation de pulse pour le bouton de mise à jour */
-@keyframes pulse-update {
-    0% {
-        box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
-    }
-
-    50% {
-        box-shadow: 0 4px 20px rgba(40, 167, 69, 0.6);
-    }
-
-    100% {
-        box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
-    }
-}
-
-button[type="submit"].btn-cart-gray {
-    animation: pulse-update 2s infinite;
-}
-
-/* Désactivation élégante */
-.btn-cart-gray:disabled,
-.btn-cart-gray.disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    transform: none !important;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2) !important;
-}
-
-.btn-cart-gray:disabled:hover,
-.btn-cart-gray.disabled:hover {
-    background: linear-gradient(135deg, #6c757d, #5a6268) !important;
-    transform: none !important;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2) !important;
-}
-
-
-/* ============ CHECKOUT MODAL STYLES ============ */
-.overlay-checkout {
-    position: fixed;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.8);
-    display: none;
-    align-items: center;
-    justify-content: center;
-    z-index: 10000;
-    padding: 20px;
-    box-sizing: border-box;
-}
-
-.overlay-checkout.show {
-    display: flex;
-    animation: fadeIn 0.3s ease;
-}
-
-.checkout-modal {
-    background: var(--panel);
-    border-radius: 16px;
-    width: 100%;
-    max-width: 600px;
-    max-height: 90vh;
-    overflow-y: auto;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    animation: slideUp 0.3s ease;
-}
-
-.checkout-header {
-    padding: 20px 25px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: rgba(0, 0, 0, 0.2);
-    border-radius: 16px 16px 0 0;
-}
-
-.checkout-header span {
-    color: #fff;
-    font-size: 1.5rem;
-    font-weight: 700;
-}
-
-.checkout-body {
-    padding: 25px;
-}
-
-.checkout-row {
-    margin-bottom: 20px;
-}
-
-.checkout-label {
-    display: block;
-    margin-bottom: 8px;
-    color: var(--muted);
-    font-size: 14px;
-    font-weight: 600;
-}
-
-.checkout-input,
-.checkout-select {
-    width: 100%;
-    padding: 12px 16px;
-    background: var(--card-bg);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 10px;
-    color: #fff;
-    font-size: 14px;
-    transition: var(--transition);
-    box-sizing: border-box;
-}
-
-.checkout-input:focus,
-.checkout-select:focus {
-    outline: none;
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(255, 74, 87, 0.1);
-}
-
-.checkout-error {
-    margin-top: 6px;
-    color: var(--accent);
-    font-size: 12px;
-    min-height: 18px;
-    font-weight: 500;
-}
-
-.checkout-actions {
-    display: flex;
-    gap: 15px;
-    padding: 20px 25px;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-    background: rgba(0, 0, 0, 0.1);
-    border-radius: 0 0 16px 16px;
-}
-
-.checkout-actions .btn-cart-gray,
-.checkout-actions .btn-cart-action {
-    flex: 1;
-    margin: 0;
-}
-
-/* Animations */
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-    }
-
-    to {
-        opacity: 1;
-    }
-}
-
-@keyframes slideUp {
-    from {
-        opacity: 0;
-        transform: translateY(30px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-    .overlay-checkout {
-        padding: 10px;
-    }
-
-    .checkout-modal {
-        max-height: 95vh;
-    }
-
-    .checkout-header,
-    .checkout-body,
-    .checkout-actions {
-        padding: 15px 20px;
-    }
-
-    .checkout-actions {
-        flex-direction: column;
-    }
-}
-
-.btn-cart {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-}
-
-.btn-cart::after {
-    content: "\f07a";
-    font-family: "Font Awesome 5 Free";
-    font-weight: 900;
-    color: #fff;
-    font-size: 20px;
-    line-height: 1;
-}
-
-.btn-like {
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 44px;
-    height: 44px;
-    min-width: 44px;
-    border-radius: 999px;
-    padding: 0 !important;
-    font-size: 0;
-}
-
-.btn-like::after {
-    content: "\f004";
-    font-family: "Font Awesome 5 Free";
-    font-weight: 900;
-    color: #fff;
-    font-size: 18px;
-    line-height: 1;
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
+    background: linear-gradient(90deg, 
+        transparent, 
+        rgba(255, 74, 87, 0.1),
+        rgba(255, 255, 255, 0.2),
+        rgba(255, 74, 87, 0.1), 
+        transparent);
+    transform: skewX(-25deg);
+    transition: left 0.7s ease;
     z-index: 2;
+    pointer-events: none;
 }
 
-.btn-like:hover::after {
-    color: #fff;
+.advanced-mirror::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 20%;
+    height: 100%;
+    background: linear-gradient(90deg, 
+        transparent, 
+        rgba(255, 74, 87, 0.4), 
+        transparent);
+    transform: skewX(-25deg);
+    transition: left 0.7s ease 0.2s;
+    z-index: 2;
+    pointer-events: none;
+}
+
+.advanced-mirror:hover::before,
+.advanced-mirror:hover::after {
+    left: 150%;
+}
+
+/* Appliquer aux cartes */
+.game-card,
+.partner-card {
+    position: relative;
+    overflow: hidden;
+}
+/* Ajouter des animations fluides */
+.card-hover {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.card-hover:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(255, 74, 87, 0.15);
 }

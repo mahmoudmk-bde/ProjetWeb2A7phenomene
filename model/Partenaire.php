@@ -1,9 +1,8 @@
 <?php
-class Partenaire
-{
+class Partenaire {
     private $conn;
     private $table = "partenaires";
-
+    
     public $id;
     public $nom;
     public $logo;
@@ -14,16 +13,14 @@ class Partenaire
     public $telephone;
     public $site_web;
     public $created_at;
-
-    public function __construct($db)
-    {
+    
+    public function __construct($db) {
         $this->conn = $db;
     }
-
-
-    public function create()
-    {
-
+    
+    
+    public function create() {
+        
         $query = "INSERT INTO " . $this->table . " 
                   SET nom = :nom, 
                       logo = :logo, 
@@ -34,15 +31,15 @@ class Partenaire
                       telephone = :telephone, 
                       site_web = :site_web,
                       created_at = NOW()";
-
+        
         $stmt = $this->conn->prepare($query);
-
+        
         // Nettoyer les données
         $this->nom = htmlspecialchars(strip_tags($this->nom));
         $this->description = htmlspecialchars(strip_tags($this->description ?? ''));
         $this->email = htmlspecialchars(strip_tags($this->email));
-
-
+        
+       
         $stmt->bindParam(":nom", $this->nom);
         $stmt->bindParam(":logo", $this->logo);
         $stmt->bindParam(":type", $this->type);
@@ -51,7 +48,7 @@ class Partenaire
         $stmt->bindParam(":email", $this->email);
         $stmt->bindParam(":telephone", $this->telephone);
         $stmt->bindParam(":site_web", $this->site_web);
-
+        
         try {
             return $stmt->execute();
         } catch (PDOException $e) {
@@ -59,11 +56,10 @@ class Partenaire
             return false;
         }
     }
-
-
-    public function update()
-    {
-
+    
+  
+    public function update() {
+        
         $query = "UPDATE " . $this->table . " 
                   SET nom = :nom, 
                       logo = :logo, 
@@ -75,14 +71,14 @@ class Partenaire
                       site_web = :site_web,
                       updated_at = NOW()
                   WHERE id = :id";
-
+        
         $stmt = $this->conn->prepare($query);
-
+        
         // nettoyer
         $this->nom = htmlspecialchars(strip_tags($this->nom));
         $this->description = htmlspecialchars(strip_tags($this->description ?? ''));
-
-
+        
+        
         $stmt->bindParam(":id", $this->id);
         $stmt->bindParam(":nom", $this->nom);
         $stmt->bindParam(":logo", $this->logo);
@@ -92,7 +88,7 @@ class Partenaire
         $stmt->bindParam(":email", $this->email);
         $stmt->bindParam(":telephone", $this->telephone);
         $stmt->bindParam(":site_web", $this->site_web);
-
+        
         try {
             return $stmt->execute();
         } catch (PDOException $e) {
@@ -100,34 +96,31 @@ class Partenaire
             return false;
         }
     }
-
-
-    public function getAll()
-    {
+    
+    
+    public function getAll() {
         $query = "SELECT * FROM " . $this->table . " ORDER BY created_at DESC";
         $stmt = $this->conn->prepare($query);
         $stmt->execute();
         return $stmt;
     }
-
-    public function getActifs()
-    {
+    
+    public function getActifs() {
         $query = "SELECT * FROM " . $this->table . " WHERE statut = 'actif' ORDER BY created_at DESC";
         $stmt = $this->conn->prepare($query);
         $stmt->execute();
         return $stmt;
     }
-
-    public function getById()
-    {
+    
+    public function getById() {
         $query = "SELECT * FROM " . $this->table . " WHERE id = :id LIMIT 1";
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(":id", $this->id);
         $stmt->execute();
-
+        
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        if ($row) {
+        
+        if($row) {
             $this->id = $row['id'];
             $this->nom = $row['nom'];
             $this->logo = $row['logo'];
@@ -142,51 +135,18 @@ class Partenaire
         }
         return false;
     }
-
-    public function delete()
-    {
+    
+    public function delete() {
         $query = "DELETE FROM " . $this->table . " WHERE id = :id";
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(":id", $this->id);
-
+        
         try {
             return $stmt->execute();
         } catch (PDOException $e) {
             error_log("Erreur Partenaire::delete: " . $e->getMessage());
             return false;
         }
-    }
-    public function getActifsPaginated($limit, $offset, $type = null)
-    {
-        $query = "SELECT * FROM " . $this->table . " WHERE statut = 'actif'";
-        if ($type) {
-            $query .= " AND type = :type";
-        }
-        $query .= " ORDER BY created_at DESC LIMIT :limit OFFSET :offset";
-
-        $stmt = $this->conn->prepare($query);
-        if ($type) {
-            $stmt->bindParam(":type", $type);
-        }
-        $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
-        $stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
-        $stmt->execute();
-        return $stmt;
-    }
-
-    public function getCountActifs($type = null)
-    {
-        $query = "SELECT COUNT(*) as total FROM " . $this->table . " WHERE statut = 'actif'";
-        if ($type) {
-            $query .= " AND type = :type";
-        }
-        $stmt = $this->conn->prepare($query);
-        if ($type) {
-            $stmt->bindParam(":type", $type);
-        }
-        $stmt->execute();
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        return $row['total'];
     }
 }
 ?>

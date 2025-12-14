@@ -23,8 +23,6 @@ if (!$rec) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['response']) && !empty(trim($_POST['response']))) {
     $respCtrl = new ResponseController();
     $respCtrl->addResponse($id, trim($_POST['response']));
-    // Set a flash message to inform admin that email was sent
-    $_SESSION['flash_success'] = 'La réponse a été envoyée et l\'email a été transmis avec succès.';
     header('Location: listReclamation.php');
     exit;
 }
