@@ -138,7 +138,7 @@
 <body>
     <div class="body_bg">
         <!--::header part start::-->
-        <?php include 'header_mission.php'; ?>
+        <?php include 'header_common.php'; ?>
         <!-- Header part end-->
 
         <!-- breadcrumb start-->
