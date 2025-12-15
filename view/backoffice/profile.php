@@ -173,6 +173,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['profile_picture'])) 
             font-size: 0.9rem;
             border-radius: 5px;
         }
+        
     </style></head>
 <body>
     <div class="body_bg" style="background: #1f2235;">
@@ -182,9 +183,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['profile_picture'])) 
                 <div class="row align-items-center">
                     <div class="col-lg-12">
                         <nav class="navbar navbar-expand-lg navbar-light">
-                            <a class="navbar-brand" href="index1.php">
-                                <img src="assets/img/logo.png" alt="logo" style="height: 135px; width: auto;" />
-                            </a>
+                            
                             <div class="collapse navbar-collapse main-menu-item">
                                 <ul class="navbar-nav">
                                     <li class="nav-item">

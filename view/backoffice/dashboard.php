@@ -449,6 +449,104 @@ ksort($feedbackRatings);
         }
         /* Global bell icon sizing */
         .fas.fa-bell { font-size: 1.9rem !important; }
+        /* User Menu Styles */
+        .user-menu {
+            position: relative;
+            display: inline-block;
+            margin-right: 20px;
+        }
+        
+        .user-dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            min-width: 200px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            border-radius: 8px;
+            z-index: 1000;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+        
+        .user-dropdown.show {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .user-dropdown a {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            text-decoration: none;
+            color: #333;
+            border-bottom: 1px solid #f0f0f0;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+        
+        .user-dropdown a:hover {
+            background: #f8f9fa;
+            color: var(--primary-color);
+            padding-left: 25px;
+        }
+        
+        .user-dropdown a:last-child {
+            border-bottom: none;
+            color: #dc3545;
+        }
+        
+        .user-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: white;
+            cursor: pointer;
+            padding: 5px 10px;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+        }
+
+        /* Navbar Specifics to force right alignment */
+        .navbar.topbar {
+            width: 100%;
+            display: flex;
+            justify-content: space-between !important; /* Force toggle left, menu right */
+            align-items: center;
+            padding: 10px 20px;
+        }
+        
+        .user-wrapper:hover {
+            background: rgba(255,255,255,0.1);
+        }
+        
+        .user-name {
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid rgba(255,255,255,0.2);
+        }
+        
+        .user-avatar i {
+            color: white;
+            font-size: 18px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
     </style>
 </head>
 
