@@ -1,7 +1,13 @@
 <?php
 session_start();
-require_once '../../config.php';
-require_once '../../model/evenementModel.php';
+// Use project DB config; fallback path relative to this file
+if (!class_exists('config')) {
+    $dbCfg = __DIR__ . '/../../../db_config.php';
+    if (file_exists($dbCfg)) {
+        require_once $dbCfg;
+    }
+}
+require_once __DIR__ . '/../../../model/evenementModel.php';
 
 // Simuler une session d'administration si nécessaire
 if (!isset($_SESSION['user_id'])) {
