@@ -11,6 +11,11 @@ function normalize_asset_path($img) {
     $img = trim($img);
     if (strpos($img, 'http') === 0) return $img;
     if (strpos($img, '/') === 0) return $img;
+    if (strpos($img, 'assets/') === 0) {
+        // Map backoffice stored path to a reachable URL from frontoffice/events/
+        return '../../backoffice/events/' . $img; // => ../../backoffice/events/assets/<file>
+    }
+    // Legacy fallback
     return 'events/' . $img;
 }
 ?>

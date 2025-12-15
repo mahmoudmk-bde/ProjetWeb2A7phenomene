@@ -96,6 +96,27 @@ if (isset($_SESSION['user_id']) && empty($notifications)) {
             ];
         }
 
+        // Nouveaux événements (from existing evenement table)
+        try {
+            $eventStmt = $pdo->query("SELECT id_evenement, titre, description, date_evenement, created_at 
+                                      FROM evenement 
+                                      WHERE created_at > DATE_SUB(NOW(), INTERVAL 7 DAY)
+                                      ORDER BY created_at DESC
+                                      LIMIT 5");
+            foreach ($eventStmt->fetchAll(PDO::FETCH_ASSOC) as $evt) {
+                $notifications[] = [
+                    'title' => '🎉 Nouvel Événement',
+                    'body' => $evt['titre'] ?? 'Événement',
+                    'text' => 'Un nouvel événement: ' . ($evt['titre'] ?? 'Événement') . ' le ' . ($evt['date_evenement'] ?? ''),
+                    'date' => $evt['created_at'] ?? null,
+                    'href' => 'events/event.php',
+                    'key' => md5('event|' . ($evt['id_evenement'] ?? '') . '|' . ($evt['created_at'] ?? ''))
+                ];
+            }
+        } catch (Exception $e) {
+            // Silently fail if query has issues
+        }
+
         usort($notifications, function($a, $b) {
             $da = isset($a['date']) ? strtotime($a['date']) : 0;
             $db = isset($b['date']) ? strtotime($b['date']) : 0;
