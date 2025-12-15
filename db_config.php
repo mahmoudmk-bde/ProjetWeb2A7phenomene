@@ -10,7 +10,7 @@ class config
             $username = "root";
             $password = "";
             $dbname = "projetweb3";
-            $port = 3306; // Vérifiez si c'est bien le bon port
+            $port = 3307; // Vérifiez si c'est bien le bon port
             
             try {
                 // Ajout du port dans la chaîne de connexion
