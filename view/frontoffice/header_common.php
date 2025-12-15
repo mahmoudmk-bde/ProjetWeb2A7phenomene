@@ -43,6 +43,24 @@ if (isset($_SESSION['user_id']) && empty($notifications)) {
             ];
         }
 
+        // Réclamations rejetées
+        $rejectedStmt = $pdo->prepare("SELECT id, sujet, statut, updated_at, date_creation
+                                        FROM reclamation
+                                        WHERE utilisateur_id = :uid AND statut = 'Rejeté'
+                                        ORDER BY COALESCE(updated_at, date_creation) DESC
+                                        LIMIT 10");
+        $rejectedStmt->execute(['uid' => $uid]);
+        foreach ($rejectedStmt->fetchAll(PDO::FETCH_ASSOC) as $n) {
+            $notifications[] = [
+                'title' => 'Réclamation rejetée',
+                'body' => $n['sujet'] ?? 'Réclamation',
+                'text' => 'Votre réclamation a été rejetée. Consultez les détails pour plus d\'informations.',
+                'date' => $n['updated_at'] ?? $n['date_creation'] ?? null,
+                'href' => 'historique_reclamations.php#rec-' . (int)($n['id'] ?? 0),
+                'key' => md5('rejected|' . ($n['id'] ?? '') . '|' . ($n['statut'] ?? '') . '|' . ($n['updated_at'] ?? $n['date_creation'] ?? ''))
+            ];
+        }
+
         // Candidatures acceptées
         $accStmt = $pdo->prepare("SELECT c.mission_id, c.date_candidature, c.statut, m.titre
                                    FROM candidatures c

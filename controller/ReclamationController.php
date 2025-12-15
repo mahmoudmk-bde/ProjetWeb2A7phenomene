@@ -56,5 +56,14 @@ class ReclamationController {
 
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
+
+    public function updateStatus($id, $statut) {
+        $sql = "UPDATE reclamation SET statut = :statut, updated_at = NOW() WHERE id = :id";
+        $stmt = $this->pdo->prepare($sql);
+        return $stmt->execute([
+            'id' => $id,
+            'statut' => $statut
+        ]);
+    }
 }
 ?>

@@ -14,6 +14,28 @@ if (!isset($_GET['id']) || !$_GET['id']) {
 $id = intval($_GET['id']);
 $recCtrl = new ReclamationController();
 $respCtrl = new ResponseController();
+// Handle status update (reject)
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'reject') {
+    if ($recCtrl->updateStatus($id, 'Rejeté')) {
+        $_SESSION['success_message'] = 'La réclamation a été rejetée avec succès.';
+        header('Location: details.php?id=' . $id);
+        exit;
+    } else {
+        $_SESSION['error_message'] = 'Erreur lors du rejet de la réclamation.';
+    }
+}
+
+// Handle status update (resolve)
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'resolve') {
+    if ($recCtrl->updateStatus($id, 'Résolu')) {
+        $_SESSION['success_message'] = 'La réclamation a été marquée comme résolue.';
+        header('Location: details.php?id=' . $id);
+        exit;
+    } else {
+        $_SESSION['error_message'] = 'Erreur lors de la résolution de la réclamation.';
+    }
+}
+
 
 $rec = $recCtrl->getReclamation($id);
 if (!$rec) { 
@@ -224,6 +246,67 @@ $responses = $respCtrl->getResponses($id);
         .badge-danger { background: var(--danger); color: white; }
         .badge-info { background: var(--info); color: white; }
         
+        .alert {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: slideIn 0.3s ease;
+        }
+        
+        .alert-success {
+            background: rgba(40, 167, 69, 0.2);
+            border: 1px solid var(--success);
+            color: var(--success);
+        }
+        
+        .alert-danger {
+            background: rgba(220, 53, 69, 0.2);
+            border: 1px solid var(--danger);
+            color: var(--danger);
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .status-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+        }
+        
+        .btn-success {
+            background: linear-gradient(45deg, #28a745, #20c997);
+            color: white;
+        }
+        
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+        }
+        
+        .btn-warning {
+            background: linear-gradient(45deg, #ffc107, #e0a800);
+            color: #212529;
+        }
+        
+        .btn-warning:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 193, 7, 0.4);
+        }
+        
         .responses-section {
             margin-top: 20px;
         }
@@ -298,6 +381,20 @@ $responses = $respCtrl->getResponses($id);
 </head>
 <body>
     <div class="container">
+                <?php if (isset($_SESSION['success_message'])): ?>
+                    <div class="alert alert-success">
+                        <i class="fas fa-check-circle"></i>
+                        <span><?= htmlspecialchars($_SESSION['success_message']); unset($_SESSION['success_message']); ?></span>
+                    </div>
+                <?php endif; ?>
+        
+                <?php if (isset($_SESSION['error_message'])): ?>
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span><?= htmlspecialchars($_SESSION['error_message']); unset($_SESSION['error_message']); ?></span>
+                    </div>
+                <?php endif; ?>
+        
         <div class="page-header">
             <h2>
                 <i class="fas fa-eye"></i> Détails de la réclamation #<?= htmlspecialchars($rec['id']) ?>
@@ -395,6 +492,23 @@ $responses = $respCtrl->getResponses($id);
                             <span><?= count($responses) ?></span>
                         </li>
                     </ul>
+                    
+                    <?php if ($rec['statut'] !== 'Rejeté' && $rec['statut'] !== 'Résolu'): ?>
+                    <div class="status-actions">
+                        <form method="POST" style="flex: 1;" onsubmit="return confirm('Êtes-vous sûr de vouloir marquer cette réclamation comme résolue ?');">
+                            <input type="hidden" name="action" value="resolve">
+                            <button type="submit" class="btn btn-success" style="width: 100%; justify-content: center;">
+                                <i class="fas fa-check"></i> Marquer comme résolue
+                            </button>
+                        </form>
+                        <form method="POST" style="flex: 1;" onsubmit="return confirm('Êtes-vous sûr de vouloir rejeter cette réclamation ? L\'utilisateur en sera notifié.');">
+                            <input type="hidden" name="action" value="reject">
+                            <button type="submit" class="btn btn-warning" style="width: 100%; justify-content: center;">
+                                <i class="fas fa-times"></i> Rejeter
+                            </button>
+                        </form>
+                    </div>
+                    <?php endif; ?>
                     
                     <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border-color);">
                         <a href="delete.php?id=<?= $rec['id'] ?>" 
