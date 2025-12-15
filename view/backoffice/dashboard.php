@@ -471,6 +471,7 @@ ksort($feedbackRatings);
             </a>
             <ul class="collapse list-unstyled" id="gestionUtil">
                 <li><a href="#" onclick="openPage('utilisateur/listeutil.php')">📌 utilisateur</a></li>
+                <li><a href="#" onclick="openPage('profile1.php')">👥Profile</a></li>
             </ul>
         </li>
         <li>
