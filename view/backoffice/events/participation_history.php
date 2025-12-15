@@ -1,21 +1,28 @@
 <?php
 session_start();
-require_once '../../config.php';
-require_once '../../model/participationModel.php';
+// Load project DB config (fallback if not already loaded)
+if (!class_exists('config')) {
+    $dbCfg = __DIR__ . '/../../../db_config.php';
+    if (file_exists($dbCfg)) {
+        require_once $dbCfg;
+    }
+}
+require_once __DIR__ . '/../../../model/evenementModel.php';
+require_once __DIR__ . '/../../../model/participationModel.php';
 
 $participationModel = new ParticipationModel();
 $history = $participationModel->getAllParticipationsWithUsers();
 ?>
-<?php include 'assets/layout_top.php'; ?>
+<?php if (!isset($_GET['embed'])) { include 'assets/layout_top.php'; } ?>
 
-            <div class="row mt-3">
+            <div class="row mt-3" <?= isset($_GET['embed']) ? 'style="margin-left:0;padding:20px"' : '' ?> >
                 <div class="col-12">
                     <h1 class="mb-4">Historique global des participants</h1>
 
                     <div class="card dashboard-card">
                         <div class="card-header d-flex justify-content-between align-items-center">
                             <h5 class="mb-0">Toutes les réservations</h5>
-                            <a href="evenement.php" class="btn btn-secondary btn-sm">
+                            <a href="evenement.php<?= isset($_GET['embed']) ? '?embed=1' : '' ?>" class="btn btn-secondary btn-sm">
                                 <i class="fas fa-arrow-left"></i> Retour aux événements
                             </a>
                         </div>

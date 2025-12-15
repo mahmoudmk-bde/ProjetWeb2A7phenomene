@@ -16,6 +16,8 @@ $base_dir = __DIR__ . '/../../';
 require_once $base_dir . 'controller/missioncontroller.php';
 require_once $base_dir . 'controller/condidaturecontroller.php';
 require_once $base_dir . 'controller/utilisateurcontroller.php';
+require_once $base_dir . 'model/evenementModel.php';
+require_once $base_dir . 'model/participationModel.php';
 
 // Récupération des infos utilisateur pour le header
 $utilisateurC = new UtilisateurController();
@@ -498,9 +500,9 @@ ksort($feedbackRatings);
                 <i class="fas fa-calendar-alt"></i> Gestion des événements
             </a>
             <ul class="collapse list-unstyled" id="gestionEventsMenu">
-                <li><a href="#" onclick="openPage('events/evenement.php')">🎟️ Événements</a></li>
-                <li><a href="#" onclick="openPage('events/createevent.php')">➕ Créer événement</a></li>
-                <li><a href="#" onclick="openPage('events/participation_history.php')">👥 Participations</a></li>
+                <li><a href="#" onclick="openPage('events/evenement.php?embed=1')">🎟️ Événements</a></li>
+                <li><a href="#" onclick="openPage('events/createevent.php?embed=1')">➕ Créer événement</a></li>
+                <li><a href="#" onclick="openPage('events/participation_history.php?embed=1')">👥 Participations</a></li>
             </ul>
         </li>
 

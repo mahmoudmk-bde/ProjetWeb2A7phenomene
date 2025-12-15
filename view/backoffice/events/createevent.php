@@ -1,7 +1,13 @@
 <?php
 session_start();
-require_once '../../config.php';
-require_once '../../model/evenementModel.php';
+// Load project DB config (fallback if not already loaded)
+if (!class_exists('config')) {
+    $dbCfg = __DIR__ . '/../../../db_config.php';
+    if (file_exists($dbCfg)) {
+        require_once $dbCfg;
+    }
+}
+require_once __DIR__ . '/../../../model/evenementModel.php';
 
 $eventModel = new EvenementModel();
 
@@ -52,9 +58,9 @@ if ($_POST) {
     }
 }
 ?>
-<?php include 'assets/layout_top.php'; ?>
+<?php if (!isset($_GET['embed'])) { include 'assets/layout_top.php'; } ?>
 
-            <div class="row mt-3">
+            <div class="row mt-3" <?= isset($_GET['embed']) ? 'style="margin-left:0;padding:20px"' : '' ?> >
                 <div class="col-12">
                     <h1 class="mb-4">Créer un Événement</h1>
 
@@ -134,11 +140,11 @@ if ($_POST) {
                                 </div>
 
                                 <button type="submit" class="btn btn-primary">Créer l'événement</button>
-                                <a href="evenement.php" class="btn btn-secondary">Annuler</a>
+                                <a href="evenement.php<?= isset($_GET['embed']) ? '?embed=1' : '' ?>" class="btn btn-secondary">Annuler</a>
                             </form>
                         </div>
                     </div>
                 </div>
             </div>
 
-<?php include 'assets/layout_bottom.php'; ?>
+<?php if (!isset($_GET['embed'])) { include 'assets/layout_bottom.php'; } ?>
