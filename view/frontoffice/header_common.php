@@ -405,8 +405,10 @@ $frontOfficePath = $baseUrl . 'view/frontoffice/';
         from { opacity: 0; transform: translateY(-10px); }
         to { opacity: 1; transform: translateY(0); }
     }
+    /* Global bell icon sizing */
+    .fas.fa-bell { font-size: 1.9rem !important; }
     .notification-item { position: relative; }
-    .notification-bell { position: relative; display: flex; align-items: center; font-size: 1.6rem; padding: 6px 4px; }
+    .notification-bell { position: relative; display: flex; align-items: center; font-size: 1.9rem; padding: 6px 4px; }
     .notif-badge {
         position:absolute;
         top:0;

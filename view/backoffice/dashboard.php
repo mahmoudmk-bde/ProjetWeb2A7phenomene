@@ -447,6 +447,8 @@ ksort($feedbackRatings);
             color: var(--text-color);
             font-size: 0.9rem;
         }
+        /* Global bell icon sizing */
+        .fas.fa-bell { font-size: 1.9rem !important; }
     </style>
 </head>
 

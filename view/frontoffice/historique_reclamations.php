@@ -183,6 +183,8 @@ $headerShowUserMenu = true; // instruct header to show dropdown
         .status-answered { background: rgba(56,213,152,0.18); color:#38d998; border:1px solid rgba(56,213,152,0.35); }
         .status-pending { background: rgba(255,199,0,0.18); color:#ffd166; border:1px solid rgba(255,199,0,0.4); }
         .status-progress { background: rgba(82,156,255,0.18); color:#92c5ff; border:1px solid rgba(82,156,255,0.35); }
+        .status-rejected { background: rgba(220, 53, 69, 0.18); color:#ff6b6b; border:1px solid rgba(220, 53, 69, 0.35); }
+        .status-accepted { background: rgba(40, 167, 69, 0.18); color:#28a745; border:1px solid rgba(40, 167, 69, 0.35); }
     </style>
 </head>
 <body class="body_bg">
@@ -206,13 +208,41 @@ $headerShowUserMenu = true; // instruct header to show dropdown
                         $statut = $reclamation['statut'] ?? 'Non traite';
                         $statusClass = 'status-pending';
                         $statusIcon = '⏳';
-                        if ($statut === 'Traite' || $hasResponses) {
+                        
+                        // Check if reclamation is rejected or accepted based on responses
+                        $isRejected = false;
+                        $isAccepted = false;
+                        
+                        if ($hasResponses) {
+                            foreach ($responses as $resp) {
+                                if (strpos($resp['contenu'], '[REJECTION]') === 0) {
+                                    $isRejected = true;
+                                    break;
+                                }
+                            }
+                            // If not rejected and has responses, it's accepted
+                            if (!$isRejected) {
+                                $isAccepted = true;
+                            }
+                        }
+                        
+                        // Determine status display
+                        if ($isRejected) {
+                            $statusClass = 'status-rejected';
+                            $statusIcon = '❌';
+                            $statut = 'Rejeté';
+                        } elseif ($isAccepted) {
+                            $statusClass = 'status-accepted';
+                            $statusIcon = '✔️';
+                            $statut = 'Accepté';
+                        } elseif ($statut === 'Traite') {
                             $statusClass = 'status-answered';
                             $statusIcon = '✔️';
                         } elseif ($statut === 'En cours') {
                             $statusClass = 'status-progress';
                             $statusIcon = '🔄';
                         }
+                        
                         $itemClass = ($statut === 'Non traite' && !$hasResponses) ? ' pending' : '';
                     ?>
                     <div class="timeline-item<?= $itemClass; ?>" id="rec-<?= (int)$reclamation['id']; ?>">
