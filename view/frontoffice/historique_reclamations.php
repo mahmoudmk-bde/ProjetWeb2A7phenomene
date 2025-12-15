@@ -5,6 +5,7 @@ session_start();
 require_once __DIR__ . '/../../controller/ReclamationController.php';
 require_once __DIR__ . '/../../controller/utilisateurcontroller.php';
 require_once __DIR__ . '/../../controller/ResponseController.php';
+require_once __DIR__ . '/../../db_config.php';
 
 if (!isset($_SESSION['user_id'])) {
     header('Location: connexion.php');
@@ -15,6 +16,31 @@ $user_id = $_SESSION['user_id'];
 $reclamationController = new ReclamationController();
 $responseController = new ResponseController();
 $utilCtrl = new UtilisateurController();
+
+// Auto-delete reclamations that have been responded to and viewed (only if response is older than 1 hour)
+try {
+    $pdo = config::getConnexion();
+    
+    // Get all user's reclamations that have responses older than 1 hour
+    $stmt = $pdo->prepare("SELECT rec.id FROM reclamation rec
+                           JOIN response r ON r.reclamation_id = rec.id
+                           WHERE rec.utilisateur_id = :user_id 
+                           AND r.date_response < DATE_SUB(NOW(), INTERVAL 1 HOUR)");
+    $stmt->execute(['user_id' => $user_id]);
+    $oldReclamations = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    // Delete only the old reclamations that have been given time to be viewed
+    foreach ($oldReclamations as $rec) {
+        $deleteRespStmt = $pdo->prepare("DELETE FROM response WHERE reclamation_id = :rec_id");
+        $deleteRespStmt->execute(['rec_id' => $rec['id']]);
+        
+        $deleteRecStmt = $pdo->prepare("DELETE FROM reclamation WHERE id = :rec_id");
+        $deleteRecStmt->execute(['rec_id' => $rec['id']]);
+    }
+} catch (Exception $e) {
+    // Log error but don't break the page
+    error_log("Error auto-deleting reclamations: " . $e->getMessage());
+}
 
 $reclamations = $reclamationController->getReclamationsByUser($user_id);
 
