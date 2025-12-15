@@ -183,7 +183,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['profile_picture'])) 
                     <div class="col-lg-12">
                         <nav class="navbar navbar-expand-lg navbar-light">
                             <a class="navbar-brand" href="index1.php">
-                                <img src="assets/img/logo.png" alt="logo" />
+                                <img src="assets/img/logo.png" alt="logo" style="height: 135px; width: auto;" />
                             </a>
                             <div class="collapse navbar-collapse main-menu-item">
                                 <ul class="navbar-nav">

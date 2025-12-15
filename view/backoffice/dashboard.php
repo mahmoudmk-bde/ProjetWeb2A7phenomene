@@ -455,7 +455,8 @@ ksort($feedbackRatings);
 <!-- SIDEBAR -->
 <nav id="sidebar">
     <div class="sidebar-header">
-        <h3><img src="assets/img/logo.png" style="height:40px;"> ENGAGE Admin</h3>
+        <img src="assets/img/logo.png" style="height:120px; width: auto; margin-bottom: 10px; display: block;">
+        <h3 style="text-align: center; margin: 0; font-size: 1.1rem; font-weight: 600; color: white;">ENGAGE Admin</h3>
     </div>
 
     <ul class="list-unstyled components">

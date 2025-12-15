@@ -7,7 +7,15 @@ require_once $base_dir . 'controller/ResponseController.php';
 
 $recCtrl = new ReclamationController();
 $respCtrl = new ResponseController();
-$list = $recCtrl->listReclamations();
+$allReclamations = $recCtrl->listReclamations();
+
+// Pagination
+$page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
+$perPage = 6; // afficher 6 réclamations par page
+$totalReclamations = count($allReclamations);
+$totalPages = (int) ceil($totalReclamations / $perPage);
+$offset = ($page - 1) * $perPage;
+$list = array_slice($allReclamations, $offset, $perPage);
 
 // Message de succès après suppression
 $successMessage = isset($_GET['deleted']) && $_GET['deleted'] == 1 ? 'Réclamation supprimée avec succès !' : null;
@@ -23,18 +31,7 @@ $successMessage = isset($_GET['deleted']) && $_GET['deleted'] == 1 ? 'Réclamati
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     
     <style>
-        body {
-            background: var(--secondary-color);
-            padding: 20px;
-            margin: 0;
-        }
-        
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-        
-        .stats-header {
+        .missions-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -43,111 +40,178 @@ $successMessage = isset($_GET['deleted']) && $_GET['deleted'] == 1 ? 'Réclamati
             gap: 15px;
         }
         
-        .section-title {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: var(--text-color);
-            margin: 0;
-            display: flex;
-            align-items: center;
-            gap: 10px;
+        .missions-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
         }
         
-        .section-title i {
-            color: var(--primary-color);
-        }
-        
-        
-        .table-container {
+        .mission-stat-card {
             background: var(--accent-color);
-            padding: 25px;
+            padding: 20px;
             border-radius: 12px;
+            text-align: center;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+        
+        .mission-stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(255, 74, 87, 0.2);
+        }
+        
+        .mission-stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            display: block;
+        }
+        
+        .mission-stat-label {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+        
+        .mission-card {
+            background: var(--accent-color);
+            padding: 15px;
+            border-radius: 15px;
             border: 1px solid var(--border-color);
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-        }
-        
-        .table-modern {
-            width: 100%;
-            border-collapse: separate;
-            border-spacing: 0 8px;
-            color: var(--text-color);
-        }
-        
-        .table-modern thead th {
-            background: linear-gradient(45deg, var(--primary-color), var(--primary-light));
-            border: none;
-            color: white;
-            font-weight: 700;
-            text-transform: uppercase;
-            font-size: 0.85rem;
-            padding: 15px;
-            text-align: center;
-            letter-spacing: 0.5px;
-        }
-        
-        .table-modern tbody tr {
-            background: var(--secondary-color);
-            border-radius: 10px;
             transition: all 0.3s ease;
-        }
-        
-        .table-modern tbody tr:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(255, 74, 87, 0.3);
-        }
-        
-        .table-modern td {
-            padding: 15px;
-            border: none;
-            text-align: center;
-            vertical-align: middle;
-            color: var(--text-color);
-        }
-        
-        .email-info {
+            position: relative;
             display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
+            flex-direction: column;
         }
         
-        .email-info i {
+        .mission-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(255, 74, 87, 0.3);
+            border-color: var(--primary-color);
+        }
+        
+        .mission-header {
+            margin-bottom: 8px;
+        }
+        
+        .mission-title {
+            font-size: 0.95rem;
+            font-weight: 700;
             color: var(--primary-color);
+            margin: 0 0 4px 0;
         }
         
-        .badge {
-            border-radius: 15px;
-            padding: 6px 12px;
-            font-size: 0.75rem;
+        .mission-difficulty {
+            background: var(--secondary-color);
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
             font-weight: 600;
             display: inline-block;
-            text-transform: capitalize;
         }
         
-        .badge-success { background: var(--success); color: white; }
-        .badge-warning { background: var(--warning); color: #212529; }
-        .badge-danger { background: var(--danger); color: white; }
-        .badge-info { background: var(--info); color: white; }
+        .difficulty-facile { color: #28a745; border: 1px solid #28a745; }
+        .difficulty-moyen { color: #ffc107; border: 1px solid #ffc107; }
+        .difficulty-difficile { color: #dc3545; border: 1px solid #dc3545; }
+        .difficulty-en_attente { color: #ffc107; border: 1px solid #ffc107; }
+        .difficulty-traite { color: #28a745; border: 1px solid #28a745; }
+        .difficulty-rejete { color: #dc3545; border: 1px solid #dc3545; }
         
-        .action-buttons {
+        .mission-dates {
             display: flex;
-            gap: 8px;
-            justify-content: center;
-            flex-wrap: wrap;
+            flex-direction: column;
+            gap: 4px;
+            margin-bottom: 8px;
+            font-size: 0.75rem;
         }
         
-        .btn-view, .btn-edit, .btn-delete {
-            padding: 8px 15px;
-            border-radius: 8px;
-            text-decoration: none;
-            font-size: 0.85rem;
-            font-weight: 600;
-            display: inline-flex;
+        .date-info {
+            display: flex;
             align-items: center;
-            gap: 5px;
+            gap: 4px;
+            color: var(--text-muted);
+        }
+        
+        .date-info i {
+            color: var(--primary-color);
+            font-size: 0.8rem;
+        }
+        
+        .mission-details {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 8px;
+            flex: 1;
+        }
+        
+        .detail-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px;
+            background: var(--secondary-color);
+            border-radius: 6px;
+            font-size: 0.75rem;
+        }
+        
+        .detail-item i {
+            color: var(--primary-color);
+            width: 12px;
+            text-align: center;
+            flex-shrink: 0;
+            font-size: 0.75rem;
+        }
+        
+        .detail-label {
+            color: var(--text-muted);
+            font-size: 0.65rem;
+            display: block;
+        }
+        
+        .detail-value {
+            color: var(--text-color);
+            font-weight: 600;
+            font-size: 0.8rem;
+        }
+        
+        .mission-actions {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: auto;
+            padding-top: 10px;
+            border-top: 1px solid var(--border-color);
+        }
+        
+        .btn-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
             transition: all 0.3s ease;
             border: none;
+            font-size: 0.95rem;
             cursor: pointer;
+        }
+        
+        .btn-icon:hover {
+            transform: translateY(-3px) scale(1.1);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .btn-reply {
+            background: linear-gradient(45deg, #17a2b8, #138496);
+            color: white;
+        }
+        
+        .btn-reply:hover {
+            background: linear-gradient(45deg, #138496, #117a8b);
+            box-shadow: 0 5px 15px rgba(23, 162, 184, 0.4);
         }
         
         .btn-view {
@@ -155,177 +219,249 @@ $successMessage = isset($_GET['deleted']) && $_GET['deleted'] == 1 ? 'Réclamati
             color: white;
         }
         
-        .btn-edit {
-            background: linear-gradient(45deg, #ffc107, #e0a800);
-            color: #212529;
+        .btn-view:hover {
+            background: linear-gradient(45deg, #0056b3, #004099);
+            box-shadow: 0 5px 15px rgba(0, 123, 255, 0.4);
         }
         
-        .btn-delete {
+        .btn-supprimer {
             background: linear-gradient(45deg, #dc3545, #c82333);
             color: white;
         }
         
-        .btn-view:hover, .btn-edit:hover, .btn-delete:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+        .btn-supprimer:hover {
+            background: linear-gradient(45deg, #c82333, #bd2130);
+            box-shadow: 0 5px 15px rgba(220, 53, 69, 0.4);
         }
         
         .empty-state {
             text-align: center;
             padding: 60px 20px;
             color: var(--text-muted);
+            grid-column: 1 / -1;
         }
         
         .empty-state i {
             font-size: 4rem;
-            color: var(--primary-color);
             margin-bottom: 20px;
+            color: var(--text-muted);
             opacity: 0.5;
         }
         
-        .empty-state h3 {
-            color: var(--text-color);
-            margin-bottom: 10px;
+        .mission-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            align-items: start;
         }
-        
-        .alert {
-            padding: 15px 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            animation: slideIn 0.3s ease;
-        }
-        
-        .alert-success {
-            background: rgba(40, 167, 69, 0.2);
-            border: 1px solid var(--success);
-            color: var(--success);
-        }
-        
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        @media (max-width: 768px) {
-            
-            .table-modern {
-                font-size: 0.85rem;
-            }
-            
-            .table-modern thead th,
-            .table-modern td {
-                padding: 10px 5px;
-            }
-            
-            .action-buttons {
-                flex-direction: column;
-            }
-            
-            .btn-view, .btn-edit, .btn-delete {
-                width: 100%;
-                justify-content: center;
+
+        @media (max-width: 992px) {
+            .mission-grid {
+                grid-template-columns: repeat(1, 1fr);
             }
         }
     </style>
+    <style>
+        /* Pagination styles for backoffice to match admin theme */
+        .pagination { display: flex; gap: 6px; justify-content: center; padding-left: 0; list-style: none; }
+        .pagination .page-item .page-link {
+            color: #212529;
+            background: #fff;
+            border: 1px solid #e6e6e6;
+            padding: 8px 12px;
+            border-radius: 6px;
+            min-width: 40px;
+            text-align: center;
+            transition: all .12s ease;
+        }
+
+        .pagination .page-item.active .page-link {
+            background: linear-gradient(45deg, #ff4a57, #ff6b6b);
+            color: #fff;
+            border-color: rgba(0,0,0,0.06);
+            box-shadow: 0 6px 14px rgba(255,74,87,0.16);
+        }
+
+        .pagination .page-item .page-link:hover { transform: translateY(-3px); }
+        .pagination .page-item.disabled .page-link { opacity: .5; pointer-events: none; }
+
+        @media (max-width: 768px) { .pagination .page-item .page-link { padding: 6px 8px; min-width: 34px; } }
+    </style>
 </head>
+
 <body>
-<div class="container">
-    <div class="stats-header">
-            <h2 class="section-title">
-            <i class="fas fa-exclamation-circle"></i> Gestion des Réclamations
-        </h2>
+
+<div class="container mt-4">
+
+    <!-- En-tête -->
+    <div class="missions-header">
+        <h2 class="text-white">📋 Gestion des Réclamations</h2>
     </div>
 
-        <!-- Message de succès -->
-        <?php if ($successMessage): ?>
-            <div class="alert alert-success">
-                <i class="fas fa-check-circle"></i>
-                <span><?= htmlspecialchars($successMessage) ?></span>
-            </div>
-        <?php endif; ?>
+    <!-- Message de succès -->
+    <?php if ($successMessage): ?>
+        <div class="alert alert-success"><?= htmlspecialchars($successMessage); ?></div>
+    <?php endif; ?>
 
-        <!-- Tableau des réclamations -->
-    <div class="table-container">
-        <table class="table-modern">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Sujet</th>
-                    <th>Email</th>
-                    <th>Date</th>
-                    <th>Statut</th>
-                    <th>Réponses</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-            <?php if (!empty($list)): ?>
-                <?php foreach ($list as $rec): ?>
-                    <tr>
-                        <td><?= htmlspecialchars($rec['id']) ?></td>
-                            <td><?= htmlspecialchars($rec['sujet'] ?? 'N/A') ?></td>
-                        <td class="email-info">
-                            <i class="fas fa-envelope"></i>
-                                <span><?= htmlspecialchars($rec['email'] ?? 'N/A') ?></span>
-                        </td>
-                        <td><?= date('d/m/Y à H:i', strtotime($rec['date_creation'] ?? 'now')) ?></td>
-                        <td>
+    <!-- Statistiques des réclamations -->
+    <div class="missions-stats">
+        <div class="mission-stat-card">
+            <span class="mission-stat-number"><?= count($allReclamations) ?></span>
+            <span class="mission-stat-label">Total Réclamations</span>
+        </div>
+        <div class="mission-stat-card">
+            <span class="mission-stat-number">
+                <?= count(array_filter($allReclamations, fn($r) => $r['statut'] === 'Non traite')) ?>
+            </span>
+            <span class="mission-stat-label">Non traitées</span>
+        </div>
+        <div class="mission-stat-card">
+            <span class="mission-stat-number">
+                <?= count(array_filter($allReclamations, fn($r) => $r['statut'] === 'En cours')) ?>
+            </span>
+            <span class="mission-stat-label">En cours</span>
+        </div>
+        <div class="mission-stat-card">
+            <span class="mission-stat-number">
+                <?= count(array_filter($allReclamations, fn($r) => $r['statut'] === 'Traite')) ?>
+            </span>
+            <span class="mission-stat-label">Traitées</span>
+        </div>
+    </div>
+
+    <!-- Grille des réclamations -->
+    <div class="mission-grid">
+        <?php if (empty($list)): ?>
+            <div class="empty-state">
+                <i class="fas fa-inbox"></i>
+                <h3>Aucune réclamation trouvée</h3>
+                <p>Les réclamations apparaîtront ici dès que les utilisateurs en soumettront.</p>
+            </div>
+        <?php else: ?>
+            <?php foreach ($list as $rec): 
+                $responses = $respCtrl->getResponses($rec['id']);
+                $countResp = $responses ? count($responses) : 0;
+            ?>
+                <div class="mission-card">
+                    <!-- En-tête de la réclamation -->
+                    <div class="mission-header">
+                        <div>
+                            <h3 class="mission-title"><?= htmlspecialchars($rec['sujet']) ?></h3>
                             <?php
-                                $statusClass = 'badge-info';
-                                if ($rec['statut'] === 'Traite' || $rec['statut'] === 'Résolu') {
-                                    $statusClass = 'badge-success';
-                                } elseif ($rec['statut'] === 'En cours' || $rec['statut'] === 'En attente') {
-                                    $statusClass = 'badge-warning';
-                                } elseif ($rec['statut'] === 'Rejeté') {
-                                    $statusClass = 'badge-danger';
+                                $statusClass = 'difficulty-en_attente';
+                                $statusLabel = 'Non traité';
+                                if ($rec['statut'] === 'En cours') {
+                                    $statusClass = 'difficulty-moyen';
+                                    $statusLabel = 'En cours';
+                                } elseif ($rec['statut'] === 'Traite') {
+                                    $statusClass = 'difficulty-traite';
+                                    $statusLabel = 'Traité';
                                 }
                             ?>
-                            <span class="badge <?= $statusClass ?>"><?= htmlspecialchars($rec['statut']) ?></span>
-                        </td>
-                        <td>
-                            <?php
-                                $responses = $respCtrl->getResponses($rec['id']);
-                                $countResp = $responses ? count($responses) : 0;
-                            ?>
-                            <span class="badge badge-info"><?= $countResp ?></span>
-                        </td>
-                        <td class="action-buttons">
-                            <a class="btn-view" href="response.php?id=<?= $rec['id'] ?>">
-                                <i class="fas fa-reply"></i> Répondre
-                            </a>
-                            <a class="btn-edit" href="details.php?id=<?= $rec['id'] ?>">
-                                <i class="fas fa-eye"></i> Voir
-                            </a>
-                            <a class="btn-delete" href="delete.php?id=<?= $rec['id'] ?>"
-                               onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette réclamation ?')">
-                                <i class="fas fa-trash"></i> Supprimer
-                            </a>
-                        </td>
-                    </tr>
-                <?php endforeach; ?>
-            <?php else: ?>
-                <tr>
-                    <td colspan="7">
-                        <div class="empty-state">
-                            <i class="fas fa-inbox"></i>
-                            <h3>Aucune réclamation trouvée</h3>
-                            <p>Les réclamations apparaîtront ici dès que les utilisateurs en soumettront.</p>
+                            <span class="mission-difficulty <?= $statusClass ?>">
+                                <?= $statusLabel ?>
+                            </span>
                         </div>
-                    </td>
-                </tr>
-            <?php endif; ?>
-            </tbody>
-        </table>
+                    </div>
+
+                    <!-- Dates -->
+                    <div class="mission-dates">
+                        <div class="date-info">
+                            <i class="fas fa-calendar-alt"></i>
+                            <span><?= date('d/m/Y H:i', strtotime($rec['date_creation'])) ?></span>
+                        </div>
+                    </div>
+
+                    <!-- Détails de la réclamation -->
+                    <div class="mission-details">
+                        <div class="detail-item">
+                            <i class="fas fa-envelope"></i>
+                            <div>
+                                <div class="detail-label">Email</div>
+                                <div class="detail-value"><?= htmlspecialchars($rec['email']) ?></div>
+                            </div>
+                        </div>
+                        
+                        <div class="detail-item">
+                            <i class="fas fa-comments"></i>
+                            <div>
+                                <div class="detail-label">Réponses</div>
+                                <div class="detail-value"><?= $countResp ?> réponse<?= $countResp !== 1 ? 's' : '' ?></div>
+                            </div>
+                        </div>
+                        
+                        <?php if (!empty($rec['description'])): ?>
+                        <div class="detail-item" style="grid-column: 1 / -1;">
+                            <i class="fas fa-file-alt"></i>
+                            <div>
+                                <div class="detail-label">Description</div>
+                                <div class="detail-value" style="font-weight: normal; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                    <?= htmlspecialchars(substr($rec['description'], 0, 50)) ?>
+                                    <?= strlen($rec['description']) > 50 ? '...' : '' ?>
+                                </div>
+                            </div>
+                        </div>
+                        <?php endif; ?>
+                    </div>
+
+                    <!-- Priorité info -->
+                    <div class="mission-likes-info" style="margin: 12px 0; padding: 10px; background: rgba(255, 74, 87, 0.1); border-radius: 8px; border-left: 3px solid #ff4a57; display: flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-flag" style="color: #ff4a57; font-size: 1rem;"></i>
+                        <span style="color: var(--text-color); font-weight: 600; font-size: 0.9rem;">
+                            Priorité: <?= htmlspecialchars($rec['priorite'] ?? 'Normal') ?>
+                        </span>
+                    </div>
+
+                    <!-- Boutons d'action -->
+                    <div class="mission-actions">
+                        <!-- Répondre -->
+                        <a href="response.php?id=<?= $rec['id'] ?>" 
+                           class="btn-icon btn-reply"
+                           title="Répondre">
+                            <i class="fas fa-reply"></i>
+                        </a>
+
+                        <!-- Voir détails -->
+                        <a href="details.php?id=<?= $rec['id'] ?>" 
+                           class="btn-icon btn-view"
+                           title="Voir les détails">
+                            <i class="fas fa-eye"></i>
+                        </a>
+
+                        <!-- Supprimer -->
+                        <a href="delete.php?id=<?= $rec['id'] ?>" 
+                           class="btn-icon btn-supprimer"
+                           title="Supprimer"
+                           onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette réclamation ?');">
+                            <i class="fas fa-trash"></i>
+                        </a>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        <?php endif; ?>
     </div>
+
+    <!-- Pagination -->
+    <?php if ($totalPages > 1): ?>
+    <div class="text-center mt-4">
+        <nav aria-label="Pagination">
+            <ul class="pagination justify-content-center">
+                <li class="page-item <?= $page <= 1 ? 'disabled' : '' ?>">
+                    <a class="page-link" href="?page=<?= max(1, $page-1) ?>" aria-label="Précédent">&laquo;</a>
+                </li>
+                <?php for ($p = 1; $p <= $totalPages; $p++): ?>
+                    <li class="page-item <?= $p === $page ? 'active' : '' ?>">
+                        <a class="page-link" href="?page=<?= $p ?>"><?= $p ?></a>
+                    </li>
+                <?php endfor; ?>
+                <li class="page-item <?= $page >= $totalPages ? 'disabled' : '' ?>">
+                    <a class="page-link" href="?page=<?= min($totalPages, $page+1) ?>" aria-label="Suivant">&raquo;</a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+    <?php endif; ?>
 </div>
+
 </body>
 </html>

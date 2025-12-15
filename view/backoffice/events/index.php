@@ -356,7 +356,7 @@ $revCounts = array_column($stats['revenue'], 'total');
     <!-- Sidebar -->
     <nav id="sidebar">
         <div class="sidebar-header">
-            <h3><img src="assets/img/logo.png" alt="logo" style="height: 40px; margin-right: 10px;" />BACKOFFICE</h3>
+            <h3><img src="assets/img/logo.png" alt="logo" style="height: 120px; margin-right: 10px;" />BACKOFFICE</h3>
         </div>
 
         <ul class="list-unstyled components">

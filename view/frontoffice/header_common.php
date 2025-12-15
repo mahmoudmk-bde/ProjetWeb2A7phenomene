@@ -43,21 +43,24 @@ if (isset($_SESSION['user_id']) && empty($notifications)) {
             ];
         }
 
-        // Réclamations rejetées
-        $rejectedStmt = $pdo->prepare("SELECT id, sujet, statut, updated_at, date_creation
-                                        FROM reclamation
-                                        WHERE utilisateur_id = :uid AND statut = 'Rejeté'
-                                        ORDER BY COALESCE(updated_at, date_creation) DESC
+        // Réclamations rejetées (via response records with [REJECTION] prefix)
+        $rejectedStmt = $pdo->prepare("SELECT r.reclamation_id, r.contenu, r.date_response, rec.sujet
+                                        FROM response r
+                                        JOIN reclamation rec ON rec.id = r.reclamation_id
+                                        WHERE rec.utilisateur_id = :uid AND r.contenu LIKE '[REJECTION]%'
+                                        ORDER BY r.date_response DESC
                                         LIMIT 10");
         $rejectedStmt->execute(['uid' => $uid]);
         foreach ($rejectedStmt->fetchAll(PDO::FETCH_ASSOC) as $n) {
+            // Extract the rejection reason from the response content
+            $rejectionContent = str_replace('[REJECTION] ', '', $n['contenu']);
             $notifications[] = [
                 'title' => 'Réclamation rejetée',
                 'body' => $n['sujet'] ?? 'Réclamation',
-                'text' => 'Votre réclamation a été rejetée. Consultez les détails pour plus d\'informations.',
-                'date' => $n['updated_at'] ?? $n['date_creation'] ?? null,
-                'href' => 'historique_reclamations.php#rec-' . (int)($n['id'] ?? 0),
-                'key' => md5('rejected|' . ($n['id'] ?? '') . '|' . ($n['statut'] ?? '') . '|' . ($n['updated_at'] ?? $n['date_creation'] ?? ''))
+                'text' => $rejectionContent,
+                'date' => $n['date_response'] ?? null,
+                'href' => 'historique_reclamations.php#rec-' . (int)($n['reclamation_id'] ?? 0),
+                'key' => md5('rejected|' . ($n['reclamation_id'] ?? '') . '|' . ($n['date_response'] ?? ''))
             ];
         }
 
@@ -127,7 +130,7 @@ $frontOfficePath = $baseUrl . 'view/frontoffice/';
             <div class="col-lg-12">
                 <nav class="navbar navbar-expand-lg navbar-light">
                     <a class="navbar-brand" href="<?= isset($_SESSION['user_id']) ? $frontOfficePath.'index1.php' : $frontOfficePath.'index.php' ?>">
-                        <img src="<?= $frontOfficePath ?>assets/img/logo.png" alt="logo" style="height: 45px;" />
+                        <img src="<?= $frontOfficePath ?>assets/img/logo.png" alt="logo" style="height: 135px; width: auto;" />
                     </a>
                     <button class="navbar-toggler" type="button" data-toggle="collapse" 
                             data-target="#navbarSupportedContent">

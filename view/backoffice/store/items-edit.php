@@ -23,7 +23,7 @@ $ordersAssetsBase = (defined('BASE_URL') ? BASE_URL : '') . 'view/backoffice/ass
     <nav id="sidebar">
         <div class="sidebar-header">
             <h3>
-                <img src="<?php echo $ordersAssetsBase; ?>img/logo.png" alt="logo" style="height: 40px;" /> 
+                <img src="<?php echo $ordersAssetsBase; ?>img/logo.png" alt="logo" style="height: 120px;" /> 
                 ENGAGE
             </h3>
         </div>

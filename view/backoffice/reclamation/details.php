@@ -5,6 +5,7 @@ session_start();
 $base_dir = str_replace('\\', '/', __DIR__) . '/../../../';
 require_once $base_dir . 'controller/ReclamationController.php';
 require_once $base_dir . 'controller/ResponseController.php';
+require_once $base_dir . 'db_config.php';
 
 if (!isset($_GET['id']) || !$_GET['id']) {
     header('Location: listReclamation.php'); 
@@ -14,10 +15,30 @@ if (!isset($_GET['id']) || !$_GET['id']) {
 $id = intval($_GET['id']);
 $recCtrl = new ReclamationController();
 $respCtrl = new ResponseController();
+
+// Get admin ID
+$adminId = isset($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : 1;
+
 // Handle status update (reject)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'reject') {
-    if ($recCtrl->updateStatus($id, 'Rejeté')) {
-        $_SESSION['success_message'] = 'La réclamation a été rejetée avec succès.';
+    // Update status to 'En cours' (showing it's being processed)
+    if ($recCtrl->updateStatus($id, 'En cours')) {
+        // Create a rejection response notification
+        $rejectionMessage = "Votre réclamation a été rejetée après examen.";
+        if (!empty($_POST['rejection_reason'])) {
+            $rejectionMessage = htmlspecialchars($_POST['rejection_reason']);
+        }
+        
+        $pdo = config::getConnexion();
+        $stmt = $pdo->prepare("INSERT INTO response (reclamation_id, contenu, date_response, admin_id) 
+                               VALUES (:rec_id, :content, NOW(), :admin_id)");
+        $stmt->execute([
+            ':rec_id' => $id,
+            ':content' => '[REJECTION] ' . $rejectionMessage,
+            ':admin_id' => $adminId
+        ]);
+        
+        $_SESSION['success_message'] = 'La réclamation a été rejetée avec succès et une notification a été envoyée à l\'utilisateur.';
         header('Location: details.php?id=' . $id);
         exit;
     } else {
@@ -27,8 +48,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 
 // Handle status update (resolve)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'resolve') {
-    if ($recCtrl->updateStatus($id, 'Résolu')) {
-        $_SESSION['success_message'] = 'La réclamation a été marquée comme résolue.';
+    if ($recCtrl->updateStatus($id, 'Traite')) {
+        $_SESSION['success_message'] = 'La réclamation a été marquée comme traitée.';
         header('Location: details.php?id=' . $id);
         exit;
     } else {
@@ -493,7 +514,7 @@ $responses = $respCtrl->getResponses($id);
                         </li>
                     </ul>
                     
-                    <?php if ($rec['statut'] !== 'Rejeté' && $rec['statut'] !== 'Résolu'): ?>
+                    <?php if ($rec['statut'] !== 'En cours' && $rec['statut'] !== 'Traite'): ?>
                     <div class="status-actions">
                         <form method="POST" style="flex: 1;" onsubmit="return confirm('Êtes-vous sûr de vouloir marquer cette réclamation comme résolue ?');">
                             <input type="hidden" name="action" value="resolve">
@@ -501,10 +522,25 @@ $responses = $respCtrl->getResponses($id);
                                 <i class="fas fa-check"></i> Marquer comme résolue
                             </button>
                         </form>
-                        <form method="POST" style="flex: 1;" onsubmit="return confirm('Êtes-vous sûr de vouloir rejeter cette réclamation ? L\'utilisateur en sera notifié.');">
+                    </div>
+                    
+                    <!-- Reject form with reason -->
+                    <div style="margin-top: 15px;">
+                        <form method="POST" onsubmit="return confirm('Êtes-vous sûr de vouloir rejeter cette réclamation ? L\'utilisateur en sera notifié.');">
                             <input type="hidden" name="action" value="reject">
+                            <div style="margin-bottom: 10px;">
+                                <label for="rejection_reason" style="display: block; margin-bottom: 5px; font-weight: 600; color: var(--text-color);">
+                                    Raison du rejet (optionnel)
+                                </label>
+                                <textarea 
+                                    id="rejection_reason"
+                                    name="rejection_reason" 
+                                    placeholder="Expliquez pourquoi cette réclamation est rejetée..." 
+                                    style="width: 100%; min-height: 80px; padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--secondary-color); color: var(--text-color); font-family: inherit; resize: vertical;">
+                                </textarea>
+                            </div>
                             <button type="submit" class="btn btn-warning" style="width: 100%; justify-content: center;">
-                                <i class="fas fa-times"></i> Rejeter
+                                <i class="fas fa-times"></i> Rejeter la réclamation
                             </button>
                         </form>
                     </div>
