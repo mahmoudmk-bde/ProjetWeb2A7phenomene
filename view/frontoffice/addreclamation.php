@@ -296,75 +296,10 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
             outline: none;
             background: rgba(255,255,255,0.12);
         }
-        .form-group select {
-            width: 100%;
-            border: 2px solid #ff4a57 !important;
-            border-radius: 8px;
-            padding: 12px 15px;
-            font-size: 15px;
-            font-weight: 600;
-            color: white !important;
-            background-color: #2d3142 !important;
-            cursor: pointer;
-        }
-        .form-control {
-            background-color: rgba(255,255,255,0.06);
-            color: #fff;
-        }
-        select.form-control {
+        /* All select styling removed - using inline styles instead */
+        option {
             background-color: #2d3142 !important;
             color: white !important;
-            border: 2px solid #ff4a57 !important;
-            font-size: 14px !important;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
-            padding: 10px 12px !important;
-            line-height: 1.5;
-        }
-        select.form-control option {
-            background-color: #2d3142;
-            color: white;
-            padding: 8px;
-            font-size: 14px;
-        }
-        select.form-control option:checked {
-            background-color: #ff4a57;
-            color: white;
-        }
-        select.form-control:hover {
-            border-color: #ff6b7a !important;
-        }
-        select.form-control:focus {
-            border-color: #ff4a57 !important;
-            box-shadow: 0 0 10px rgba(255, 74, 87, 0.4);
-            outline: none;
-        }
-        .form-group select {
-            width: 100%;
-            border: 2px solid #ff4a57;
-            border-radius: 8px;
-            padding: 12px 15px;
-            font-size: 15px;
-            font-weight: 600;
-            color: white;
-            background-color: #2d3142;
-            cursor: pointer;
-        }
-        .form-group select option {
-            background-color: #2d3142;
-            color: white;
-            padding: 10px;
-        }
-        .form-group select option:checked {
-            background-color: #ff4a57;
-            color: white;
-        }
-        .form-group select:hover {
-            border-color: #ff6b7a;
-        }
-        .form-group select:focus {
-            border-color: #ff4a57;
-            box-shadow: 0 0 10px rgba(255, 74, 87, 0.4);
-            outline: none;
         }
         .form-group input::placeholder,
         .form-group textarea::placeholder {
@@ -419,6 +354,28 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
             color: #ff6b7a;
         }
     </style>
+    <style>
+        /* NUCLEAR OVERRIDE - After all CSS files */
+        select, select.form-control, .form-group select {
+            background-color: #2d3142 !important;
+            color: white !important;
+            border: 2px solid #ff4a57 !important;
+            appearance: auto !important;
+            background-image: none !important;
+            -webkit-appearance: none !important;
+            -moz-appearance: none !important;
+        }
+        
+        option {
+            background-color: #2d3142 !important;
+            color: white !important;
+        }
+        
+        option:checked {
+            background-color: #ff4a57 !important;
+            color: white !important;
+        }
+    </style>
 </head>
 
 <body>
@@ -450,20 +407,20 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
 
                     <div class="form-group">
                         <label for="type_reclamation">Type de réclamation</label>
-                        <select class="form-control" id="type_reclamation" name="type_reclamation" required>
-                            <option value="">Choisissez le type</option>
-                            <option value="mission" <?= (($_POST['type_reclamation'] ?? '') === 'mission') ? 'selected' : '' ?>>Mission</option>
-                            <option value="evenement" <?= (($_POST['type_reclamation'] ?? '') === 'evenement') ? 'selected' : '' ?>>Événement</option>
-                            <option value="partenaire" <?= (($_POST['type_reclamation'] ?? '') === 'partenaire') ? 'selected' : '' ?>>Partenaire</option>
-                            <option value="utilisateur" <?= (($_POST['type_reclamation'] ?? '') === 'utilisateur') ? 'selected' : '' ?>>Utilisateur</option>
-                            <option value="technique" <?= (($_POST['type_reclamation'] ?? '') === 'technique') ? 'selected' : '' ?>>Technique</option>
-                            <option value="autre" <?= (($_POST['type_reclamation'] ?? '') === 'autre') ? 'selected' : '' ?>>Autre</option>
+                        <select class="form-control" id="type_reclamation" name="type_reclamation" required style="width: 100%; border: 2px solid #ff4a57; border-radius: 8px; padding: 12px 15px; font-size: 16px; color: white; background-color: #2d3142; cursor: pointer;">
+                            <option value="" style="background-color: #2d3142; color: white;">Choisissez le type</option>
+                            <option value="mission" style="background-color: #2d3142; color: white;" <?= (($_POST['type_reclamation'] ?? '') === 'mission') ? 'selected' : '' ?>>Mission</option>
+                            <option value="evenement" style="background-color: #2d3142; color: white;" <?= (($_POST['type_reclamation'] ?? '') === 'evenement') ? 'selected' : '' ?>>Événement</option>
+                            <option value="partenaire" style="background-color: #2d3142; color: white;" <?= (($_POST['type_reclamation'] ?? '') === 'partenaire') ? 'selected' : '' ?>>Partenaire</option>
+                            <option value="utilisateur" style="background-color: #2d3142; color: white;" <?= (($_POST['type_reclamation'] ?? '') === 'utilisateur') ? 'selected' : '' ?>>Utilisateur</option>
+                            <option value="technique" style="background-color: #2d3142; color: white;" <?= (($_POST['type_reclamation'] ?? '') === 'technique') ? 'selected' : '' ?>>Technique</option>
+                            <option value="autre" style="background-color: #2d3142; color: white;" <?= (($_POST['type_reclamation'] ?? '') === 'autre') ? 'selected' : '' ?>>Autre</option>
                         </select>
                     </div>
 
                     <div class="form-group conditional-field d-none" data-block="mission">
                         <label for="mission_id">Mission concernée</label>
-                        <select class="form-control" id="mission_id" name="mission_id">
+                        <select class="form-control" id="mission_id" name="mission_id" style="width: 100%; border: 2px solid #ff4a57; border-radius: 8px; padding: 12px 15px; font-size: 16px; color: white; background-color: #2d3142; cursor: pointer;">
                             <option value="">Sélectionnez une mission</option>
                             <?php foreach ($missions as $mission): ?>
                                 <option value="<?= htmlspecialchars($mission['id']) ?>" <?= (($_POST['mission_id'] ?? '') == $mission['id']) ? 'selected' : '' ?>>
@@ -475,7 +432,7 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
 
                     <div class="form-group conditional-field d-none" data-block="evenement">
                         <label for="evenement_id">Événement concerné</label>
-                        <select class="form-control" id="evenement_id" name="evenement_id">
+                        <select class="form-control" id="evenement_id" name="evenement_id" style="width: 100%; border: 2px solid #ff4a57; border-radius: 8px; padding: 12px 15px; font-size: 16px; color: white; background-color: #2d3142; cursor: pointer;">
                             <option value="">Sélectionnez un événement</option>
                             <?php foreach ($evenements as $event): ?>
                                 <option value="<?= htmlspecialchars($event['id_evenement']) ?>" <?= (($_POST['evenement_id'] ?? '') == $event['id_evenement']) ? 'selected' : '' ?>>
@@ -487,7 +444,7 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
 
                     <div class="form-group conditional-field d-none" data-block="partenaire">
                         <label for="partenaire_id">Partenaire concerné</label>
-                        <select class="form-control" id="partenaire_id" name="partenaire_id">
+                        <select class="form-control" id="partenaire_id" name="partenaire_id" style="width: 100%; border: 2px solid #ff4a57; border-radius: 8px; padding: 12px 15px; font-size: 16px; color: white; background-color: #2d3142; cursor: pointer;">
                             <option value="">Sélectionnez un partenaire</option>
                             <?php foreach ($partenaires as $p): ?>
                                 <option value="<?= htmlspecialchars($p['id']) ?>" <?= (($_POST['partenaire_id'] ?? '') == $p['id']) ? 'selected' : '' ?>>
@@ -499,7 +456,7 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
 
                     <div class="form-group conditional-field d-none" data-block="utilisateur">
                         <label for="utilisateur_cible_id">Utilisateur concerné</label>
-                        <select class="form-control" id="utilisateur_cible_id" name="utilisateur_cible_id">
+                        <select class="form-control" id="utilisateur_cible_id" name="utilisateur_cible_id" style="width: 100%; border: 2px solid #ff4a57; border-radius: 8px; padding: 12px 15px; font-size: 16px; color: white; background-color: #2d3142; cursor: pointer;">
                             <option value="">Sélectionnez un utilisateur</option>
                             <?php foreach ($utilisateurs as $u): ?>
                                 <option value="<?= htmlspecialchars($u['id_util']) ?>" <?= (($_POST['utilisateur_cible_id'] ?? '') == $u['id_util']) ? 'selected' : '' ?>>
@@ -771,8 +728,8 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
                                     sujetInput.value = 'Réclamation - ' + (data.category_label || 'Automatique');
                                 }
 
-                                // Auto-select type if user hasn’t chosen
-                                if (!locks.type && typeSelect && !typeSelect.value) {
+                                // Auto-select type - always re-run on content change
+                                if (typeSelect) {
                                     const textForMatch = subject + ' ' + description;
                                     const mapped = mapCategoryToType(data.category || '');
                                     const best = bestEntityMatch(textForMatch);
@@ -780,12 +737,27 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
                                     typeSelect.value = chosenType;
                                     typeSelect.dispatchEvent(new Event('change'));
 
-                                    // Auto-pick relevant entity if match found, else fallback to first
-                                    if (chosenType === 'mission') autoSelectByMatch(missionSelect, 'mission', textForMatch);
-                                    if (chosenType === 'evenement') autoSelectByMatch(eventSelect, 'event', textForMatch);
-                                    if (chosenType === 'partenaire') autoSelectByMatch(partnerSelect, 'partner', textForMatch);
-                                    if (chosenType === 'utilisateur') autoSelectByMatch(userSelect, 'user', textForMatch);
-                                    if (chosenType === 'technique') fillTechnique(description);
+                                    // Auto-pick relevant entity - always update on content change
+                                    if (chosenType === 'mission') {
+                                        missionSelect.value = '';
+                                        autoSelectByMatch(missionSelect, 'mission', textForMatch);
+                                    }
+                                    if (chosenType === 'evenement') {
+                                        eventSelect.value = '';
+                                        autoSelectByMatch(eventSelect, 'event', textForMatch);
+                                    }
+                                    if (chosenType === 'partenaire') {
+                                        partnerSelect.value = '';
+                                        autoSelectByMatch(partnerSelect, 'partner', textForMatch);
+                                    }
+                                    if (chosenType === 'utilisateur') {
+                                        userSelect.value = '';
+                                        autoSelectByMatch(userSelect, 'user', textForMatch);
+                                    }
+                                    if (chosenType === 'technique') {
+                                        techniqueInput.value = '';
+                                        fillTechnique(description);
+                                    }
                                 }
                             })
                             .catch(error => {
