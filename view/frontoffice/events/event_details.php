@@ -841,7 +841,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_feedback'])) {
                                     <form method="POST">
                                         <!-- Système de rating -->
                                         <div class="rating-input mb-3">
-                                            <label style="color: rgba(255,255,255,0.8); margin-bottom: 10px; display: block;">Votre note :</label>
+                                            <label style="color: rgba(255,255,255,0.8); margin-bottom: 10px; display: block; font-weight: 600;">Votre note :</label>
                                             <div class="star-rating">
                                                 <?php for ($i = 5; $i >= 1; $i--): ?>
                                                     <input type="radio" id="star<?= $i ?>" name="rating" value="<?= $i ?>" 
@@ -855,12 +855,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_feedback'])) {
 
                                         <!-- Commentaire -->
                                         <div class="mb-3">
-                                            <label for="commentaire" style="color: rgba(255,255,255,0.8); margin-bottom: 10px; display: block;">
+                                            <label for="commentaire" style="color: rgba(255,255,255,0.8); margin-bottom: 10px; display: block; font-weight: 600;">
                                                 Votre commentaire (optionnel) :
                                             </label>
                                             <textarea name="commentaire" id="commentaire" rows="4" 
                                                       placeholder="Partagez votre expérience avec cet événement..."
-                                                      class="form-control" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3); color: white; resize: none;"><?= $userFeedback ? htmlspecialchars($userFeedback['commentaire']) : '' ?></textarea>
+                                                      class="form-control" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.25); color: white; resize: none; padding: 12px; font-family: inherit;"><?= $userFeedback ? htmlspecialchars($userFeedback['commentaire']) : '' ?></textarea>
                                         </div>
 
                                         <button type="submit" name="submit_feedback" class="btn-enhanced">
@@ -884,7 +884,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_feedback'])) {
                                     <h5 style="color: #ff4a57; margin-bottom: 20px;">Avis des participants (<?= $totalFeedbacks ?>)</h5>
                                     
                                     <?php foreach ($feedbacks as $feedback): ?>
-                                        <div class="feedback-item">
+                                        <div class="feedback-item" style="background: rgba(255,255,255,0.03); padding: 20px; border-radius: 10px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.1);">
                                             <div class="d-flex justify-content-between align-items-start mb-2">
                                                 <div>
                                                     <strong style="color: white;"><?= htmlspecialchars($feedback['prenom'] . ' ' . $feedback['nom']) ?></strong>
