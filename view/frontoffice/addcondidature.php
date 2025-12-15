@@ -316,6 +316,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             text-align: center;
         }
     </style>
+    <style>
+        /* NUCLEAR OVERRIDE - Select elements fix */
+        select, select.form-control, .form-group select {
+            background-color: #2d3142 !important;
+            color: white !important;
+            border: 2px solid #ff4a57 !important;
+            appearance: auto !important;
+            background-image: none !important;
+            -webkit-appearance: none !important;
+            -moz-appearance: none !important;
+        }
+        
+        option {
+            background-color: #2d3142 !important;
+            color: white !important;
+        }
+        
+        option:checked {
+            background-color: #ff4a57 !important;
+            color: white !important;
+        }
+    </style>
 </head>
 
 <body>
