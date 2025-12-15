@@ -1,5 +1,4 @@
 <?php
-session_start();   // 🔥 AJOUT OBLIGATOIRE
 
 require_once __DIR__ . '/../../../controller/missioncontroller.php';
 $missionC = new missioncontroller();

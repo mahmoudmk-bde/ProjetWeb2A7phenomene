@@ -15,6 +15,21 @@ if (!isset($_SESSION['user_id']) || !isset($_SESSION['user_type']) || strtolower
 $base_dir = __DIR__ . '/../../';
 require_once $base_dir . 'controller/missioncontroller.php';
 require_once $base_dir . 'controller/condidaturecontroller.php';
+require_once $base_dir . 'controller/utilisateurcontroller.php';
+
+// Récupération des infos utilisateur pour le header
+$utilisateurC = new UtilisateurController();
+$currentUser = $utilisateurC->showUtilisateur($_SESSION['user_id']);
+$userImg = $currentUser['img'] ?? null;
+$userName = $currentUser['prenom'] . ' ' . $currentUser['nom'];
+
+// Chemin de l'image (attention aux chemins relatifs depuis backoffice vers frontoffice)
+$imgPath = '../frontoffice/assets/uploads/profiles/' . $userImg;
+$defaultImg = '../frontoffice/assets/img/user_default.png'; // Image par défaut si besoin
+if (!file_exists(__DIR__ . '/../../view/frontoffice/assets/uploads/profiles/' . $userImg) || empty($userImg)) {
+    // Si l'image n'existe pas physiquement ou est vide, on peut mettre une image par défaut ou gérer l'affichage d'une icône
+    $userImg = null; 
+}
 
 
 // Chargement conditionnel du feedbackcontroller
@@ -57,6 +72,48 @@ $condC = new condidaturecontroller();
 
 $missions = $missionC->getMissions();
 $candidatures = $condC->getAllCondidatures();
+
+/* --- STATS UTILISATEURS (From admin.php) --- */
+$utilisateurs = $utilisateurC->listUtilisateurs();
+$allUsers = [];
+if ($utilisateurs) {
+    $allUsers = $utilisateurs->fetchAll(PDO::FETCH_ASSOC);
+}
+// Stats Variables
+$totalUsers = count($allUsers);
+$totalAdmins = 0;
+$totalClients = 0;
+$ageDistribution = ['18-25' => 0, '26-35' => 0, '36-50' => 0, '50+' => 0];
+$lastUser = null;
+
+if ($totalUsers > 0) {
+    $lastUser = $allUsers[count($allUsers) - 1]; // Assuming last added is last in list
+    foreach ($allUsers as $user) {
+        // By Type
+        if (strtolower($user['typee']) === 'admin') {
+            $totalAdmins++;
+        } else {
+            $totalClients++;
+        }
+        // By Age
+        if (!empty($user['dt_naiss'])) {
+            try {
+                $dob = new DateTime($user['dt_naiss']);
+                $now = new DateTime();
+                $age = $now->diff($dob)->y;
+                if ($age >= 18 && $age <= 25) $ageDistribution['18-25']++;
+                elseif ($age >= 26 && $age <= 35) $ageDistribution['26-35']++;
+                elseif ($age >= 36 && $age <= 50) $ageDistribution['36-50']++;
+                elseif ($age > 50) $ageDistribution['50+']++;
+            } catch (Exception $e) {}
+        }
+    }
+}
+$usersLabels = ['Administrateurs', 'Utilisateurs'];
+$usersValues = [$totalAdmins, $totalClients];
+$ageLabels = array_keys($ageDistribution);
+$ageValues = array_values($ageDistribution);
+/* ------------------------------------------- */
 
 /* Résumé rapide */
 $totalMissions = count($missions);
@@ -123,6 +180,12 @@ ksort($feedbackRatings);
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
         #contentFrame {
             width: 100%;
             display: none;
@@ -324,6 +387,95 @@ ksort($feedbackRatings);
                 min-height: 100px;
             }
         }
+
+        /* User Menu Styles */
+        .user-menu {
+            position: relative;
+            display: inline-block;
+            margin-right: 20px;
+        }
+        
+        .user-dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            min-width: 200px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            border-radius: 8px;
+            z-index: 1000;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+        
+        .user-dropdown.show {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .user-dropdown a {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            text-decoration: none;
+            color: #333;
+            border-bottom: 1px solid #f0f0f0;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+        
+        .user-dropdown a:hover {
+            background: #f8f9fa;
+            color: var(--primary-color);
+            padding-left: 25px;
+        }
+        
+        .user-dropdown a:last-child {
+            border-bottom: none;
+            color: #dc3545;
+        }
+        
+        .user-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: white;
+            cursor: pointer;
+            padding: 5px 10px;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .user-wrapper:hover {
+            background: rgba(255,255,255,0.1);
+        }
+        
+        .user-name {
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid rgba(255,255,255,0.2);
+        }
+        
+        .user-avatar i {
+            color: white;
+            font-size: 18px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
 
@@ -332,14 +484,21 @@ ksort($feedbackRatings);
 <!-- SIDEBAR -->
 <nav id="sidebar">
     <div class="sidebar-header">
-        <h3><img src="../img/logo.png" style="height:40px;"> ENGAGE Admin</h3>
+        <h3><img src="assets/img/logo.png" style="height:40px;"> ENGAGE Admin</h3>
     </div>
 
     <ul class="list-unstyled components">
         <li class="active">
             <a href="#" onclick="showDashboard()"><i class="fas fa-home"></i> Tableau de bord</a>
         </li>
-
+        <li>
+            <a href="#gestionUtil" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
+                <i class="fas fa-cogs"></i> Gestion des utilisateurs
+            </a>
+            <ul class="collapse list-unstyled" id="gestionUtil">
+                <li><a href="#" onclick="openPage('utilisateur/listeutil.php')">📌 utilisateur</a></li>
+            </ul>
+        </li>
         <li>
             <a href="#gestionMenu" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
                 <i class="fas fa-cogs"></i> Gestion des missions
@@ -385,6 +544,29 @@ ksort($feedbackRatings);
         <button id="sidebarCollapse" class="btn btn-dark">
             <i class="fas fa-bars"></i>
         </button>
+
+        <!-- User Menu -->
+        <div class="user-menu ml-auto">
+            <div class="user-wrapper">
+                <span class="user-name"><?= htmlspecialchars($userName) ?></span>
+                <div class="user-avatar">
+                    <?php if ($userImg): ?>
+                        <img src="<?= htmlspecialchars($imgPath) ?>" alt="Profil" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+                    <?php else: ?>
+                        <i class="fas fa-user"></i>
+                    <?php endif; ?>
+                </div>
+            </div>
+            <div class="user-dropdown">
+                <a href="profile.php" onclick="openPage('../frontoffice/profile.php')">
+                    <i class="fas fa-user me-2"></i>Mon Profil
+                </a>
+               
+                <a href="connexion.php">
+                    <i class="fas fa-sign-out-alt me-2"></i>Déconnexion
+                </a>
+            </div>
+        </div>
     </nav>
 
     <div class="container mt-4">
@@ -397,7 +579,57 @@ ksort($feedbackRatings);
         <!-- DASHBOARD NORMAL -->
         <div id="dashboardSection">
 
-            <h2 class="text-white mb-4 section-title">📊 Tableau de Bord</h2>
+            <!-- SECTION DASHBOARD UTILISATEURS (Moved to Top) -->
+            <h2 class="text-white mb-4 section-title">👥 Gestion des Utilisateurs</h2>
+
+            <div class="dashboard-stats">
+                <div class="stat-card-balanced">
+                    <div class="stat-icon-balanced"><i class="fas fa-users"></i></div>
+                    <span class="stat-number-balanced"><?= $totalUsers ?></span>
+                    <span class="stat-label-balanced">Utilisateurs Totaux</span>
+                </div>
+                <div class="stat-card-balanced">
+                    <div class="stat-icon-balanced"><i class="fas fa-user-shield"></i></div>
+                    <span class="stat-number-balanced"><?= $totalAdmins ?></span>
+                    <span class="stat-label-balanced">Administrateurs</span>
+                </div>
+                <div class="stat-card-balanced">
+                    <div class="stat-icon-balanced"><i class="fas fa-user"></i></div>
+                    <span class="stat-number-balanced"><?= $totalClients ?></span>
+                    <span class="stat-label-balanced">Clients / Membres</span>
+                </div>
+                <div class="stat-card-balanced">
+                     <div class="stat-icon-balanced"><i class="fas fa-clock"></i></div>
+                     <span class="stat-number-balanced">NEW</span>
+                     <span class="stat-label-balanced">Dernier inscrit</span>
+                </div>
+            </div>
+
+            <div class="row">
+                 <div class="col-lg-6 mb-4">
+                    <div class="chart-container-balanced">
+                        <div class="chart-title-balanced">📊 Répartition Types</div>
+                        <div class="chart-wrapper-balanced">
+                            <canvas id="userTypeChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6 mb-4">
+                    <div class="chart-container-balanced">
+                        <div class="chart-title-balanced">🥧 Tranches d'âge</div>
+                        <div class="chart-wrapper-balanced">
+                            <canvas id="ageChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TABLEAU UTILISATEURS -->
+             
+
+            <hr style="border-color:#ff0066; margin: 40px 0;">
+
+            <h2 class="text-white mb-4 section-title">📊 Tableau de Bord Missions</h2>
 
             <!-- STATISTIQUES BIEN PROPORTIONNÉES -->
             <div class="dashboard-stats">
@@ -526,8 +758,76 @@ window.dashboardData = {
     expLabels: <?= json_encode(array_keys($expLevels)) ?>,
     expValues: <?= json_encode(array_values($expLevels)) ?>,
     feedbackLabels: <?= json_encode(array_keys($feedbackRatings)) ?>,
-    feedbackValues: <?= json_encode(array_values($feedbackRatings)) ?>
+    feedbackValues: <?= json_encode(array_values($feedbackRatings)) ?>,
+    // Users Data
+    usersLabels: <?= json_encode($usersLabels) ?>,
+    usersValues: <?= json_encode($usersValues) ?>,
+    ageLabels: <?= json_encode($ageLabels) ?>,
+    ageValues: <?= json_encode($ageValues) ?>
 };
+</script>
+
+<script>
+// Init User Charts
+document.addEventListener("DOMContentLoaded", function () {
+    // 1. User Type
+    const ctxType = document.getElementById('userTypeChart');
+    if (ctxType) {
+        new Chart(ctxType, {
+            type: 'doughnut',
+            data: {
+                labels: window.dashboardData.usersLabels,
+                datasets: [{
+                    data: window.dashboardData.usersValues,
+                    backgroundColor: ['#ff4a57', '#3498db'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom', labels: { color: '#fff' } }
+                }
+            }
+        });
+    }
+
+    // 2. Age
+    const ctxAge = document.getElementById('ageChart');
+    if (ctxAge) {
+        new Chart(ctxAge, {
+            type: 'bar',
+            data: {
+                labels: window.dashboardData.ageLabels,
+                datasets: [{
+                    label: "Utilisateurs",
+                    data: window.dashboardData.ageValues,
+                    backgroundColor: '#FFCE56',
+                    borderRadius: 5
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { 
+                        beginAtZero: true, 
+                        ticks: { color: '#fff', stepSize: 1 },
+                        grid: { color: '#2d3047' } 
+                    },
+                    x: {
+                        ticks: { color: '#fff' },
+                        grid: { display: false }
+                    }
+                },
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+    }
+});
 </script>
 
 <!-- JS pour ONE PAGE -->
@@ -549,6 +849,23 @@ function showDashboard() {
 // Initialisation au chargement
 document.addEventListener('DOMContentLoaded', function() {
     showDashboard();
+
+    // User Menu Toggle
+    const userWrapper = document.querySelector('.user-wrapper');
+    const userDropdown = document.querySelector('.user-dropdown');
+    
+    if (userWrapper && userDropdown) {
+        userWrapper.addEventListener('click', function(e) {
+            e.stopPropagation();
+            userDropdown.classList.toggle('show');
+        });
+
+        document.addEventListener('click', function(e) {
+            if (!userWrapper.contains(e.target)) {
+                userDropdown.classList.remove('show');
+            }
+        });
+    }
 });
 </script>
 
