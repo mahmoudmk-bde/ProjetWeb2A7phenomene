@@ -61,7 +61,8 @@ if ($_POST) {
         }
     }
     
-    if ($eventModel->create($titre, $description, $date_evenement, $heure_evenement, $duree_minutes, $lieu, $image, $id_organisation, $type_evenement, $prix)) {
+    $created_by = isset($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : null;
+    if ($eventModel->create($titre, $description, $date_evenement, $heure_evenement, $duree_minutes, $lieu, $image, $id_organisation, $type_evenement, $prix, $created_by)) {
         $_SESSION['success'] = "🎉 Événement créé avec succès !";
         header('Location: evenement.php');
         exit;

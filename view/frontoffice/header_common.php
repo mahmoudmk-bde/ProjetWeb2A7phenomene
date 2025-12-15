@@ -17,6 +17,19 @@ $notifications = $notifications ?? [];
 $notificationCount = $notificationCount ?? 0;
 $notificationTitle = 'Notifications';
 
+// Determine Base URL for consistent paths - auto-detect if not defined
+if (!defined('BASE_URL')) {
+    $scriptPath = dirname($_SERVER['SCRIPT_NAME']);
+    $baseUrl = rtrim(str_replace('\\', '/', $scriptPath), '/');
+    // Strip any nested /view/frontoffice/... segments to get project root
+    $baseUrl = preg_replace('#/view/frontoffice(?:/.*)?$#i', '', $baseUrl);
+    $baseUrl = rtrim($baseUrl, '/') . '/';
+} else {
+    $baseUrl = BASE_URL;
+}
+// Ensure we point to view/frontoffice for links
+$frontOfficePath = $baseUrl . 'view/frontoffice/';
+
 // Fallback: si aucune notification fournie par la page, charger un minimum ici
 if (isset($_SESSION['user_id']) && empty($notifications)) {
     try {
@@ -38,7 +51,7 @@ if (isset($_SESSION['user_id']) && empty($notifications)) {
                 'body' => $n['sujet'] ?? 'Réclamation',
                 'text' => $n['contenu'] ?? '',
                 'date' => $n['date_response'] ?? null,
-                'href' => 'historique_reclamations.php#rec-' . (int)($n['reclamation_id'] ?? 0),
+                'href' => $frontOfficePath . 'historique_reclamations.php#rec-' . (int)($n['reclamation_id'] ?? 0),
                 'key' => md5(($n['sujet'] ?? '') . '|' . ($n['contenu'] ?? '') . '|' . ($n['date_response'] ?? '') . '|' . ($n['reclamation_id'] ?? ''))
             ];
         }
@@ -59,7 +72,7 @@ if (isset($_SESSION['user_id']) && empty($notifications)) {
                 'body' => $n['sujet'] ?? 'Réclamation',
                 'text' => $rejectionContent,
                 'date' => $n['date_response'] ?? null,
-                'href' => 'historique_reclamations.php#rec-' . (int)($n['reclamation_id'] ?? 0),
+                'href' => $frontOfficePath . 'historique_reclamations.php#rec-' . (int)($n['reclamation_id'] ?? 0),
                 'key' => md5('rejected|' . ($n['reclamation_id'] ?? '') . '|' . ($n['date_response'] ?? ''))
             ];
         }
@@ -78,7 +91,7 @@ if (isset($_SESSION['user_id']) && empty($notifications)) {
                 'body' => $n['titre'] ?? 'Mission',
                 'text' => 'Vous avez été accepté(e) dans cette mission.',
                 'date' => $n['date_candidature'] ?? null,
-                'href' => 'missiondetails.php?id=' . (int)($n['mission_id'] ?? 0),
+                'href' => $frontOfficePath . 'missiondetails.php?id=' . (int)($n['mission_id'] ?? 0),
                 'key' => md5('cand|' . ($n['mission_id'] ?? '') . '|' . ($n['date_candidature'] ?? '') . '|' . ($n['statut'] ?? ''))
             ];
         }
@@ -91,7 +104,7 @@ if (isset($_SESSION['user_id']) && empty($notifications)) {
                 'body' => $m['titre'] ?? 'Mission',
                 'text' => $m['description'] ?? '',
                 'date' => $m['date_creation'] ?? null,
-                'href' => 'missiondetails.php?id=' . (int)($m['id'] ?? 0),
+                'href' => $frontOfficePath . 'missiondetails.php?id=' . (int)($m['id'] ?? 0),
                 'key' => md5('mission|' . ($m['id'] ?? '') . '|' . ($m['date_creation'] ?? '') . '|' . ($m['titre'] ?? ''))
             ];
         }
@@ -109,7 +122,7 @@ if (isset($_SESSION['user_id']) && empty($notifications)) {
                     'body' => $evt['titre'] ?? 'Événement',
                     'text' => 'Un nouvel événement: ' . ($evt['titre'] ?? 'Événement') . ' le ' . ($evt['date_evenement'] ?? ''),
                     'date' => $evt['created_at'] ?? null,
-                    'href' => 'events/event.php',
+                    'href' => $frontOfficePath . 'events/event_details.php?id=' . (int)($evt['id_evenement'] ?? 0),
                     'key' => md5('event|' . ($evt['id_evenement'] ?? '') . '|' . ($evt['created_at'] ?? ''))
                 ];
             }
@@ -130,19 +143,6 @@ if (isset($_SESSION['user_id']) && empty($notifications)) {
 }
 
 $headerShowUserMenu = isset($headerShowUserMenu) ? (bool)$headerShowUserMenu : false;
-
-// Determine Base URL for consistent paths - auto-detect if not defined
-if (!defined('BASE_URL')) {
-    $scriptPath = dirname($_SERVER['SCRIPT_NAME']);
-    $baseUrl = rtrim(str_replace('\\', '/', $scriptPath), '/');
-    // Strip any nested /view/frontoffice/... segments to get project root
-    $baseUrl = preg_replace('#/view/frontoffice(?:/.*)?$#i', '', $baseUrl);
-    $baseUrl = rtrim($baseUrl, '/') . '/';
-} else {
-    $baseUrl = BASE_URL;
-}
-// Ensure we point to view/frontoffice for links
-$frontOfficePath = $baseUrl . 'view/frontoffice/';
 ?>
 <!-- Header -->
 <header class="main_menu single_page_menu">

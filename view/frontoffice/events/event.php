@@ -367,18 +367,14 @@ function normalize_asset_path($img) {
                         ];
                         $image = $images[$theme] ?? "default.png";
                         $imagePath = "../assets/img/" . $image;
+                        $cardImg = !empty($ev['image']) ? $img : $imagePath;
                         $eventId = $ev['id_evenement'] ?? 0;
                     ?>
                     <div class="col-lg-4 col-md-6 event-item" data-theme="<?= htmlspecialchars($theme) ?>" data-type="<?= htmlspecialchars($type) ?>" data-date="<?= $ev['date_evenement'] ?? '' ?>">
                         <div class="game-card store-card">
                             <!-- Image de l'événement -->
                             <div class="game-card-img">
-                                <img src="<?= $imagePath ?>" alt="<?= htmlspecialchars($theme) ?>">
-                                
-                                <!-- Badge de catégorie/type -->
-                                <div class="game-badge">
-                                    <?= ucfirst($theme) ?>
-                                </div>
+                                <img src="<?= htmlspecialchars($cardImg) ?>" alt="<?= htmlspecialchars($theme) ?>">
                                 
                                 <!-- Badge de prix/gratuit -->
                                 <?php if ($isPaid): ?>

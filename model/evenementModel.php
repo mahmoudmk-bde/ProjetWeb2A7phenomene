@@ -8,13 +8,20 @@ class EvenementModel {
         $this->conn = config::getConnexion();
     }
 
-    public function create($titre, $description, $date_evenement, $heure_evenement, $duree_minutes, $lieu, $image, $id_organisation, $type_evenement = 'gratuit', $prix = null) {
-        $query = "INSERT INTO evenement (titre, description, date_evenement, heure_evenement, duree_minutes, lieu, image, id_organisation, type_evenement, prix) 
-                  VALUES (:titre, :description, :date_evenement, :heure_evenement, :duree_minutes, :lieu, :image, :id_organisation, :type_evenement, :prix)";
+    public function create($titre, $description, $date_evenement, $heure_evenement, $duree_minutes, $lieu, $image, $id_organisation, $type_evenement = 'gratuit', $prix = null, $created_by = null) {
+        $includeCreatedBy = $this->columnExists('evenement', 'created_by');
+
+        if ($includeCreatedBy) {
+            $query = "INSERT INTO evenement (titre, description, date_evenement, heure_evenement, duree_minutes, lieu, image, id_organisation, type_evenement, prix, created_by) 
+                      VALUES (:titre, :description, :date_evenement, :heure_evenement, :duree_minutes, :lieu, :image, :id_organisation, :type_evenement, :prix, :created_by)";
+        } else {
+            $query = "INSERT INTO evenement (titre, description, date_evenement, heure_evenement, duree_minutes, lieu, image, id_organisation, type_evenement, prix) 
+                      VALUES (:titre, :description, :date_evenement, :heure_evenement, :duree_minutes, :lieu, :image, :id_organisation, :type_evenement, :prix)";
+        }
         
         $stmt = $this->conn->prepare($query);
         
-        return $stmt->execute([
+        $params = [
             ':titre' => $titre,
             ':description' => $description,
             ':date_evenement' => $date_evenement,
@@ -25,7 +32,17 @@ class EvenementModel {
             ':id_organisation' => $id_organisation,
             ':type_evenement' => $type_evenement,
             ':prix' => $prix
-        ]);
+        ];
+
+        if ($includeCreatedBy) {
+            // If no valid creator provided, try to use session user id; else fallback to 1
+            if ($created_by === null) {
+                $created_by = isset($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : 1;
+            }
+            $params[':created_by'] = (int)$created_by;
+        }
+
+        return $stmt->execute($params);
     }
 
     public function getAllEvents() {

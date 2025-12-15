@@ -3,13 +3,15 @@ require_once __DIR__ . '/../../../model/evenementModel.php';
 require_once __DIR__ . '/../../../model/participationModel.php';
 require_once __DIR__ . '/../../../db_config.php';
 require_once __DIR__ . '/../../../controller/feedbackcontroller.php';
+require_once __DIR__ . '/../../../controller/EventFeedbackController.php';
 require_once __DIR__ . '/../../../controller/LikeController.php';
 
 if (session_status() === PHP_SESSION_NONE) session_start();
 
 $eventModel = new EvenementModel();
 $participationModel = new ParticipationModel();
-$feedbackcontroller = new feedbackcontroller();
+$feedbackcontroller = new feedbackcontroller(); // missions
+$eventFeedback = new EventFeedbackController(); // events
 $likeController = new LikeController();
 
 $themeMap = [
@@ -76,16 +78,16 @@ if (isset($event)) {
     $price = isset($event['prix']) ? (float)$event['prix'] : 0;
     $isPaidEvent = ($event['type_evenement'] === 'payant') && $price > 0;
     
-    // Feedback & Rating System
-    $feedbackStats = $feedbackcontroller->getFeedbackStats($event_id);
+    // Feedback & Rating System (events isolated from missions)
+    $feedbackStats = $eventFeedback->getFeedbackStats($event_id);
     $averageRating = $feedbackStats['avg_rating'] ? round($feedbackStats['avg_rating'], 1) : 0;
     $totalFeedbacks = $feedbackStats['total_feedbacks'] ?? 0;
-    $feedbacks = $feedbackcontroller->getFeedbacksByMission($event_id);
+    $feedbacks = $eventFeedback->getFeedbacksByEvent($event_id);
     
     // Check if user already gave feedback
     $userFeedback = null;
     if (isset($_SESSION['user_id'])) {
-        $userFeedback = $feedbackcontroller->getUserFeedback($event_id, $_SESSION['user_id']);
+        $userFeedback = $eventFeedback->getUserFeedback($event_id, $_SESSION['user_id']);
     }
     
     // Like system
@@ -305,7 +307,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_feedback'])) {
         $commentaire = trim($_POST['commentaire']);
         
         if ($rating >= 1 && $rating <= 5) {
-            if ($feedbackcontroller->addFeedback($event_id, $_SESSION['user_id'], $rating, $commentaire)) {
+            if ($eventFeedback->addFeedback($event_id, $_SESSION['user_id'], $rating, $commentaire)) {
                 header("Location: event_details.php?id=$event_id&success=1");
                 exit();
             } else {
