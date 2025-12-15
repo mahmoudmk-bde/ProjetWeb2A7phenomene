@@ -166,6 +166,10 @@ $headerShowUserMenu = isset($headerShowUserMenu) ? (bool)$headerShowUserMenu : f
                             <li class="nav-item"><a class="nav-link" href="<?= $frontOfficePath ?>store.php?controller=Partenaire&action=index">Partenaires</a></li>
                             
                             <li class="nav-item"><a class="nav-link" href="<?= $frontOfficePath ?>events/event.php">Événements</a></li>
+                            <li class="nav-item">
+  <a class="nav-link nav-heart" href="<?= $frontOfficePath ?>wishlist.php">❤️</a>
+</li>
+                            <li class="nav-item"><a class="nav-link" href="<?= $frontOfficePath ?>cart.php">🛒</a></li>
                             <?php if (isset($_SESSION['user_id'])): ?>
                             <li class="nav-item notification-item">
                                 <a class="nav-link notification-bell" href="#" id="notificationBell">
