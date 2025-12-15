@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once "../../controller/ReclamationController.php";
+require_once "../../controller/ReclamationClassifier.php";
 require_once "../../controller/missioncontroller.php";
 
 $success_message = '';
@@ -81,6 +82,14 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
         $descriptionWithContext = $contextString . "\n\n" . trim($description);
         $sujetDecorated = '[' . ucfirst($type) . '] ' . $sujet;
 
+        // 🤖 AI CLASSIFICATION - Smart Auto-Detection
+        $classification = ReclamationClassifier::classify($sujetDecorated, $descriptionWithContext);
+        
+        // Allow manual override if provided
+        $finalPriority = !empty($_POST['priority_override']) ? $_POST['priority_override'] : $classification['priority_label'];
+        $finalCategory = $classification['category'];
+        $finalDepartment = $classification['department'];
+
         $utilisateur_id = $_SESSION['user_id'];
         $product_id = null;
 
@@ -91,12 +100,14 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
             "Non traite",
             $utilisateur_id,
             $product_id,
-            "Moyenne"
+            $finalPriority,
+            $finalCategory,
+            $finalDepartment
         );
 
         $ctrl = new ReclamationController();
         $ctrl->addReclamation($rec);
-        $success_message = "Réclamation ajoutée avec succès !";
+        $success_message = "Réclamation ajoutée avec succès ! <br><small>🤖 Classifiée automatiquement : <b>" . $classification['category_label'] . "</b> | Priorité: <b>" . $classification['priority_label'] . "</b> | Département: <b>" . $classification['department'] . "</b></small>";
     } catch (Exception $e) {
         $error_message = "Erreur : " . $e->getMessage();
     }
@@ -275,12 +286,89 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
             padding: 12px 15px;
             font-size: 15px;
             transition: all 0.3s ease;
+            background: rgba(255,255,255,0.06);
+            color: #fff;
         }
         .form-group input:focus,
         .form-group textarea:focus {
             border-color: #ff4a57;
             box-shadow: 0 0 0 0.2rem rgba(255, 74, 87, 0.1);
             outline: none;
+            background: rgba(255,255,255,0.12);
+        }
+        .form-group select {
+            width: 100%;
+            border: 2px solid #ff4a57 !important;
+            border-radius: 8px;
+            padding: 12px 15px;
+            font-size: 15px;
+            font-weight: 600;
+            color: white !important;
+            background-color: #2d3142 !important;
+            cursor: pointer;
+        }
+        .form-control {
+            background-color: rgba(255,255,255,0.06);
+            color: #fff;
+        }
+        select.form-control {
+            background-color: #2d3142 !important;
+            color: white !important;
+            border: 2px solid #ff4a57 !important;
+            font-size: 14px !important;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+            padding: 10px 12px !important;
+            line-height: 1.5;
+        }
+        select.form-control option {
+            background-color: #2d3142;
+            color: white;
+            padding: 8px;
+            font-size: 14px;
+        }
+        select.form-control option:checked {
+            background-color: #ff4a57;
+            color: white;
+        }
+        select.form-control:hover {
+            border-color: #ff6b7a !important;
+        }
+        select.form-control:focus {
+            border-color: #ff4a57 !important;
+            box-shadow: 0 0 10px rgba(255, 74, 87, 0.4);
+            outline: none;
+        }
+        .form-group select {
+            width: 100%;
+            border: 2px solid #ff4a57;
+            border-radius: 8px;
+            padding: 12px 15px;
+            font-size: 15px;
+            font-weight: 600;
+            color: white;
+            background-color: #2d3142;
+            cursor: pointer;
+        }
+        .form-group select option {
+            background-color: #2d3142;
+            color: white;
+            padding: 10px;
+        }
+        .form-group select option:checked {
+            background-color: #ff4a57;
+            color: white;
+        }
+        .form-group select:hover {
+            border-color: #ff6b7a;
+        }
+        .form-group select:focus {
+            border-color: #ff4a57;
+            box-shadow: 0 0 10px rgba(255, 74, 87, 0.4);
+            outline: none;
+        }
+        .form-group input::placeholder,
+        .form-group textarea::placeholder {
+            color: rgba(255,255,255,0.7);
         }
         .form-group textarea {
             resize: vertical;
@@ -344,12 +432,7 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
                 </div>
 
                 <?php if ($success_message): ?>
-                    <div class="alert alert-success" role="alert">
-                        <i class="fas fa-check-circle"></i> <?= htmlspecialchars($success_message) ?>
-                    </div>
-                <?php endif; ?>
 
-                <?php if ($error_message): ?>
                     <div class="alert alert-danger" role="alert">
                         <i class="fas fa-exclamation-circle"></i> <?= htmlspecialchars($error_message) ?>
                     </div>
@@ -357,6 +440,14 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
 
                 <!-- Formulaire direct de réclamation -->
                 <form id="reclamationForm" method="POST" action="" novalidate>
+                    <!-- Description first so AI can auto-suggest the rest -->
+                    <div class="form-group">
+                        <label for="description">Description de la réclamation</label>
+                        <textarea class="form-control" id="description" name="description" 
+                                  placeholder="Décrivez en détail votre réclamation..." aria-describedby="descriptionHelp"><?= htmlspecialchars($_POST['description'] ?? '') ?></textarea>
+                        <div class="invalid-feedback" id="descriptionHelp"></div>
+                    </div>
+
                     <div class="form-group">
                         <label for="type_reclamation">Type de réclamation</label>
                         <select class="form-control" id="type_reclamation" name="type_reclamation" required>
@@ -438,11 +529,32 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
                         <div class="invalid-feedback" id="emailHelp"></div>
                     </div>
 
-                    <div class="form-group">
-                        <label for="description">Description de la réclamation</label>
-                        <textarea class="form-control" id="description" name="description" 
-                                  placeholder="Décrivez en détail votre réclamation..." aria-describedby="descriptionHelp"><?= htmlspecialchars($_POST['description'] ?? '') ?></textarea>
-                        <div class="invalid-feedback" id="descriptionHelp"></div>
+                    <!-- 🤖 AI Classification Preview -->
+                    <div id="ai-classification-preview" style="display: none; background: linear-gradient(135deg, rgba(74, 144, 226, 0.1) 0%, rgba(80, 227, 194, 0.1) 100%); border: 2px solid rgba(74, 144, 226, 0.3); border-radius: 12px; padding: 20px; margin-bottom: 25px;">
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+                            <i class="fas fa-robot" style="font-size: 24px; color: #4a90e2;"></i>
+                            <h5 style="margin: 0; color: #fff; font-weight: 600;">Classification Automatique</h5>
+                        </div>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
+                            <div style="background: rgba(255,255,255,0.05); padding: 12px; border-radius: 8px;">
+                                <div style="color: rgba(255,255,255,0.7); font-size: 12px; margin-bottom: 5px;">Catégorie</div>
+                                <div id="ai-category" style="color: #4a90e2; font-weight: 600; font-size: 15px;">-</div>
+                            </div>
+                            <div style="background: rgba(255,255,255,0.05); padding: 12px; border-radius: 8px;">
+                                <div style="color: rgba(255,255,255,0.7); font-size: 12px; margin-bottom: 5px;">Priorité</div>
+                                <div id="ai-priority" style="color: #50e3c2; font-weight: 600; font-size: 15px;">-</div>
+                            </div>
+                            <div style="background: rgba(255,255,255,0.05); padding: 12px; border-radius: 8px;">
+                                <div style="color: rgba(255,255,255,0.7); font-size: 12px; margin-bottom: 5px;">Département</div>
+                                <div id="ai-department" style="color: #ff6b9d; font-weight: 600; font-size: 15px;">-</div>
+                            </div>
+                        </div>
+                        <div style="margin-top: 12px; display: flex; align-items: center; gap: 8px;">
+                            <div style="flex: 1; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden;">
+                                <div id="ai-confidence-bar" style="height: 100%; background: linear-gradient(90deg, #4a90e2 0%, #50e3c2 100%); width: 0%; transition: width 0.5s ease;"></div>
+                            </div>
+                            <small id="ai-confidence-text" style="color: rgba(255,255,255,0.7); font-size: 12px;">Confiance: 0%</small>
+                        </div>
                     </div>
 
                     <button type="submit" class="btn_submit">
@@ -476,6 +588,217 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
     <script src="assets/js/slick.min.js"></script>
     <script src="assets/js/custom.js"></script>
     <script>
+                // 🤖 Live AI Classification
+                (function() {
+                    const sujetInput = document.getElementById('sujet');
+                    const descriptionInput = document.getElementById('description');
+                    const previewBox = document.getElementById('ai-classification-preview');
+                    const categoryEl = document.getElementById('ai-category');
+                    const priorityEl = document.getElementById('ai-priority');
+                    const departmentEl = document.getElementById('ai-department');
+                    const confidenceBar = document.getElementById('ai-confidence-bar');
+                    const confidenceText = document.getElementById('ai-confidence-text');
+                    const typeSelect = document.getElementById('type_reclamation');
+                    const missionSelect = document.getElementById('mission_id');
+                    const eventSelect = document.getElementById('evenement_id');
+                    const partnerSelect = document.getElementById('partenaire_id');
+                    const userSelect = document.getElementById('utilisateur_cible_id');
+                    const techniqueInput = document.getElementById('technique_detail');
+
+                    // Track if user changed type to avoid overwriting
+                    const locks = {
+                        type: false,
+                        mission: false,
+                        event: false,
+                        partner: false,
+                        user: false
+                    };
+                    if (typeSelect) typeSelect.addEventListener('change', () => { locks.type = true; });
+                    if (missionSelect) missionSelect.addEventListener('change', () => { locks.mission = true; });
+                    if (eventSelect) eventSelect.addEventListener('change', () => { locks.event = true; });
+                    if (partnerSelect) partnerSelect.addEventListener('change', () => { locks.partner = true; });
+                    if (userSelect) userSelect.addEventListener('change', () => { locks.user = true; });
+                    if (techniqueInput) techniqueInput.addEventListener('input', () => { locks.technique = true; });
+
+                    function normalize(str) {
+                        return (str || '').toString().toLowerCase();
+                    }
+
+                    function getTokens(text) {
+                        return normalize(text).split(/[^a-z0-9éèêàùûôç]+/i).filter(w => w.length >= 3);
+                    }
+
+                    function autoSelectByMatch(selectEl, lockKey, text) {
+                        if (!selectEl || locks[lockKey] || selectEl.value) return;
+                        const tokens = getTokens(text);
+                        if (!tokens.length) {
+                            autoSelectFirst(selectEl, lockKey);
+                            return;
+                        }
+                        const options = Array.from(selectEl.options).slice(1); // skip placeholder
+                        let best = null;
+                        let bestScore = 0;
+                        options.forEach(opt => {
+                            const label = normalize(opt.text);
+                            let score = 0;
+                            tokens.forEach(t => { if (label.includes(t)) score += t.length; });
+                            if (score > bestScore) { bestScore = score; best = opt; }
+                        });
+                        if (best) {
+                            selectEl.value = best.value;
+                            selectEl.dispatchEvent(new Event('change'));
+                            locks[lockKey] = true;
+                        } else {
+                            autoSelectFirst(selectEl, lockKey);
+                        }
+                    }
+
+                    function bestEntityMatch(text) {
+                        const buckets = [];
+                        const tokens = getTokens(text);
+                        if (!tokens.length) return null;
+
+                        function scoreSelect(selectEl, typeKey) {
+                            if (!selectEl) return;
+                            const options = Array.from(selectEl.options).slice(1);
+                            let best = null, bestScore = 0;
+                            options.forEach(opt => {
+                                const label = normalize(opt.text);
+                                let score = 0;
+                                tokens.forEach(t => { if (label.includes(t)) score += t.length; });
+                                if (score > bestScore) { bestScore = score; best = opt; }
+                            });
+                            if (bestScore > 0 && best) {
+                                buckets.push({ type: typeKey, option: best, score: bestScore });
+                            }
+                        }
+
+                        scoreSelect(missionSelect, 'mission');
+                        scoreSelect(eventSelect, 'evenement');
+                        scoreSelect(partnerSelect, 'partenaire');
+                        scoreSelect(userSelect, 'utilisateur');
+
+                        if (!buckets.length) return null;
+                        buckets.sort((a, b) => b.score - a.score);
+                        return buckets[0];
+                    }
+
+                    function fillTechnique(text) {
+                        if (!techniqueInput || locks.technique) return;
+                        const snippet = text.trim();
+                        if (!snippet) return;
+                        techniqueInput.value = snippet.slice(0, 180);
+                        locks.technique = true;
+                    }
+
+                    function mapCategoryToType(category) {
+                        switch (category) {
+                            case 'mission': return 'mission';
+                            case 'event': return 'evenement';
+                            case 'technical': return 'technique';
+                            case 'payment': return 'technique';
+                            case 'delivery': return 'technique';
+                            case 'partner': return 'partenaire';
+                            case 'hr': return 'utilisateur';
+                            case 'store': return 'partenaire';
+                            default: return 'autre';
+                        }
+                    }
+
+                    function autoSelectFirst(selectEl, lockKey) {
+                        if (!selectEl || locks[lockKey]) return;
+                        if (selectEl.value) return;
+                        if (selectEl.options.length > 1) {
+                            selectEl.selectedIndex = 1; // first real option
+                            selectEl.dispatchEvent(new Event('change'));
+                        }
+                    }
+            
+                    let classifyTimeout;
+            
+                    function classifyText() {
+                        const subject = sujetInput.value.trim();
+                        const description = descriptionInput.value.trim();
+                
+                        if (!subject && !description) {
+                            previewBox.style.display = 'none';
+                            return;
+                        }
+                
+                        clearTimeout(classifyTimeout);
+                        classifyTimeout = setTimeout(() => {
+                            fetch('ajax_classify_reclamation.php', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/x-www-form-urlencoded',
+                                },
+                                body: new URLSearchParams({
+                                    subject: subject,
+                                    description: description
+                                })
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.error) {
+                                    console.error('Classification error:', data.error);
+                                    return;
+                                }
+                        
+                                // Show preview
+                                previewBox.style.display = 'block';
+                        
+                                // Update values with animation
+                                categoryEl.textContent = data.category_label || '-';
+                                priorityEl.textContent = data.priority_label || '-';
+                                departmentEl.textContent = data.department || '-';
+                        
+                                // Update confidence
+                                const confidence = Math.round(data.confidence || 0);
+                                confidenceBar.style.width = confidence + '%';
+                                confidenceText.textContent = 'Confiance: ' + confidence + '%';
+                        
+                                // Color priority based on level
+                                const priorityColors = {
+                                    'Urgent': '#ff4757',
+                                    'Élevée': '#ffa502',
+                                    'Moyenne': '#50e3c2',
+                                    'Basse': '#a4b0be'
+                                };
+                                priorityEl.style.color = priorityColors[data.priority_label] || '#50e3c2';
+
+                                // Auto-fill subject if empty
+                                if (!subject && sujetInput) {
+                                    sujetInput.value = 'Réclamation - ' + (data.category_label || 'Automatique');
+                                }
+
+                                // Auto-select type if user hasn’t chosen
+                                if (!locks.type && typeSelect && !typeSelect.value) {
+                                    const textForMatch = subject + ' ' + description;
+                                    const mapped = mapCategoryToType(data.category || '');
+                                    const best = bestEntityMatch(textForMatch);
+                                    const chosenType = best ? best.type : mapped;
+                                    typeSelect.value = chosenType;
+                                    typeSelect.dispatchEvent(new Event('change'));
+
+                                    // Auto-pick relevant entity if match found, else fallback to first
+                                    if (chosenType === 'mission') autoSelectByMatch(missionSelect, 'mission', textForMatch);
+                                    if (chosenType === 'evenement') autoSelectByMatch(eventSelect, 'event', textForMatch);
+                                    if (chosenType === 'partenaire') autoSelectByMatch(partnerSelect, 'partner', textForMatch);
+                                    if (chosenType === 'utilisateur') autoSelectByMatch(userSelect, 'user', textForMatch);
+                                    if (chosenType === 'technique') fillTechnique(description);
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Fetch error:', error);
+                            });
+                        }, 500); // Debounce 500ms
+                    }
+            
+                    // Attach listeners
+                    if (sujetInput) sujetInput.addEventListener('input', classifyText);
+                    if (descriptionInput) descriptionInput.addEventListener('input', classifyText);
+                })();
+
         (function() {
             const typeSelect = document.getElementById('type_reclamation');
             const blocks = document.querySelectorAll('.conditional-field');
