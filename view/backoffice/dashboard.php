@@ -69,9 +69,17 @@ try {
 
 $missionC = new missioncontroller();
 $condC = new condidaturecontroller();
+$eventModel = new EvenementModel();
+$participationModel = new ParticipationModel();
 
 $missions = $missionC->getMissions();
 $candidatures = $condC->getAllCondidatures();
+$events = $eventModel->getAllEvents();
+foreach ($events as &$ev) {
+    // Utilise la méthode du modèle d'événement pour compter
+    $ev['participants_count'] = $eventModel->countParticipants($ev['id_evenement']);
+}
+unset($ev);
 
 /* --- STATS UTILISATEURS (From admin.php) --- */
 $utilisateurs = $utilisateurC->listUtilisateurs();
@@ -180,10 +188,11 @@ ksort($feedbackRatings);
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
-        .topbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        /* Ensure sidebar is scrollable independently */
+        nav#sidebar {
+            height: 100vh;
+            max-height: 100vh;
+            overflow-y: auto !important;
         }
 
         #contentFrame {
@@ -388,93 +397,53 @@ ksort($feedbackRatings);
             }
         }
 
-        /* User Menu Styles */
-        .user-menu {
-            position: relative;
-            display: inline-block;
-            margin-right: 20px;
+        /* Event cards */
+        .event-grid .event-card {
+            background: var(--accent-color);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 18px;
+            height: 100%;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+            transition: all 0.2s ease;
         }
-        
-        .user-dropdown {
-            display: none;
-            position: absolute;
-            top: 100%;
-            right: 0;
-            background: white;
-            min-width: 200px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-            border-radius: 8px;
-            z-index: 1000;
-            margin-top: 10px;
-            overflow: hidden;
+        .event-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 14px 28px rgba(0,0,0,0.32);
         }
-        
-        .user-dropdown.show {
-            display: block;
-            animation: fadeIn 0.3s ease;
+        .event-card h5 {
+            color: var(--text-color);
+            font-weight: 700;
         }
-        
-        .user-dropdown a {
-            display: flex;
-            align-items: center;
-            padding: 12px 20px;
-            text-decoration: none;
-            color: #333;
-            border-bottom: 1px solid #f0f0f0;
-            transition: all 0.3s ease;
-            font-size: 14px;
+        .event-meta {
+            color: var(--text-muted);
+            font-size: 0.95rem;
         }
-        
-        .user-dropdown a:hover {
-            background: #f8f9fa;
-            color: var(--primary-color);
-            padding-left: 25px;
-        }
-        
-        .user-dropdown a:last-child {
-            border-bottom: none;
-            color: #dc3545;
-        }
-        
-        .user-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            color: white;
-            cursor: pointer;
-            padding: 5px 10px;
-            border-radius: 20px;
-            transition: all 0.3s ease;
-        }
-        
-        .user-wrapper:hover {
-            background: rgba(255,255,255,0.1);
-        }
-        
-        .user-name {
+        .event-badge {
+            background: rgba(255,74,87,0.15);
+            color: #ff6b6b;
+            border: 1px solid rgba(255,74,87,0.4);
+            padding: 6px 12px;
+            border-radius: 14px;
             font-weight: 600;
-            font-size: 14px;
         }
-        
-        .user-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: var(--primary-color);
+        .event-actions .btn {
+            border-radius: 10px;
+            font-weight: 600;
+        }
+        .event-stats {
             display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 2px solid rgba(255,255,255,0.2);
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 10px;
         }
-        
-        .user-avatar i {
-            color: white;
-            font-size: 18px;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
+        .pill {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border-color);
+            padding: 8px 12px;
+            border-radius: 12px;
+            color: var(--text-color);
+            font-size: 0.9rem;
         }
     </style>
 </head>
@@ -520,6 +489,18 @@ ksort($feedbackRatings);
             <ul class="collapse list-unstyled" id="gestionReclamationMenu">
                 <li><a href="#" onclick="openPage('reclamation/listReclamation.php')">⚠️ Réclamations</a></li>
                 <li><a href="#" onclick="openPage('reclamation/statistiques.php')">📊 Statistiques</a></li>
+            </ul>
+        </li>
+
+        <!-- Gestion des événements -->
+        <li>
+            <a href="#gestionEventsMenu" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
+                <i class="fas fa-calendar-alt"></i> Gestion des événements
+            </a>
+            <ul class="collapse list-unstyled" id="gestionEventsMenu">
+                <li><a href="#" onclick="openPage('events/evenement.php')">🎟️ Événements</a></li>
+                <li><a href="#" onclick="openPage('events/createevent.php')">➕ Créer événement</a></li>
+                <li><a href="#" onclick="openPage('events/participation_history.php')">👥 Participations</a></li>
             </ul>
         </li>
 
@@ -695,6 +676,64 @@ ksort($feedbackRatings);
             </div>
 
             <hr style="border-color:#ff0066; margin: 25px 0;">
+
+            <h2 class="text-white mb-3 section-title d-flex align-items-center justify-content-between">
+                🎉 Gestion des Événements
+                <button class="btn btn-primary" onclick="openPage('events/createevent.php')">
+                    <i class="fas fa-plus me-2"></i>Nouvel événement
+                </button>
+            </h2>
+
+            <div class="row event-grid">
+                <?php if (!empty($events)): ?>
+                    <?php foreach ($events as $ev): ?>
+                        <div class="col-lg-6 mb-4">
+                            <div class="event-card">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h5 class="mb-0"><?= htmlspecialchars($ev['titre']) ?></h5>
+                                    <span class="event-badge">
+                                        <?= ($ev['type_evenement'] ?? 'gratuit') === 'payant' ? 'Payant' : 'Gratuit' ?>
+                                    </span>
+                                </div>
+                                <div class="event-meta mb-2">
+                                    <i class="far fa-calendar-alt mr-2"></i><?= !empty($ev['date_evenement']) ? date('d/m/Y', strtotime($ev['date_evenement'])) : '--/--/----' ?>
+                                    <span class="ml-3"><i class="far fa-clock mr-2"></i><?= isset($ev['heure_evenement']) && $ev['heure_evenement'] !== null ? substr($ev['heure_evenement'], 0, 5) : '--:--' ?></span>
+                                </div>
+                                <div class="event-meta mb-2">
+                                    <i class="fas fa-map-marker-alt mr-2"></i><?= htmlspecialchars($ev['lieu'] ?? 'Lieu non défini') ?>
+                                </div>
+                                <p class="event-meta mb-3" style="color: var(--text-color); opacity: 0.9;">
+                                    <?= htmlspecialchars(mb_strimwidth($ev['description'] ?? 'Pas de description', 0, 140, '...')) ?>
+                                </p>
+                                <div class="event-stats">
+                                    <div class="pill"><i class="fas fa-users mr-2"></i><?= $ev['participants_count'] ?? 0 ?> participants</div>
+                                    <div class="pill"><i class="fas fa-eye mr-2"></i><?= $ev['vues'] ?? 0 ?> vues</div>
+                                    <?php if (($ev['type_evenement'] ?? 'gratuit') === 'payant'): ?>
+                                        <div class="pill"><i class="fas fa-ticket-alt mr-2"></i><?= isset($ev['prix']) ? number_format((float)$ev['prix'], 2) . ' TND' : 'Tarif' ?></div>
+                                    <?php else: ?>
+                                        <div class="pill"><i class="fas fa-ticket-alt mr-2"></i>Gratuit</div>
+                                    <?php endif; ?>
+                                </div>
+                                <div class="event-actions d-flex flex-wrap mt-3" style="gap: 8px;">
+                                    <button class="btn btn-sm btn-info" onclick="openPage('events/editevent.php?id=<?= $ev['id_evenement'] ?>')">
+                                        <i class="fas fa-edit mr-1"></i>Modifier
+                                    </button>
+                                    <button class="btn btn-sm btn-secondary" onclick="openPage('events/participation.php?event_id=<?= $ev['id_evenement'] ?>')">
+                                        <i class="fas fa-users mr-1"></i>Participations
+                                    </button>
+                                    <button class="btn btn-sm btn-danger" onclick="if(confirm('Supprimer cet événement ?')) { openPage('events/evenement.php?action=delete&id=<?= $ev['id_evenement'] ?>'); }">
+                                        <i class="fas fa-trash mr-1"></i>Supprimer
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <div class="col-12">
+                        <div class="alert alert-info">Aucun événement pour le moment.</div>
+                    </div>
+                <?php endif; ?>
+            </div>
 
             <h2 id="stats" class="text-white mb-4 section-title">📈 Statistiques Détaillées</h2>
 
