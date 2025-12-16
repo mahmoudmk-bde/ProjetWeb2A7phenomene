@@ -166,6 +166,8 @@ $headerShowUserMenu = isset($headerShowUserMenu) ? (bool) $headerShowUserMenu : 
                             </li>
                             <li class="nav-item"><a class="nav-link"
                                     href="<?= $frontOfficePath ?>missionlist.php">Missions</a></li>
+                            <li class="nav-item"><a class="nav-link"href="<?= $frontOfficePath ?>education.php">Education</a></li>
+                            <li class="nav-item">
                             <li class="nav-item"><a class="nav-link"
                                     href="<?= $frontOfficePath ?>store.php?controller=Store&action=index">Store</a></li>
                             <li class="nav-item"><a class="nav-link"
@@ -175,6 +177,7 @@ $headerShowUserMenu = isset($headerShowUserMenu) ? (bool) $headerShowUserMenu : 
                             <li class="nav-item"><a class="nav-link"
                                     href="<?= $frontOfficePath ?>events/event.php">Événements</a></li>
                             <li class="nav-item">
+                            
                                 <a class="nav-link" href="?controller=Store&action=wishlist" title="Liste d'envies">
                                     <i class="far fa-heart"></i>
                                 </a>
@@ -300,6 +303,9 @@ $headerShowUserMenu = isset($headerShowUserMenu) ? (bool) $headerShowUserMenu : 
                                 </a>
                                 <a href="<?= $frontOfficePath ?>historique_reclamations.php">
                                     <i class="fas fa-history me-2"></i>Historique
+                                </a>
+                                <a href="<?= $frontOfficePath ?>historiaue_user.php">
+                                    <i class="fas fa-history me-2"></i>Historique Quiz
                                 </a>
                                 <a href="<?= $frontOfficePath ?>events/my_events.php">
                                     <i class="fas fa-calendar-check me-2"></i>Mes événements
