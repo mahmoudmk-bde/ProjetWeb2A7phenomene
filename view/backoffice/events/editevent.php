@@ -101,18 +101,18 @@ if (!$eventData) {
 
         <div class="form-group">
             <label>Titre</label>
-            <input type="text" name="titre" value="<?= htmlspecialchars($eventData['titre']) ?>" required>
+            <input type="text" name="titre" value="<?= htmlspecialchars($eventData['titre']) ?>">
         </div>
 
         <div class="form-group">
             <label>Description</label>
-            <textarea name="description" rows="5" required><?= htmlspecialchars($eventData['description']) ?></textarea>
+            <textarea name="description" rows="5"><?= htmlspecialchars($eventData['description']) ?></textarea>
         </div>
 
         <div class="form-row-2">
             <div class="form-group">
                 <label>Date de l'événement</label>
-                <input type="date" name="date_evenement" value="<?= htmlspecialchars($eventData['date_evenement']) ?>" required>
+                <input type="date" name="date_evenement" value="<?= htmlspecialchars($eventData['date_evenement']) ?>">
             </div>
 
             <div class="form-group">
@@ -129,12 +129,12 @@ if (!$eventData) {
         <div class="form-row-2">
             <div class="form-group">
                 <label>Lieu</label>
-                <input type="text" name="lieu" value="<?= htmlspecialchars($eventData['lieu']) ?>" required>
+                <input type="text" name="lieu" value="<?= htmlspecialchars($eventData['lieu']) ?>">
             </div>
 
             <div class="form-group">
                 <label>Thème</label>
-                <select name="id_organisation" required>
+                <select name="id_organisation">
                     <option value="">Sélectionnez un thème</option>
                     <option value="1" <?= $eventData['id_organisation'] == 1 ? 'selected' : '' ?>>Sport</option>
                     <option value="2" <?= $eventData['id_organisation'] == 2 ? 'selected' : '' ?>>Éducation</option>
@@ -148,7 +148,7 @@ if (!$eventData) {
 
             <div class="form-group">
                 <label>Type</label>
-                <select name="type_evenement" id="type_evenement" required>
+                <select name="type_evenement" id="type_evenement">
                     <option value="gratuit" <?= (isset($eventData['type_evenement']) && $eventData['type_evenement'] === 'gratuit') ? 'selected' : '' ?>>Gratuit</option>
                     <option value="payant" <?= (isset($eventData['type_evenement']) && $eventData['type_evenement'] === 'payant') ? 'selected' : '' ?>>Payant</option>
                 </select>

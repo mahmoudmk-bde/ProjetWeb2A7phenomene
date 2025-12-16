@@ -95,7 +95,7 @@ $ordersAssetsBase = (defined('BASE_URL') ? BASE_URL : '') . 'view/backoffice/ass
                                     <i class="fas fa-building"></i> Nom du Partenaire <span class="text-danger">*</span>
                                 </label>
                                 <input type="text" class="form-control" id="nom" name="nom" 
-                                       value="<?= htmlspecialchars($old['nom'] ?? '') ?>" data-validate="required">
+                                       value="<?= htmlspecialchars($old['nom'] ?? '') ?>">
                             </div>
 
                             <!-- Email -->
@@ -104,7 +104,7 @@ $ordersAssetsBase = (defined('BASE_URL') ? BASE_URL : '') . 'view/backoffice/ass
                                     <i class="fas fa-envelope"></i> Email <span class="text-danger">*</span>
                                 </label>
                                 <input type="email" class="form-control" id="email" name="email" 
-                                       value="<?= htmlspecialchars($old['email'] ?? '') ?>" data-validate="required">
+                                       value="<?= htmlspecialchars($old['email'] ?? '') ?>">
                             </div>
 
                             <!-- Type -->
@@ -112,7 +112,7 @@ $ordersAssetsBase = (defined('BASE_URL') ? BASE_URL : '') . 'view/backoffice/ass
                                 <label for="type" class="form-label">
                                     <i class="fas fa-tag"></i> Type <span class="text-danger">*</span>
                                 </label>
-                                <select class="form-control" id="type" name="type" data-validate="required">
+                                <select class="form-control" id="type" name="type">
                                     <option value="">Sélectionner un type</option>
                                     <option value="sponsor" <?= ($old['type'] ?? '') === 'sponsor' ? 'selected' : '' ?>>Sponsor</option>
                                     <option value="testeur" <?= ($old['type'] ?? '') === 'testeur' ? 'selected' : '' ?>>Testeur</option>

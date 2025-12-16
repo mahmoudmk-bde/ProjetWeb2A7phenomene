@@ -311,7 +311,7 @@ $headerShowUserMenu = isset($headerShowUserMenu) ? (bool) $headerShowUserMenu : 
                         </div>
                     <?php else: ?>
                         <a href="<?= $frontOfficePath ?>connexion.php" class="btn_1 d-none d-sm-block">Se connecter</a>
-                        <a href="<?= $frontOfficePath ?>inscription.php" class="btn_1 d-none d-sm-block">S'INSCRIREx</a>
+                        <a href="<?= $frontOfficePath ?>inscription.php" class="btn_1 d-none d-sm-block">S'Inscrire</a>
                     <?php endif; ?>
                 </nav>
             </div>

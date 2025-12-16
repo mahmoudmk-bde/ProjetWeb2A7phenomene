@@ -381,7 +381,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['statut'])) {
                         <label for="statut">
                             <i class="fas fa-toggle-on"></i> Statut de la candidature
                         </label>
-                        <select name="statut" id="statut" class="form-control" required>
+                        <select name="statut" id="statut" class="form-control">
                             <option value="en_attente" <?= ($c['statut'] == 'en_attente' || $c['statut'] == 'en attente') ? 'selected' : '' ?>>
                                 ⏳ En attente
                             </option>

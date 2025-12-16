@@ -793,7 +793,7 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
                     requiredByType[type].forEach(id => {
                         const field = document.getElementById(id);
                         if (field) {
-                            field.required = (type === current);
+                            // field.required = (type === current);
                         }
                     });
                 });

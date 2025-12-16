@@ -514,12 +514,12 @@ $revCounts = array_column($stats['revenue'], 'total');
                                     </div>
                                     <div class="form-group col-md-8">
                                         <label for="mailSubject">Sujet de l'email :</label>
-                                        <input type="text" class="form-control" id="mailSubject" name="subject" placeholder="Important : Mise à jour de l'événement..." style="background-color: var(--secondary-color); color: var(--text-color); border-color: #2d3047;" required>
+                                        <input type="text" class="form-control" id="mailSubject" name="subject" placeholder="Important : Mise à jour de l'événement..." style="background-color: var(--secondary-color); color: var(--text-color); border-color: #2d3047;">
                                     </div>
                                 </div>
                                 <div class="form-group">
                                     <label for="mailMessage">Message :</label>
-                                    <textarea class="form-control" id="mailMessage" name="message" rows="4" style="background-color: var(--secondary-color); color: var(--text-color); border-color: #2d3047;" required></textarea>
+                                    <textarea class="form-control" id="mailMessage" name="message" rows="4" style="background-color: var(--secondary-color); color: var(--text-color); border-color: #2d3047;"></textarea>
                                 </div>
                                 <button type="submit" class="btn btn-primary">
                                     <i class="fas fa-paper-plane"></i> Envoyer le message

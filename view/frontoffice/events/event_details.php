@@ -845,7 +845,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_feedback'])) {
                                             <div class="star-rating">
                                                 <?php for ($i = 5; $i >= 1; $i--): ?>
                                                     <input type="radio" id="star<?= $i ?>" name="rating" value="<?= $i ?>" 
-                                                           <?= $userFeedback && $userFeedback['rating'] == $i ? 'checked' : '' ?> required>
+                                                           <?= $userFeedback && $userFeedback['rating'] == $i ? 'checked' : '' ?> >
                                                     <label for="star<?= $i ?>" title="<?= $i ?> étoiles">
                                                         <i class="fas fa-star"></i>
                                                     </label>
@@ -1107,15 +1107,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_feedback'])) {
                         <input type="hidden" name="action" value="guest_participate">
                         <div class="form-group">
                             <label for="modal_prenom">Prénom <span class="text-danger">*</span></label>
-                            <input type="text" name="prenom" id="modal_prenom" class="form-control" placeholder="Prénom" required>
+                            <input type="text" name="prenom" id="modal_prenom" class="form-control" placeholder="Prénom">
                         </div>
                         <div class="form-group">
                             <label for="modal_nom">Nom <span class="text-danger">*</span></label>
-                            <input type="text" name="nom" id="modal_nom" class="form-control" placeholder="Nom" required>
+                            <input type="text" name="nom" id="modal_nom" class="form-control" placeholder="Nom">
                         </div>
                         <div class="form-group">
                             <label for="modal_email">Email <span class="text-danger">*</span></label>
-                            <input type="email" name="email" id="modal_email" class="form-control" placeholder="email@example.com" required>
+                            <input type="email" name="email" id="modal_email" class="form-control" placeholder="email@example.com">
                         </div>
                         <div class="text-right">
                             <button type="submit" class="btn-buy-now">Envoyer</button>
@@ -1143,33 +1143,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_feedback'])) {
                         <div id="payment-errors" class="alert alert-danger d-none"></div>
                         <div class="form-group">
                             <label for="pay_prenom">Prénom</label>
-                            <input type="text" name="prenom" id="pay_prenom" class="form-control" required>
+                            <input type="text" name="prenom" id="pay_prenom" class="form-control">
                         </div>
                         <div class="form-group">
                             <label for="pay_nom">Nom</label>
-                            <input type="text" name="nom" id="pay_nom" class="form-control" required>
+                            <input type="text" name="nom" id="pay_nom" class="form-control">
                         </div>
                         <div class="form-group">
                             <label for="pay_email">Email</label>
-                            <input type="email" name="email" id="pay_email" class="form-control" required>
+                            <input type="email" name="email" id="pay_email" class="form-control">
                         </div>
                         <div class="row">
                             <div class="col-md-8">
                                 <div class="form-group">
                                     <label for="card_number">Numéro de carte</label>
-                                    <input type="text" name="card_number" id="card_number" class="form-control" placeholder="1234 5678 9012 3456" required>
+                                    <input type="text" name="card_number" id="card_number" class="form-control" placeholder="1234 5678 9012 3456">
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label for="card_exp">Expiration</label>
-                                    <input type="text" name="card_exp" id="card_exp" class="form-control" placeholder="MM/AA" required>
+                                    <input type="text" name="card_exp" id="card_exp" class="form-control" placeholder="MM/AA">
                                 </div>
                             </div>
                         </div>
                         <div class="form-group">
                             <label for="card_cvv">CVV</label>
-                            <input type="text" name="card_cvv" id="card_cvv" class="form-control" placeholder="123" required>
+                            <input type="text" name="card_cvv" id="card_cvv" class="form-control" placeholder="123">
                         </div>
                         <div class="alert alert-secondary" id="paymentSummary">
                             Total: <strong><?= number_format(max(1, $price), 2) ?> TND</strong>

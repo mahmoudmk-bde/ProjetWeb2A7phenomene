@@ -105,7 +105,7 @@ $ordersAssetsBase = (defined('BASE_URL') ? BASE_URL : '') . 'view/backoffice/ass
                                        id="nom" 
                                        name="nom" 
                                        value="<?= htmlspecialchars($this->storeItem->nom) ?>" 
-                                       data-validate="required">
+                                       >
                             </div>
 
                             <!-- Partenaire -->
@@ -113,7 +113,7 @@ $ordersAssetsBase = (defined('BASE_URL') ? BASE_URL : '') . 'view/backoffice/ass
                                 <label for="partenaire_id" class="form-label">
                                     <i class="fas fa-handshake"></i> Partenaire <span class="text-danger">*</span>
                                 </label>
-                                <select class="form-control" id="partenaire_id" name="partenaire_id" data-validate="required">
+                                <select class="form-control" id="partenaire_id" name="partenaire_id">
                                     <option value="">Sélectionner un partenaire</option>
                                     <?php foreach ($partenaires as $partenaire): ?>
                                         <option value="<?= $partenaire['id'] ?>" 
@@ -137,7 +137,7 @@ $ordersAssetsBase = (defined('BASE_URL') ? BASE_URL : '') . 'view/backoffice/ass
                                            value="<?= htmlspecialchars($this->storeItem->prix) ?>" 
                                            step="0.01" 
                                            min="0" 
-                                           data-validate="required">
+                                           >
                                     <div class="input-group-append">
                                         <span class="input-group-text">DT</span>
                                     </div>
@@ -154,8 +154,7 @@ $ordersAssetsBase = (defined('BASE_URL') ? BASE_URL : '') . 'view/backoffice/ass
                                        id="stock" 
                                        name="stock" 
                                        value="<?= htmlspecialchars($this->storeItem->stock) ?>" 
-                                       min="0" 
-                                       data-validate="required">
+                                       >
                             </div>
 
                             <!-- Âge minimum -->
@@ -177,7 +176,7 @@ $ordersAssetsBase = (defined('BASE_URL') ? BASE_URL : '') . 'view/backoffice/ass
                                 <label for="categorie" class="form-label">
                                     <i class="fas fa-tag"></i> Catégorie <span class="text-danger">*</span>
                                 </label>
-                                <select class="form-control" id="categorie" name="categorie" data-validate="required">
+                                <select class="form-control" id="categorie" name="categorie">
                                     <option value="">Sélectionner une catégorie</option>
                                     <option value="action" <?= $this->storeItem->categorie === 'action' ? 'selected' : '' ?>>Action</option>
                                     <option value="aventure" <?= $this->storeItem->categorie === 'aventure' ? 'selected' : '' ?>>Aventure</option>

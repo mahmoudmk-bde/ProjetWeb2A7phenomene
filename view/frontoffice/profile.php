@@ -25,7 +25,6 @@ if (!$image_exists) {
     $image_path = "assets/img/" . $profile_picture;
     $image_exists = false; // No actual profile picture
 }
-
 // Traitement de l'upload d'image
 $upload_message = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['profile_picture'])) {
@@ -176,9 +175,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['profile_picture'])) 
                 <div class="row align-items-center">
                     <div class="col-lg-12">
                         <nav class="navbar navbar-expand-lg navbar-light">
-                            <a class="navbar-brand" href="index1.php">
-                                <img src="assets/img/logo.png" alt="logo" />
-                            </a>
+                           
                             <div class="collapse navbar-collapse main-menu-item">
                                 <ul class="navbar-nav">
                                     <li class="nav-item">
@@ -201,7 +198,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['profile_picture'])) 
                                         </div>
                                     </div>
                                     <div class="user-dropdown" id="userDropdown">
-                                        <a href="index1.php">
+                                        <a href="index.php">
                                             <i class="fas fa-user"></i>Accueil
                                         </a>
                                         <a href="settings.php">
