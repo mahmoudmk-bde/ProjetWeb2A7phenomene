@@ -11,7 +11,7 @@ class config
             $password = "";
             $dbname = "projetweb3";
             $port = 3306; // Vérifiez si c'est bien le bon port
-
+            
             try {
                 // Ajout du port dans la chaîne de connexion
                 self::$pdo = new PDO(
