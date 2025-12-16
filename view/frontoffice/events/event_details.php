@@ -1374,10 +1374,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_feedback'])) {
                                 </div>
                             </div>
                         </div>
-                        <div class="form-group">
-                            <label for="card_cvv">CVV</label>
-                            <input type="text" name="card_cvv" id="card_cvv" class="form-control" placeholder="123">
-                        </div>
+
                         <div class="alert alert-secondary" id="paymentSummary" style="margin-top: 20px;">
                             Total: <strong><?= number_format(max(1, $price), 2) ?> TND</strong>
                         </div>

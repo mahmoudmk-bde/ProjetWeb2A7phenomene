@@ -48,7 +48,7 @@ if ($_POST) {
     $image = null;
     
     if (isset($_FILES['image']) && $_FILES['image']['error'] == 0) {
-        $uploadDir = __DIR__ . '/assets/';
+        $uploadDir = __DIR__ . '/../../../view/frontoffice/assets/img/events/';
         if (!is_dir($uploadDir)) {
             mkdir($uploadDir, 0777, true);
         }
@@ -57,7 +57,7 @@ if ($_POST) {
         $uploadFile = $uploadDir . $fileName;
         
         if (move_uploaded_file($_FILES['image']['tmp_name'], $uploadFile)) {
-            $image = 'assets/' . $fileName;
+            $image = $fileName;
         }
     }
     
