@@ -1,5 +1,8 @@
 <?php
 session_start();
+
+// Run database migrations
+require_once __DIR__ . '/../../db_migrations.php';
 ?>
 <!DOCTYPE html>
 <html lang="fr">

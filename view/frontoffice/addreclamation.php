@@ -1,5 +1,9 @@
 <?php
 session_start();
+
+// Run database migrations
+require_once __DIR__ . '/../../db_migrations.php';
+
 require_once "../../controller/ReclamationController.php";
 require_once "../../controller/ReclamationClassifier.php";
 require_once "../../controller/missioncontroller.php";

@@ -2,6 +2,10 @@
 // Use forward slashes which PHP handles correctly on Windows
 // From view/backoffice/reclamation/ we need to go up 3 levels to reach project root
 $base_dir = str_replace('\\', '/', __DIR__) . '/../../../';
+
+// Run database migrations
+require_once $base_dir . 'db_migrations.php';
+
 require_once $base_dir . 'controller/ReclamationController.php';
 require_once $base_dir . 'controller/ResponseController.php';
 
