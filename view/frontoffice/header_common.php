@@ -301,6 +301,9 @@ $headerShowUserMenu = isset($headerShowUserMenu) ? (bool) $headerShowUserMenu : 
                                 <a href="<?= $frontOfficePath ?>historique_reclamations.php">
                                     <i class="fas fa-history me-2"></i>Historique
                                 </a>
+                                <a href="<?= $frontOfficePath ?>events/my_events.php">
+                                    <i class="fas fa-calendar-check me-2"></i>Mes événements
+                                </a>
                                 <a href="<?= $frontOfficePath ?>settings.php">
                                     <i class="fas fa-cog me-2"></i>Paramètres
                                 </a>

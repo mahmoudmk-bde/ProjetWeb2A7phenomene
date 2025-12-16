@@ -107,7 +107,7 @@ if (isset($event)) {
     $totalFeedbacks = 0;
     $feedbacks = [];
     $userFeedback = null;
-    $isLiked = false;
+        $isLiked = false;
     $likeCount = 0;
 }
 
@@ -119,8 +119,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && isset($e
     $action = $_POST['action'];
 
     if ($action === 'guest_participate') {
-        $prenom = secure_data($_POST['prenom'] ?? '');
-        $nom = secure_data($_POST['nom'] ?? '');
+        $prenom = trim(htmlspecialchars($_POST['prenom'] ?? '', ENT_QUOTES, 'UTF-8'));
+        $nom = trim(htmlspecialchars($_POST['nom'] ?? '', ENT_QUOTES, 'UTF-8'));
         $email = isset($_POST['email']) ? filter_var($_POST['email'], FILTER_SANITIZE_EMAIL) : '';
 
         // Validation du prénom
@@ -181,8 +181,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && isset($e
             $message = 'Cet événement ne nécessite pas de paiement.';
             $alertType = 'warning';
         } else {
-            $prenom = secure_data($_POST['prenom'] ?? '');
-            $nom = secure_data($_POST['nom'] ?? '');
+            $prenom = trim(htmlspecialchars($_POST['prenom'] ?? '', ENT_QUOTES, 'UTF-8'));
+            $nom = trim(htmlspecialchars($_POST['nom'] ?? '', ENT_QUOTES, 'UTF-8'));
             $email = isset($_POST['email']) ? filter_var($_POST['email'], FILTER_SANITIZE_EMAIL) : '';
             $quantite = isset($_POST['quantite']) ? (int) $_POST['quantite'] : 1;
             $cardNumber = preg_replace('/\D+/', '', $_POST['card_number'] ?? '');
@@ -575,6 +575,165 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_feedback'])) {
             0%, 100% { transform: scale(1); }
             25% { transform: scale(1.2); }
             50% { transform: scale(1.1); }
+        }
+
+        /* ========== MODAL DARK THEME STYLING ========== */
+        .modal.fade .modal-dialog {
+            transition: transform 0.3s ease !important;
+        }
+
+        .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.6) !important;
+        }
+
+        .modal-content {
+            background-color: #2d3142 !important;
+            border: 2px solid #ff4a57 !important;
+            border-radius: 12px !important;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.7) !important;
+        }
+        
+        .modal-header {
+            background-color: #1f2235 !important;
+            border-bottom: 2px solid #ff4a57 !important;
+            padding: 25px !important;
+        }
+        
+        .modal-title {
+            color: #ffffff !important;
+            font-weight: 700 !important;
+            font-size: 1.4rem !important;
+        }
+        
+        .modal-header .close {
+            color: #ff4a57 !important;
+            opacity: 1 !important;
+            font-size: 1.8rem !important;
+            text-shadow: none !important;
+            line-height: 1 !important;
+        }
+        
+        .modal-header .close:hover,
+        .modal-header .close:focus {
+            color: #ff6b7a !important;
+            opacity: 1 !important;
+        }
+        
+        .modal-body {
+            padding: 35px !important;
+            background-color: #2d3142 !important;
+        }
+        
+        .modal-body form {
+            margin: 0 !important;
+        }
+        
+        .modal-body .form-group {
+            margin-bottom: 22px !important;
+        }
+        
+        .modal-body .form-group label {
+            color: #ffffff !important;
+            font-weight: 600 !important;
+            margin-bottom: 10px !important;
+            display: block !important;
+            font-size: 0.95rem !important;
+            letter-spacing: 0.3px !important;
+        }
+        
+        .modal-body .text-danger {
+            color: #ff4a57 !important;
+        }
+        
+        .modal-body .form-control,
+        .modal-body input[type="text"],
+        .modal-body input[type="email"],
+        .modal-body input[type="number"],
+        .modal-body textarea,
+        .modal-body select {
+            background-color: #1f2235 !important;
+            border: 2px solid #ff4a57 !important;
+            color: #ffffff !important;
+            padding: 14px 16px !important;
+            font-size: 0.95rem !important;
+            border-radius: 6px !important;
+            transition: all 0.3s ease !important;
+            height: auto !important;
+            box-shadow: none !important;
+        }
+        
+        .modal-body .form-control:focus,
+        .modal-body input[type="text"]:focus,
+        .modal-body input[type="email"]:focus,
+        .modal-body input[type="number"]:focus,
+        .modal-body textarea:focus,
+        .modal-body select:focus {
+            background-color: #1f2235 !important;
+            border-color: #ff6b7a !important;
+            color: #ffffff !important;
+            box-shadow: 0 0 10px rgba(255, 74, 87, 0.5) !important;
+            outline: none !important;
+        }
+        
+        .modal-body .form-control::placeholder {
+            color: #b0b3c1 !important;
+            opacity: 0.7 !important;
+        }
+        
+        .modal-body .alert {
+            border-radius: 8px !important;
+            margin-bottom: 20px !important;
+        }
+        
+        .modal-body .alert-danger {
+            background-color: rgba(255, 74, 87, 0.2) !important;
+            border: 1.5px solid #ff4a57 !important;
+            color: #ffb3b8 !important;
+        }
+        
+        .modal-body .alert-secondary {
+            background-color: #1f2235 !important;
+            border: 2px solid #ff4a57 !important;
+            color: #ffffff !important;
+            padding: 18px !important;
+            font-size: 1rem !important;
+        }
+        
+        .modal-body .alert-secondary strong {
+            color: #ff4a57 !important;
+            font-size: 1.15rem !important;
+        }
+
+        .modal-body .row {
+            margin: 0 -5px !important;
+        }
+
+        .modal-body .col-md-6 {
+            padding: 0 5px !important;
+        }
+
+        .modal-body .text-right {
+            text-align: right !important;
+            margin-top: 25px !important;
+        }
+
+        .modal-body .btn-buy-now {
+            background-color: #ff4a57 !important;
+            color: #ffffff !important;
+            border: none !important;
+            padding: 14px 35px !important;
+            font-weight: 600 !important;
+            border-radius: 6px !important;
+            transition: all 0.3s ease !important;
+            font-size: 0.95rem !important;
+            cursor: pointer !important;
+            min-width: 150px !important;
+        }
+
+        .modal-body .btn-buy-now:hover {
+            background-color: #ff6b7a !important;
+            transform: translateY(-2px) !important;
+            box-shadow: 0 5px 15px rgba(255, 74, 87, 0.4) !important;
         }
     </style>
 </head>
@@ -1107,17 +1266,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_feedback'])) {
                         <input type="hidden" name="action" value="guest_participate">
                         <div class="form-group">
                             <label for="modal_prenom">Prénom <span class="text-danger">*</span></label>
-                            <input type="text" name="prenom" id="modal_prenom" class="form-control" placeholder="Prénom">
+                            <input type="text" name="prenom" id="modal_prenom" class="form-control" placeholder="Votre prénom">
                         </div>
                         <div class="form-group">
                             <label for="modal_nom">Nom <span class="text-danger">*</span></label>
-                            <input type="text" name="nom" id="modal_nom" class="form-control" placeholder="Nom">
+                            <input type="text" name="nom" id="modal_nom" class="form-control" placeholder="Votre nom">
                         </div>
                         <div class="form-group">
                             <label for="modal_email">Email <span class="text-danger">*</span></label>
-                            <input type="email" name="email" id="modal_email" class="form-control" placeholder="email@example.com">
+                            <input type="email" name="email" id="modal_email" class="form-control" placeholder="votremail@example.com">
                         </div>
-                        <div class="text-right">
+                        <div class="text-right" style="margin-top: 20px;">
                             <button type="submit" class="btn-buy-now">Envoyer</button>
                         </div>
                     </form>
@@ -1143,27 +1302,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_feedback'])) {
                         <div id="payment-errors" class="alert alert-danger d-none"></div>
                         <div class="form-group">
                             <label for="pay_prenom">Prénom</label>
-                            <input type="text" name="prenom" id="pay_prenom" class="form-control">
+                            <input type="text" name="prenom" id="pay_prenom" class="form-control" placeholder="Votre prénom">
                         </div>
                         <div class="form-group">
                             <label for="pay_nom">Nom</label>
-                            <input type="text" name="nom" id="pay_nom" class="form-control">
+                            <input type="text" name="nom" id="pay_nom" class="form-control" placeholder="Votre nom">
                         </div>
                         <div class="form-group">
                             <label for="pay_email">Email</label>
-                            <input type="email" name="email" id="pay_email" class="form-control">
+                            <input type="email" name="email" id="pay_email" class="form-control" placeholder="votremail@example.com">
+                        </div>
+                        <div class="form-group">
+                            <label for="card_number">Numéro de carte</label>
+                            <input type="text" name="card_number" id="card_number" class="form-control" placeholder="1234 5678 9012 3456">
                         </div>
                         <div class="row">
-                            <div class="col-md-8">
-                                <div class="form-group">
-                                    <label for="card_number">Numéro de carte</label>
-                                    <input type="text" name="card_number" id="card_number" class="form-control" placeholder="1234 5678 9012 3456">
-                                </div>
-                            </div>
-                            <div class="col-md-4">
+                            <div class="col-md-6">
                                 <div class="form-group">
                                     <label for="card_exp">Expiration</label>
                                     <input type="text" name="card_exp" id="card_exp" class="form-control" placeholder="MM/AA">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="card_cvv">CVV</label>
+                                    <input type="text" name="card_cvv" id="card_cvv" class="form-control" placeholder="123">
                                 </div>
                             </div>
                         </div>
@@ -1171,10 +1334,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_feedback'])) {
                             <label for="card_cvv">CVV</label>
                             <input type="text" name="card_cvv" id="card_cvv" class="form-control" placeholder="123">
                         </div>
-                        <div class="alert alert-secondary" id="paymentSummary">
+                        <div class="alert alert-secondary" id="paymentSummary" style="margin-top: 20px;">
                             Total: <strong><?= number_format(max(1, $price), 2) ?> TND</strong>
                         </div>
-                        <div class="text-right">
+                        <div class="text-right" style="margin-top: 20px;">
                             <button type="submit" class="btn-buy-now">Confirmer le paiement</button>
                         </div>
                     </form>
