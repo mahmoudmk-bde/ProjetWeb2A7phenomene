@@ -32,9 +32,9 @@ class UtilisateurController {
    public function addUtilisateur(Utilisateur $u)
 {
     $sql = "INSERT INTO utilisateur 
-        (prenom, nom, dt_naiss, mail, num, mdp, typee, q1, rp1, q2, rp2, img)
+        (prenom, nom, dt_naiss, mail, num, mdp, typee, q1, rp1, q2, rp2, auth, img)
         VALUES 
-        (:prenom, :nom, :dt_naiss, :mail, :num, :mdp, :typee, :q1, :rp1, :q2, :rp2, :img)";
+        (:prenom, :nom, :dt_naiss, :mail, :num, :mdp, :typee, :q1, :rp1, :q2, :rp2, :auth, :img)";
 
     $db = config::getConnexion();
 
@@ -52,6 +52,7 @@ class UtilisateurController {
             ':rp1' => $u->getRp1(),
             ':q2' => $u->getQ2(),
             ':rp2' => $u->getRp2(),
+            ':auth' => $u->getAuth(),
             ':img' => $u->getImg()
         ]);
     } catch (Exception $e) {
@@ -72,6 +73,7 @@ class UtilisateurController {
                     num = :num,
                     mdp = :mdp,
                     typee = :typee,
+                    auth = :auth,
                     img = :img
                 WHERE id_util = :id_util'
             );
@@ -93,6 +95,7 @@ class UtilisateurController {
                 'num' => $utilisateur->getNum(),
                 'mdp' => $utilisateur->getMdp(),
                 'typee' => $utilisateur->getTypee(),
+                'auth' => $utilisateur->getAuth(),
                 'img' => $utilisateur->getImg()
             ]);
             
@@ -277,6 +280,27 @@ class UtilisateurController {
             
         } catch (PDOException $e) {
             error_log('Error updating profile image: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    // Méthode pour mettre à jour uniquement le champ auth
+    public function updateAuth($user_id, $auth_value) {
+        try {
+            $db = config::getConnexion();
+            $query = $db->prepare(
+                'UPDATE utilisateur SET auth = :auth WHERE id_util = :id_util'
+            );
+            
+            $query->execute([
+                'id_util' => $user_id,
+                'auth' => $auth_value
+            ]);
+            
+            return true;
+            
+        } catch (PDOException $e) {
+            error_log('Error updating auth: ' . $e->getMessage());
             return false;
         }
     }

@@ -179,7 +179,7 @@
 <body>
     <div class="body_bg">
         <!--::header part start::-->
-        <?php include 'header_mission.php'; ?>
+        <?php include __DIR__ . '/../header_common1.php'; ?>
         <!-- Header part end-->
 
         <!-- breadcrumb start-->
@@ -205,6 +205,15 @@
         <!-- Game Detail Section Start -->
         <section class="game-detail-section">
             <div class="container">
+                <?php if (isset($_GET['added'])): ?>
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        <strong>Succès !</strong> Le jeu a été ajouté au panier.
+                        <a href="?controller=Store&action=cart" class="alert-link">Voir le panier</a>
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                <?php endif; ?>
                 <div class="row">
                     <!-- Image principale du jeu -->
                     <div class="col-lg-6 mb-4">
@@ -348,10 +357,10 @@
                                         action="?controller=Store&action=addToCart&id=<?= $this->storeItem->id ?>">
                                         <button class="btn-buy-now">Ajouter au panier</button>
                                     </form>
-                                    <a href="<?= (defined('BASE_URL') ? BASE_URL : '') ?>view/frontoffice/store.php?controller=Store&action=toggleWishlist&id=<?= $this->storeItem->id ?>"
+                                    <a href="?controller=Store&action=toggleLike&id=<?= $this->storeItem->id ?>"
                                         class="btn-view-game btn-like" aria-label="Ajouter à la liste d'envies"
                                         style="width: auto; padding: 14px 18px; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; margin-top: 0;">
-                                        <?php $inWish = isset($_SESSION['wishlist']) && isset($_SESSION['wishlist'][$this->storeItem->id]); ?>
+                                        <?php $inWish = isset($_SESSION['liked_items']) && isset($_SESSION['liked_items'][$this->storeItem->id]); ?>
                                         <i class="<?= $inWish ? 'fas' : 'far' ?> fa-heart"></i>
                                     </a>
                                     <div style="display:flex; gap:8px; align-items:center; margin-left:auto;">
@@ -600,26 +609,20 @@
             // Animation d'apparition progressive
             $('.game-detail-card').hide().fadeIn(1000);
 
-            // Gestion du bouton d'achat
-            $('.btn-buy-now').on('click', function () {
-                if (!$(this).is(':disabled')) {
-                    alert('Fonctionnalité d\'achat à implémenter.\n\nCe jeu : <?= addslashes($this->storeItem->nom) ?>\nPrix : <?= $this->storeItem->prix ?> DT');
-                }
-            });
+            // Gestion du formulaire de commentaire
 
-            $('#commentForm').on('submit', function (e) {
-                var content = $.trim($(this).find('textarea[name="content"]').val());
-                var errors = [];
-                if (content.length < 5) { errors.push('Commentaire trop court'); }
-                if (content.length > 500) { errors.push('Commentaire trop long'); }
-                if (/<\s*script/i.test(content)) { errors.push('Contenu invalide'); }
-                if (errors.length > 0) {
-                    e.preventDefault();
-                    $('#commentErrors').text(errors.join(' • '));
-                } else {
-                    $('#commentErrors').text('');
-                }
-            });
+            var content = $.trim($(this).find('textarea[name="content"]').val());
+            var errors = [];
+            if (content.length < 5) { errors.push('Commentaire trop court'); }
+            if (content.length > 500) { errors.push('Commentaire trop long'); }
+            if (/<\s*script/i.test(content)) { errors.push('Contenu invalide'); }
+            if (errors.length > 0) {
+                e.preventDefault();
+                $('#commentErrors').text(errors.join(' • '));
+            } else {
+                $('#commentErrors').text('');
+            }
+        });
         });
     </script>
     <script>

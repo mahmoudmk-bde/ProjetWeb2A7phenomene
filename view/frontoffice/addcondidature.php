@@ -393,7 +393,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 <label class="form-label">
                                     <i class="fas fa-user me-2"></i>Pseudo Gaming *
                                 </label>
-                                <input type="text" name="pseudo_gaming" class="form-control" required 
+                                <input type="text" name="pseudo_gaming" class="form-control" 
                                        placeholder="Votre pseudo gaming préféré"
                                        value="<?= isset($_POST['pseudo_gaming']) ? htmlspecialchars($_POST['pseudo_gaming']) : '' ?>">
                             </div>
@@ -402,7 +402,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 <label class="form-label">
                                     <i class="fas fa-chart-line me-2"></i>Niveau d'expérience *
                                 </label>
-                                <select name="niveau_experience" class="form-control" required>
+                                <select name="niveau_experience" class="form-control">
                                     <option value="" disabled selected>Choisissez votre niveau</option>
                                     <option value="débutant" <?= (isset($_POST['niveau_experience']) && $_POST['niveau_experience'] === 'débutant') ? 'selected' : '' ?>>🎮 Débutant - Je découvre le jeu</option>
                                     <option value="intermédiaire" <?= (isset($_POST['niveau_experience']) && $_POST['niveau_experience'] === 'intermédiaire') ? 'selected' : '' ?>>⚡ Intermédiaire - Je me débrouille bien</option>
@@ -415,7 +415,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 <label class="form-label">
                                     <i class="fas fa-calendar me-2"></i>Disponibilités *
                                 </label>
-                                <input type="text" name="disponibilites" class="form-control" required 
+                                <input type="text" name="disponibilites" class="form-control" 
                                        placeholder="ex: 3 soirs par semaine, weekends, vacances..."
                                        value="<?= isset($_POST['disponibilites']) ? htmlspecialchars($_POST['disponibilites']) : '' ?>">
                                 <small class="form-text" style="color: rgba(255,255,255,0.6);">Indiquez vos créneaux de disponibilité pour cette mission</small>
@@ -425,7 +425,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 <label class="form-label">
                                     <i class="fas fa-envelope me-2"></i>Email *
                                 </label>
-                                <input type="email" name="email" class="form-control" required 
+                                <input type="email" name="email" class="form-control" 
                                        placeholder="votre.email@exemple.com"
                                        value="<?= isset($_POST['email']) ? htmlspecialchars($_POST['email']) : (isset($current_user['mail']) ? htmlspecialchars($current_user['mail']) : '') ?>">
                             </div>

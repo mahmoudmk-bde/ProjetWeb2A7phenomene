@@ -311,14 +311,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                             <div class="form-group">
                                                 <label class="form-label">Prénom *</label>
                                                 <input type="text" class="form-control" name="prenom" 
-                                                       value="<?php echo htmlspecialchars($current_user['prenom'] ?? ''); ?>" required>
+                                                       value="<?php echo htmlspecialchars($current_user['prenom'] ?? ''); ?>">
                                             </div>
                                         </div>
                                         <div class="col-md-6">
                                             <div class="form-group">
                                                 <label class="form-label">Nom *</label>
                                                 <input type="text" class="form-control" name="nom" 
-                                                       value="<?php echo htmlspecialchars($current_user['nom'] ?? ''); ?>" required>
+                                                       value="<?php echo htmlspecialchars($current_user['nom'] ?? ''); ?>">
                                             </div>
                                         </div>
                                     </div>
@@ -336,7 +336,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     <div class="form-group">
                                         <label class="form-label">Mot de passe de confirmation *</label>
                                         <input type="password" class="form-control" name="confirm_password" 
-                                               placeholder="Entrez votre mot de passe pour confirmer les modifications" required>
+                                               placeholder="Entrez votre mot de passe pour confirmer les modifications">
                                         <small class="form-text text-muted">Veuillez entrer votre mot de passe pour confirmer les modifications</small>
                                     </div>
                                     <button type="submit" name="update_profile" class="btn btn-save">
@@ -354,17 +354,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     <div class="form-group">
                                         <label class="form-label">Mot de passe actuel *</label>
                                         <input type="password" class="form-control" name="current_password" 
-                                               placeholder="Entrez votre mot de passe actuel" required>
+                                               placeholder="Entrez votre mot de passe actuel">
                                     </div>
                                     <div class="form-group">
                                         <label class="form-label">Nouveau mot de passe *</label>
                                         <input type="password" class="form-control" name="new_password" 
-                                               placeholder="Entrez votre nouveau mot de passe" required>
+                                               placeholder="Entrez votre nouveau mot de passe">
                                     </div>
                                     <div class="form-group">
                                         <label class="form-label">Confirmer le nouveau mot de passe *</label>
                                         <input type="password" class="form-control" name="confirm_password" 
-                                               placeholder="Confirmez votre nouveau mot de passe" required>
+                                               placeholder="Confirmez votre nouveau mot de passe">
                                     </div>
                                     <button type="submit" name="change_password" class="btn btn-save">
                                         <i class="fas fa-key me-2"></i>Changer le mot de passe

@@ -204,7 +204,7 @@ $isWishlist = isset($isWishlist) ? (bool) $isWishlist : false;
 <body>
     <div class="body_bg">
         
-<?php include 'header_common1.php'; ?>
+        <?php include 'header_common1.php'; ?>
         <!-- breadcrumb start-->
         <section class="breadcrumb_bg">
             <div class="container">

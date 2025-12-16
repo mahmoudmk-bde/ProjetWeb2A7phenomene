@@ -269,7 +269,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['response']) && !empty
                     <form method="POST" id="responseForm">
                         <div class="form-group">
                             <label for="response">Votre réponse</label>
-                            <textarea id="response" name="response" rows="8" required placeholder="Tapez votre réponse ici..."></textarea>
+                            <textarea id="response" name="response" rows="8" placeholder="Tapez votre réponse ici..."></textarea>
                             <small>Soyez courtois et professionnel dans votre réponse</small>
                         </div>
                         <div class="form-actions">

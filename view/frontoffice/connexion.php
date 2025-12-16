@@ -41,8 +41,9 @@ if (isset($_POST["verify_2fa_code"])) {
                   $_SESSION['temp_user_email'], $_SESSION['temp_user_type'], $_SESSION['temp_profile_picture']);
             
             // ouvrir index.html
+            // ouvrir index.html
             if ($_SESSION['user_type'] === 'admin') {
-                header('Location: http://localhost/tache%20utilisateur/view/backoffice/admin.php');
+                header('Location: ../backoffice/dashboard.php');
             } else {
                 header('Location: index1.php');
             }
@@ -101,7 +102,7 @@ if (isset($_POST["username"]) && isset($_POST["password"]) && !isset($show_2fa_f
             
             if ($user && (password_verify($mdp, $user['mdp']) || $mdp === $user['mdp'])) {
                 // AJOUT: Vérifier si la 2FA est activée
-                if ($user['auth'] === 'active') {
+                if (isset($user['auth']) && trim(strtolower($user['auth'])) === 'active') {
                     // Générer un code de vérification à 6 chiffres
                     $verification_code = str_pad(rand(0, 999999), 6, '0', STR_PAD_LEFT);
                     
@@ -138,7 +139,7 @@ if (isset($_POST["username"]) && isset($_POST["password"]) && !isset($show_2fa_f
                     
                     // ouvrir index.html
                     if ($user['typee'] === 'admin') {
-                        header('Location: http://localhost/tache%20utilisateur/view/backoffice/admin.php');
+                        header('Location: ../backoffice/dashboard.php');
                     } else {
                         header('Location: index1.php');
                     }
@@ -410,8 +411,6 @@ if (isset($_POST["username"]) && isset($_POST["password"]) && !isset($show_2fa_f
                            class="verification-code-input" 
                            placeholder="000000" 
                            maxlength="6" 
-                           required
-                           pattern="[0-9]{6}"
                            autocomplete="off">
                     
                     <input type="submit" name="verify_2fa_code" value="Vérifier" class="btn" style="width: 100%;">

@@ -341,8 +341,10 @@ function normalize_asset_path($img) {
                         $title = htmlspecialchars($ev['titre'] ?? 'Événement');
                         $desc = htmlspecialchars($ev['description'] ?? '');
                         $date = !empty($ev['date_evenement']) ? date('d/m/Y', strtotime($ev['date_evenement'])) : '';
+                        $rawDate = $ev['date_evenement'] ?? '';
                         $lieu = htmlspecialchars($ev['lieu'] ?? 'Lieu non spécifié');
                         $time = !empty($ev['heure_evenement']) ? substr($ev['heure_evenement'], 0, 5) : null;
+                        $duration = isset($ev['duree_minutes']) ? (int)$ev['duree_minutes'] : 0;
                         $img = normalize_asset_path($ev['image'] ?? '');
                         $participants = (int)$eventModel->countParticipants($ev['id_evenement'] ?? 0);
                         $type = isset($ev['type_evenement']) ? $ev['type_evenement'] : 'gratuit';
@@ -370,7 +372,15 @@ function normalize_asset_path($img) {
                         $cardImg = !empty($ev['image']) ? $img : $imagePath;
                         $eventId = $ev['id_evenement'] ?? 0;
                     ?>
-                    <div class="col-lg-4 col-md-6 event-item" data-theme="<?= htmlspecialchars($theme) ?>" data-type="<?= htmlspecialchars($type) ?>" data-date="<?= $ev['date_evenement'] ?? '' ?>">
+                    <div class="col-lg-4 col-md-6 event-item" 
+                         data-theme="<?= htmlspecialchars($theme) ?>" 
+                         data-type="<?= htmlspecialchars($type) ?>" 
+                         data-date="<?= $rawDate ?>"
+                         data-time="<?= $time ?? '' ?>"
+                         data-duration="<?= $duration ?>"
+                         data-title="<?= $title ?>"
+                         data-location="<?= $lieu ?>"
+                         data-description="<?= $desc ?>">
                         <div class="game-card store-card">
                             <!-- Image de l'événement -->
                             <div class="game-card-img">
@@ -462,7 +472,7 @@ function normalize_asset_path($img) {
                                 id="event-search" 
                                 class="event-search-input" 
                                 type="text" 
-                                placeholder="Rechercher par nom ou lieu..." 
+                                placeholder="Rechercher par date, heure, durée, thème, type..." 
                                 autocomplete="off"
                             />
                             <div class="search-clear" id="search-clear" style="display:none;">
@@ -493,21 +503,33 @@ document.addEventListener('DOMContentLoaded', function() {
     const searchClear = document.getElementById('search-clear');
     const searchResultsInfo = document.getElementById('search-results-info');
     const resultCount = document.getElementById('result-count');
-    const allItems = document.querySelectorAll('#events-row [data-theme]');
+    // Important: we select items that have data attributes we just added
+    const allItems = document.querySelectorAll('.event-item');
 
     function filterEvents(searchTerm) {
         const term = searchTerm.toLowerCase().trim();
         let visibleCount = 0;
 
         allItems.forEach(card => {
-            const title = card.querySelector('.event-title')?.textContent.toLowerCase() || '';
-            const location = card.querySelector('.event-meta')?.textContent.toLowerCase() || '';
-            const description = card.querySelector('.event-description')?.textContent.toLowerCase() || '';
+            // Read from data attributes for reliability
+            const title = (card.dataset.title || '').toLowerCase();
+            const location = (card.dataset.location || '').toLowerCase();
+            const description = (card.dataset.description || '').toLowerCase();
+            const date = (card.dataset.date || '').toLowerCase();
+            const time = (card.dataset.time || '').toLowerCase();
+            const duration = (card.dataset.duration || '').toLowerCase();
+            const theme = (card.dataset.theme || '').toLowerCase();
+            const type = (card.dataset.type || '').toLowerCase();
 
             const matches = 
                 title.includes(term) || 
                 location.includes(term) || 
-                description.includes(term);
+                description.includes(term) ||
+                date.includes(term) ||
+                time.includes(term) ||
+                duration.includes(term) ||
+                theme.includes(term) ||
+                type.includes(term);
 
             if (term === '' || matches) {
                 card.style.display = '';
