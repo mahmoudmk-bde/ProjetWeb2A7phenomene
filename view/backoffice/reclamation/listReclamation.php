@@ -28,6 +28,7 @@ $successMessage = isset($_GET['deleted']) && $_GET['deleted'] == 1 ? 'Réclamati
     <title>Gestion des Réclamations - ENGAGE Admin</title>
     
     <link rel="stylesheet" href="../assets/css/custom-backoffice.css">
+    <link rel="stylesheet" href="../assets/css/tags.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     
     <style>
@@ -341,8 +342,10 @@ $successMessage = isset($_GET['deleted']) && $_GET['deleted'] == 1 ? 'Réclamati
             <?php foreach ($list as $rec): 
                 $responses = $respCtrl->getResponses($rec['id']);
                 $countResp = $responses ? count($responses) : 0;
+                $tags = $recCtrl->getTagsByReclamation((int)$rec['id']);
+                $tagsStr = htmlspecialchars(implode(',', $tags));
             ?>
-                <div class="mission-card">
+                <div class="mission-card" data-reclamation-item data-tags="<?= $tagsStr ?>">
                     <!-- En-tête de la réclamation -->
                     <div class="mission-header">
                         <div>
@@ -412,6 +415,11 @@ $successMessage = isset($_GET['deleted']) && $_GET['deleted'] == 1 ? 'Réclamati
                         </span>
                     </div>
 
+                    <!-- Tags -->
+                    <div style="margin: 12px 0;">
+                        <?php $reclamationId = (int)$rec['id']; include 'tags_partial.php'; ?>
+                    </div>
+
                     <!-- Boutons d'action -->
                     <div class="mission-actions">
                         <!-- Répondre -->
@@ -463,5 +471,6 @@ $successMessage = isset($_GET['deleted']) && $_GET['deleted'] == 1 ? 'Réclamati
     <?php endif; ?>
 </div>
 
+<script src="../assets/js/tags.js"></script>
 </body>
 </html>

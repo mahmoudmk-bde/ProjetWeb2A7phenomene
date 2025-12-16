@@ -107,31 +107,31 @@ if(isset($_POST['submit'])) {
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Prénom *</label>
-                            <input type="text" name="prenom" class="form-control" required 
+                            <input type="text" name="prenom" class="form-control" 
                                    value="<?php echo htmlspecialchars($utilisateur['prenom']); ?>">
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Nom *</label>
-                            <input type="text" name="nom" class="form-control" required
+                            <input type="text" name="nom" class="form-control" 
                                    value="<?php echo htmlspecialchars($utilisateur['nom']); ?>">
                         </div>
                     </div>
                     
                     <div class="mb-3">
                         <label class="form-label">Date de Naissance *</label>
-                        <input type="date" name="dt_naiss" class="form-control" required
+                        <input type="date" name="dt_naiss" class="form-control" 
                                value="<?php echo date('Y-m-d', strtotime($utilisateur['dt_naiss'])); ?>">
                     </div>
                     
                     <div class="mb-3">
                         <label class="form-label">Email *</label>
-                        <input type="email" name="mail" class="form-control" required
+                        <input type="email" name="mail" class="form-control" 
                                value="<?php echo htmlspecialchars($utilisateur['mail']); ?>">
                     </div>
                     
                     <div class="mb-3">
                         <label class="form-label">Téléphone *</label>
-                        <input type="tel" name="num" class="form-control" required
+                        <input type="tel" name="num" class="form-control" 
                                value="<?php echo $utilisateur['num']; ?>">
                     </div>
                     
@@ -143,7 +143,7 @@ if(isset($_POST['submit'])) {
                     
                     <div class="mb-3">
                         <label class="form-label">Type *</label>
-                        <select name="typee" class="form-control" required>
+                        <select name="typee" class="form-control">
                             <option value="">Sélectionnez un type</option>
                             <option value="admin" <?php echo ($utilisateur['typee'] == 'admin') ? 'selected' : ''; ?>>Admin</option>
                             <option value="user" <?php echo ($utilisateur['typee'] == 'user') ? 'selected' : ''; ?>>Utilisateur</option>

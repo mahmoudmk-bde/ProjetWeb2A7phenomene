@@ -107,7 +107,9 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
 
         $ctrl = new ReclamationController();
         $ctrl->addReclamation($rec);
-        $success_message = "Réclamation ajoutée avec succès ! <br><small>🤖 Classifiée automatiquement : <b>" . $classification['category_label'] . "</b> | Priorité: <b>" . $classification['priority_label'] . "</b> | Département: <b>" . $classification['department'] . "</b></small>";
+        $_SESSION['reclamation_success'] = true;
+        header('Location: ' . $_SERVER['PHP_SELF']);
+        exit();
     } catch (Exception $e) {
         $error_message = "Erreur : " . $e->getMessage();
     }
@@ -388,8 +390,20 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
                     <p>Veuillez remplir le formulaire ci-dessous pour soumettre votre réclamation</p>
                 </div>
 
-                <?php if ($success_message): ?>
+                <?php if (isset($_SESSION['reclamation_success']) && $_SESSION['reclamation_success']): ?>
+                    <div id="successAlert" class="alert" style="background-color: #d4edda; border: 2px solid #28a745; border-radius: 8px; padding: 15px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px;">
+                        <i class="fas fa-check-circle" style="color: #28a745; font-size: 1.5rem;"></i>
+                        <div style="color: #155724; font-weight: 600;">Réclamation envoyée avec succès!</div>
+                    </div>
+                    <script>
+                        setTimeout(function() {
+                            document.getElementById('successAlert').style.display = 'none';
+                        }, 5000);
+                    </script>
+                    <?php unset($_SESSION['reclamation_success']); ?>
+                <?php endif; ?>
 
+                <?php if ($error_message): ?>
                     <div class="alert alert-danger" role="alert">
                         <i class="fas fa-exclamation-circle"></i> <?= htmlspecialchars($error_message) ?>
                     </div>
@@ -407,20 +421,20 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
 
                     <div class="form-group">
                         <label for="type_reclamation">Type de réclamation</label>
-                        <select class="form-control" id="type_reclamation" name="type_reclamation" required style="width: 100%; border: 2px solid #ff4a57; border-radius: 8px; padding: 12px 15px; font-size: 16px; color: white; background-color: #2d3142; cursor: pointer;">
-                            <option value="" style="background-color: #2d3142; color: white;">Choisissez le type</option>
-                            <option value="mission" style="background-color: #2d3142; color: white;" <?= (($_POST['type_reclamation'] ?? '') === 'mission') ? 'selected' : '' ?>>Mission</option>
-                            <option value="evenement" style="background-color: #2d3142; color: white;" <?= (($_POST['type_reclamation'] ?? '') === 'evenement') ? 'selected' : '' ?>>Événement</option>
-                            <option value="partenaire" style="background-color: #2d3142; color: white;" <?= (($_POST['type_reclamation'] ?? '') === 'partenaire') ? 'selected' : '' ?>>Partenaire</option>
-                            <option value="utilisateur" style="background-color: #2d3142; color: white;" <?= (($_POST['type_reclamation'] ?? '') === 'utilisateur') ? 'selected' : '' ?>>Utilisateur</option>
-                            <option value="technique" style="background-color: #2d3142; color: white;" <?= (($_POST['type_reclamation'] ?? '') === 'technique') ? 'selected' : '' ?>>Technique</option>
-                            <option value="autre" style="background-color: #2d3142; color: white;" <?= (($_POST['type_reclamation'] ?? '') === 'autre') ? 'selected' : '' ?>>Autre</option>
+                        <select id="type_reclamation" name="type_reclamation" required style="width: 100%; border: 2px solid #ff4a57; border-radius: 8px; padding: 12px 15px; font-size: 16px; font-family: Arial, sans-serif; font-weight: normal; color: #ffffff; background-color: #2d3142; cursor: pointer; line-height: normal;">
+                            <option value="" style="background-color: #2d3142; color: #ffffff; font-size: 16px;">Choisissez le type</option>
+                            <option value="mission" style="background-color: #2d3142; color: #ffffff; font-size: 16px;" <?= (($_POST['type_reclamation'] ?? '') === 'mission') ? 'selected' : '' ?>>Mission</option>
+                            <option value="evenement" style="background-color: #2d3142; color: #ffffff; font-size: 16px;" <?= (($_POST['type_reclamation'] ?? '') === 'evenement') ? 'selected' : '' ?>>Événement</option>
+                            <option value="partenaire" style="background-color: #2d3142; color: #ffffff; font-size: 16px;" <?= (($_POST['type_reclamation'] ?? '') === 'partenaire') ? 'selected' : '' ?>>Partenaire</option>
+                            <option value="utilisateur" style="background-color: #2d3142; color: #ffffff; font-size: 16px;" <?= (($_POST['type_reclamation'] ?? '') === 'utilisateur') ? 'selected' : '' ?>>Utilisateur</option>
+                            <option value="technique" style="background-color: #2d3142; color: #ffffff; font-size: 16px;" <?= (($_POST['type_reclamation'] ?? '') === 'technique') ? 'selected' : '' ?>>Technique</option>
+                            <option value="autre" style="background-color: #2d3142; color: #ffffff; font-size: 16px;" <?= (($_POST['type_reclamation'] ?? '') === 'autre') ? 'selected' : '' ?>>Autre</option>
                         </select>
                     </div>
 
                     <div class="form-group conditional-field d-none" data-block="mission">
                         <label for="mission_id">Mission concernée</label>
-                        <select class="form-control" id="mission_id" name="mission_id" style="width: 100%; border: 2px solid #ff4a57; border-radius: 8px; padding: 12px 15px; font-size: 16px; color: white; background-color: #2d3142; cursor: pointer;">
+                        <select id="mission_id" name="mission_id" style="width: 100%; border: 2px solid #ff4a57; border-radius: 8px; padding: 12px 15px; font-size: 16px; font-family: Arial, sans-serif; font-weight: normal; color: #ffffff; background-color: #2d3142; cursor: pointer; line-height: normal;">
                             <option value="">Sélectionnez une mission</option>
                             <?php foreach ($missions as $mission): ?>
                                 <option value="<?= htmlspecialchars($mission['id']) ?>" <?= (($_POST['mission_id'] ?? '') == $mission['id']) ? 'selected' : '' ?>>
@@ -432,7 +446,7 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
 
                     <div class="form-group conditional-field d-none" data-block="evenement">
                         <label for="evenement_id">Événement concerné</label>
-                        <select class="form-control" id="evenement_id" name="evenement_id" style="width: 100%; border: 2px solid #ff4a57; border-radius: 8px; padding: 12px 15px; font-size: 16px; color: white; background-color: #2d3142; cursor: pointer;">
+                        <select id="evenement_id" name="evenement_id" style="width: 100%; border: 2px solid #ff4a57; border-radius: 8px; padding: 12px 15px; font-size: 16px; font-family: Arial, sans-serif; font-weight: normal; color: #ffffff; background-color: #2d3142; cursor: pointer; line-height: normal;">
                             <option value="">Sélectionnez un événement</option>
                             <?php foreach ($evenements as $event): ?>
                                 <option value="<?= htmlspecialchars($event['id_evenement']) ?>" <?= (($_POST['evenement_id'] ?? '') == $event['id_evenement']) ? 'selected' : '' ?>>
@@ -444,7 +458,7 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
 
                     <div class="form-group conditional-field d-none" data-block="partenaire">
                         <label for="partenaire_id">Partenaire concerné</label>
-                        <select class="form-control" id="partenaire_id" name="partenaire_id" style="width: 100%; border: 2px solid #ff4a57; border-radius: 8px; padding: 12px 15px; font-size: 16px; color: white; background-color: #2d3142; cursor: pointer;">
+                        <select id="partenaire_id" name="partenaire_id" style="width: 100%; border: 2px solid #ff4a57; border-radius: 8px; padding: 12px 15px; font-size: 16px; font-family: Arial, sans-serif; font-weight: normal; color: #ffffff; background-color: #2d3142; cursor: pointer; line-height: normal;">
                             <option value="">Sélectionnez un partenaire</option>
                             <?php foreach ($partenaires as $p): ?>
                                 <option value="<?= htmlspecialchars($p['id']) ?>" <?= (($_POST['partenaire_id'] ?? '') == $p['id']) ? 'selected' : '' ?>>
@@ -456,7 +470,7 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
 
                     <div class="form-group conditional-field d-none" data-block="utilisateur">
                         <label for="utilisateur_cible_id">Utilisateur concerné</label>
-                        <select class="form-control" id="utilisateur_cible_id" name="utilisateur_cible_id" style="width: 100%; border: 2px solid #ff4a57; border-radius: 8px; padding: 12px 15px; font-size: 16px; color: white; background-color: #2d3142; cursor: pointer;">
+                        <select id="utilisateur_cible_id" name="utilisateur_cible_id" style="width: 100%; border: 2px solid #ff4a57; border-radius: 8px; padding: 12px 15px; font-size: 16px; font-family: Arial, sans-serif; font-weight: normal; color: #ffffff; background-color: #2d3142; cursor: pointer; line-height: normal;">
                             <option value="">Sélectionnez un utilisateur</option>
                             <?php foreach ($utilisateurs as $u): ?>
                                 <option value="<?= htmlspecialchars($u['id_util']) ?>" <?= (($_POST['utilisateur_cible_id'] ?? '') == $u['id_util']) ? 'selected' : '' ?>>
@@ -487,28 +501,28 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
                     </div>
 
                     <!-- 🤖 AI Classification Preview -->
-                    <div id="ai-classification-preview" style="display: none; background: linear-gradient(135deg, rgba(74, 144, 226, 0.1) 0%, rgba(80, 227, 194, 0.1) 100%); border: 2px solid rgba(74, 144, 226, 0.3); border-radius: 12px; padding: 20px; margin-bottom: 25px;">
+                    <div id="ai-classification-preview" style="display: none; background: linear-gradient(135deg, rgba(255, 74, 87, 0.08) 0%, rgba(45, 49, 66, 0.18) 100%); border: 2px solid rgba(255, 74, 87, 0.3); border-radius: 12px; padding: 20px; margin-bottom: 25px;">
                         <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
-                            <i class="fas fa-robot" style="font-size: 24px; color: #4a90e2;"></i>
+                            <i class="fas fa-robot" style="font-size: 24px; color: var(--primary);"></i>
                             <h5 style="margin: 0; color: #fff; font-weight: 600;">Classification Automatique</h5>
                         </div>
                         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
                             <div style="background: rgba(255,255,255,0.05); padding: 12px; border-radius: 8px;">
                                 <div style="color: rgba(255,255,255,0.7); font-size: 12px; margin-bottom: 5px;">Catégorie</div>
-                                <div id="ai-category" style="color: #4a90e2; font-weight: 600; font-size: 15px;">-</div>
+                                <div id="ai-category" style="color: var(--primary); font-weight: 600; font-size: 15px;">-</div>
                             </div>
                             <div style="background: rgba(255,255,255,0.05); padding: 12px; border-radius: 8px;">
                                 <div style="color: rgba(255,255,255,0.7); font-size: 12px; margin-bottom: 5px;">Priorité</div>
-                                <div id="ai-priority" style="color: #50e3c2; font-weight: 600; font-size: 15px;">-</div>
+                                <div id="ai-priority" style="color: var(--primary-light); font-weight: 600; font-size: 15px;">-</div>
                             </div>
                             <div style="background: rgba(255,255,255,0.05); padding: 12px; border-radius: 8px;">
                                 <div style="color: rgba(255,255,255,0.7); font-size: 12px; margin-bottom: 5px;">Département</div>
-                                <div id="ai-department" style="color: #ff6b9d; font-weight: 600; font-size: 15px;">-</div>
+                                <div id="ai-department" style="color: var(--primary); font-weight: 600; font-size: 15px;">-</div>
                             </div>
                         </div>
                         <div style="margin-top: 12px; display: flex; align-items: center; gap: 8px;">
                             <div style="flex: 1; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden;">
-                                <div id="ai-confidence-bar" style="height: 100%; background: linear-gradient(90deg, #4a90e2 0%, #50e3c2 100%); width: 0%; transition: width 0.5s ease;"></div>
+                                <div id="ai-confidence-bar" style="height: 100%; background: linear-gradient(90deg, var(--primary) 0%, var(--primary-light) 100%); width: 0%; transition: width 0.5s ease;"></div>
                             </div>
                             <small id="ai-confidence-text" style="color: rgba(255,255,255,0.7); font-size: 12px;">Confiance: 0%</small>
                         </div>
@@ -716,12 +730,12 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
                         
                                 // Color priority based on level
                                 const priorityColors = {
-                                    'Urgent': '#ff4757',
-                                    'Élevée': '#ffa502',
-                                    'Moyenne': '#50e3c2',
-                                    'Basse': '#a4b0be'
+                                    'Urgent': 'var(--primary)',
+                                    'Élevée': 'var(--primary-light)',
+                                    'Moyenne': 'rgba(255,255,255,0.85)',
+                                    'Basse': 'rgba(255,255,255,0.6)'
                                 };
-                                priorityEl.style.color = priorityColors[data.priority_label] || '#50e3c2';
+                                priorityEl.style.color = priorityColors[data.priority_label] || 'var(--primary-light)';
 
                                 // Auto-fill subject if empty
                                 if (!subject && sujetInput) {
@@ -793,7 +807,7 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
                     requiredByType[type].forEach(id => {
                         const field = document.getElementById(id);
                         if (field) {
-                            field.required = (type === current);
+                            // field.required = (type === current);
                         }
                     });
                 });
@@ -804,6 +818,26 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
                 updateBlocks();
             }
         })();
+
+        // Clear form after successful submission
+        if (document.location.href.includes('addreclamation.php')) {
+            const urlParams = new URLSearchParams(window.location.search);
+            // Form will auto-reset due to page reload, just ensure all fields are empty
+            window.addEventListener('load', function() {
+                const form = document.getElementById('reclamationForm');
+                if (form) {
+                    // Give slight delay to ensure page is fully loaded
+                    setTimeout(function() {
+                        const inputs = form.querySelectorAll('input[type="text"], input[type="email"], textarea, select');
+                        inputs.forEach(input => {
+                            if (input.id !== 'email' || !input.value) { // Keep email if it has a value
+                                input.value = '';
+                            }
+                        });
+                    }, 100);
+                }
+            });
+        }
     </script>
     <!-- Validation spécifique du formulaire de réclamation -->
     <script src="js/form-validation.js"></script>

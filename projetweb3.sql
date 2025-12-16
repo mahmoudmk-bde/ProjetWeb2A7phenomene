@@ -668,7 +668,8 @@ CREATE TABLE `utilisateur` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   `img` varchar(255) DEFAULT NULL,
-  `auth` varchar(200) NOT NULL
+  `auth` varchar(200) NOT NULL,
+  `face` longtext DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --

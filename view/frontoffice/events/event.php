@@ -6,6 +6,29 @@ require_once __DIR__ . '/../../../db_config.php';
 $eventModel = new EvenementModel();
 $events = $eventModel->getAllEvents();
 
+// Extract unique themes for the filter
+// Static themes as requested
+$uniqueThemes = ['Sport', 'Education', 'Esport', 'Creation', 'Prévention', 'Coaching', 'Compétition'];
+
+// Robust mapping for themes using tokens
+mb_internal_encoding('UTF-8');
+
+function get_theme_token($str) {
+    if (empty($str)) return 'evenement';
+    
+    // Use multi-byte safe case-insensitive search
+    if (mb_stripos($str, 'esport') !== false) return 'esport';
+    if (mb_stripos($str, 'sport') !== false) return 'sport';
+    // 'ducat' matches 'education', 'éducation'
+    if (mb_stripos($str, 'ducat') !== false) return 'education'; 
+    if (mb_stripos($str, 'création') !== false || mb_stripos($str, 'creation') !== false) return 'creation';
+    if (mb_stripos($str, 'prévention') !== false || mb_stripos($str, 'prevention') !== false) return 'prevention';
+    if (mb_stripos($str, 'coaching') !== false) return 'coaching';
+    if (mb_stripos($str, 'compétition') !== false || mb_stripos($str, 'competition') !== false) return 'competition';
+    
+    return 'evenement';
+}
+
 function normalize_asset_path($img) {
     if (empty($img)) return '../assets/img/default-event.jpg';
     $img = trim($img);
@@ -307,6 +330,63 @@ function normalize_asset_path($img) {
         .event-overlay { pointer-events: none; }
         .event-card-enhanced .event-overlay { pointer-events: none; }
         .btn.btn-primary { position: relative; z-index: 2; }
+
+        /* Theme Filter Styles */
+        /* Theme Filter Styles */
+        .filter-section-wrapper {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 40px;
+        }
+
+        .filter-box {
+            background: #25283d; /* Darker box background similar to image */
+            border-radius: 16px;
+            padding: 24px 40px;
+            width: 100%;
+            max-width: 900px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .filter-title {
+            color: #ffffff;
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            text-transform: none; /* Keep natural case */
+        }
+
+        .theme-filter-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .filter-btn {
+            background: rgba(255,255,255,0.05); /* Very subtle background */
+            border: none;
+            color: rgba(255,255,255,0.6);
+            padding: 8px 20px;
+            border-radius: 20px; /* Pill shape */
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+
+        .filter-btn:hover {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+        }
+
+        .filter-btn.active {
+            background: rgba(255,255,255,0.15); /* Slightly lighter for active */
+            color: white;
+            font-weight: 600;
+        }
     </style>
 </head>
 <body>
@@ -334,6 +414,23 @@ function normalize_asset_path($img) {
     <!-- SECTION EVENTS -->
     <section class="section_padding">
         <div class="container">
+            
+            <!-- Theme Filters -->
+            <!-- Theme Filters -->
+            <div class="filter-section-wrapper">
+                <div class="filter-box">
+                    <h4 class="filter-title">Filtrer par thème</h4>
+                    <div class="theme-filter-container">
+                        <button class="filter-btn active" data-filter="all">Tous</button>
+                        <?php foreach ($uniqueThemes as $thm): ?>
+                            <button class="filter-btn" data-filter="<?= htmlspecialchars(get_theme_token($thm)) ?>">
+                                 <?= htmlspecialchars($thm) ?>
+                            </button>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+            </div>
+
             <div class="row" id="events-row">
             <?php if (!empty($events)): ?>
                 <?php foreach ($events as $ev): ?>
@@ -341,28 +438,35 @@ function normalize_asset_path($img) {
                         $title = htmlspecialchars($ev['titre'] ?? 'Événement');
                         $desc = htmlspecialchars($ev['description'] ?? '');
                         $date = !empty($ev['date_evenement']) ? date('d/m/Y', strtotime($ev['date_evenement'])) : '';
+                        $rawDate = $ev['date_evenement'] ?? '';
                         $lieu = htmlspecialchars($ev['lieu'] ?? 'Lieu non spécifié');
                         $time = !empty($ev['heure_evenement']) ? substr($ev['heure_evenement'], 0, 5) : null;
+                        $duration = isset($ev['duree_minutes']) ? (int)$ev['duree_minutes'] : 0;
                         $img = normalize_asset_path($ev['image'] ?? '');
                         $participants = (int)$eventModel->countParticipants($ev['id_evenement'] ?? 0);
                         $type = isset($ev['type_evenement']) ? $ev['type_evenement'] : 'gratuit';
                         $prix = isset($ev['prix']) ? (float)$ev['prix'] : 0;
                         $isPaid = ($type === 'payant') && $prix > 0;
-                        $theme = strtolower(trim($ev['theme'] ?? 'evenement'));
+                        // Concatenate fields to auto-detect theme if explicit theme is missing
+                        $themeSource = ($ev['theme'] ?? '') . ' ' . ($ev['titre'] ?? '') . ' ' . ($ev['description'] ?? '');
+                        $theme = get_theme_token($themeSource);
+                        
+                        // Debug: Uncomment to see what token is assigned if needed
+                        // echo "<!-- DEBUG: " . htmlspecialchars($themeSource) . " -> $theme -->";
+
                         $images = [
                             "sport" => "sport.png",
-                            "éducation" => "education.png",
                             "education" => "education.png",
                             "esport" => "valorant.png",
                             "valorant" => "valorant.png",
                             "minecraft" => "minecraft.png",
-                            "création" => "roblox.png",
                             "creation" => "roblox.png",
-                            "prévention" => "sante.png",
+                            "roblox" => "roblox.png",
                             "prevention" => "sante.png",
+                            "sante" => "sante.png",
                             "coaching" => "coaching.png",
-                            "compétition" => "cyber.png",
                             "competition" => "cyber.png",
+                            "cyber" => "cyber.png",
                             "evenement" => "default.png",
                         ];
                         $image = $images[$theme] ?? "default.png";
@@ -370,7 +474,15 @@ function normalize_asset_path($img) {
                         $cardImg = !empty($ev['image']) ? $img : $imagePath;
                         $eventId = $ev['id_evenement'] ?? 0;
                     ?>
-                    <div class="col-lg-4 col-md-6 event-item" data-theme="<?= htmlspecialchars($theme) ?>" data-type="<?= htmlspecialchars($type) ?>" data-date="<?= $ev['date_evenement'] ?? '' ?>">
+                    <div class="col-lg-4 col-md-6 event-item" 
+                         data-theme="<?= htmlspecialchars($theme) ?>" 
+                         data-type="<?= htmlspecialchars($type) ?>" 
+                         data-date="<?= $rawDate ?>"
+                         data-time="<?= $time ?? '' ?>"
+                         data-duration="<?= $duration ?>"
+                         data-title="<?= $title ?>"
+                         data-location="<?= $lieu ?>"
+                         data-description="<?= $desc ?>">
                         <div class="game-card store-card">
                             <!-- Image de l'événement -->
                             <div class="game-card-img">
@@ -462,7 +574,7 @@ function normalize_asset_path($img) {
                                 id="event-search" 
                                 class="event-search-input" 
                                 type="text" 
-                                placeholder="Rechercher par nom ou lieu..." 
+                                placeholder="Rechercher par date, heure, durée, thème, type..." 
                                 autocomplete="off"
                             />
                             <div class="search-clear" id="search-clear" style="display:none;">
@@ -493,23 +605,46 @@ document.addEventListener('DOMContentLoaded', function() {
     const searchClear = document.getElementById('search-clear');
     const searchResultsInfo = document.getElementById('search-results-info');
     const resultCount = document.getElementById('result-count');
-    const allItems = document.querySelectorAll('#events-row [data-theme]');
+    // Important: we select items that have data attributes we just added
+    const allItems = document.querySelectorAll('.event-item');
 
-    function filterEvents(searchTerm) {
-        const term = searchTerm.toLowerCase().trim();
+    // State
+    let currentTheme = 'all';
+    let currentSearchTerm = '';
+
+    const filterBtns = document.querySelectorAll('.filter-btn');
+
+    function applyFilters() {
+        const term = currentSearchTerm.toLowerCase().trim();
         let visibleCount = 0;
 
         allItems.forEach(card => {
-            const title = card.querySelector('.event-title')?.textContent.toLowerCase() || '';
-            const location = card.querySelector('.event-meta')?.textContent.toLowerCase() || '';
-            const description = card.querySelector('.event-description')?.textContent.toLowerCase() || '';
+            // Data attributes
+            const theme = (card.dataset.theme || '').toLowerCase();
+            
+            // Searchable fields
+            const title = (card.dataset.title || '').toLowerCase();
+            const location = (card.dataset.location || '').toLowerCase();
+            const description = (card.dataset.description || '').toLowerCase();
+            const date = (card.dataset.date || '').toLowerCase();
+            const time = (card.dataset.time || '').toLowerCase();
+            const type = (card.dataset.type || '').toLowerCase();
 
-            const matches = 
+            // 1. Check Theme
+            const matchesTheme = (currentTheme === 'all' || theme === currentTheme);
+
+            // 2. Check Search Term
+            const matchesSearch = 
+                term === '' ||
                 title.includes(term) || 
                 location.includes(term) || 
-                description.includes(term);
+                description.includes(term) ||
+                date.includes(term) ||
+                time.includes(term) ||
+                theme.includes(term) ||
+                type.includes(term);
 
-            if (term === '' || matches) {
+            if (matchesTheme && matchesSearch) {
                 card.style.display = '';
                 visibleCount++;
             } else {
@@ -517,40 +652,71 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
-        if (term !== '') {
-            searchResultsInfo.style.display = 'block';
-            resultCount.textContent = visibleCount;
+        // Update search info visibility
+        if (term !== '' || currentTheme !== 'all') {
+            // Show count if we are filtering in any way (optional preference)
+            // But usually the user wants to know how many results if they typed something.
+            // Let's keep original behavior: only show specific "results info" if typing.
+            // OR we can always show it if it helps. 
+            // For now, let's Stick to the "search-results-info" being mostly about the text search
+            // unless we want to show "5 filtered events". 
+            
+            // Let's just follow the text search visibility rule for the info box to avoid clutter,
+            // or update it if text is present.
+            if (term !== '') {
+                searchResultsInfo.style.display = 'block';
+                resultCount.textContent = visibleCount;
+            } else {
+                searchResultsInfo.style.display = 'none';
+            }
         } else {
             searchResultsInfo.style.display = 'none';
         }
     }
 
+    // --- Theme Filter Events ---
+    filterBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            // Remove active class from all
+            filterBtns.forEach(b => b.classList.remove('active'));
+            // Add to clicked
+            btn.classList.add('active');
+            
+            // Update state
+            currentTheme = btn.getAttribute('data-filter');
+            applyFilters();
+        });
+    });
+
+    // --- Search Events ---
     searchInput.addEventListener('input', function(e) {
-        const searchTerm = e.target.value;
+        currentSearchTerm = e.target.value;
         
-        if (searchTerm.length > 0) {
+        if (currentSearchTerm.length > 0) {
             searchClear.style.display = 'flex';
         } else {
             searchClear.style.display = 'none';
         }
 
-        filterEvents(searchTerm);
+        applyFilters();
     });
 
     searchClear.addEventListener('click', function() {
         searchInput.value = '';
+        currentSearchTerm = '';
         searchClear.style.display = 'none';
         searchResultsInfo.style.display = 'none';
-        filterEvents('');
+        applyFilters();
         searchInput.focus();
     });
 
     searchInput.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
             searchInput.value = '';
+            currentSearchTerm = '';
             searchClear.style.display = 'none';
             searchResultsInfo.style.display = 'none';
-            filterEvents('');
+            applyFilters();
         }
     });
 });

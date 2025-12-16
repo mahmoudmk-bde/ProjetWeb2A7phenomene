@@ -167,7 +167,7 @@ if (isset($_POST['start_over'])) {
                 <div class="form-group">
                     <label class="form-label">Adresse email *</label>
                     <input type="email" class="form-control" name="email" 
-                           placeholder="Entrez votre adresse email" required
+                           placeholder="Entrez votre adresse email"
                            value="<?php echo isset($_POST['email']) ? htmlspecialchars($_POST['email']) : ''; ?>">
                 </div>
                 <button type="submit" name="search_user" class="btn-reset">
@@ -184,13 +184,13 @@ if (isset($_POST['start_over'])) {
                 <div class="question-section">
                     <div class="question-text"><?php echo htmlspecialchars($security_questions['q1']); ?></div>
                     <input type="text" class="form-control" name="answer1" 
-                           placeholder="Votre réponse" required>
+                           placeholder="Votre réponse">
                 </div>
                 
                 <div class="question-section">
                     <div class="question-text"><?php echo htmlspecialchars($security_questions['q2']); ?></div>
                     <input type="text" class="form-control" name="answer2" 
-                           placeholder="Votre réponse" required>
+                           placeholder="Votre réponse">
                 </div>
                 
                 <div class="row">
@@ -214,14 +214,14 @@ if (isset($_POST['start_over'])) {
                 <div class="form-group">
                     <label class="form-label">Nouveau mot de passe *</label>
                     <input type="password" class="form-control" name="new_password" 
-                           placeholder="Entrez votre nouveau mot de passe" required>
+                           placeholder="Entrez votre nouveau mot de passe">
                     <small class="text-muted">Le mot de passe doit contenir au moins 6 caractères</small>
                 </div>
                 
                 <div class="form-group">
                     <label class="form-label">Confirmer le nouveau mot de passe *</label>
                     <input type="password" class="form-control" name="confirm_password" 
-                           placeholder="Confirmez votre nouveau mot de passe" required>
+                           placeholder="Confirmez votre nouveau mot de passe">
                 </div>
                 
                 <div class="row">

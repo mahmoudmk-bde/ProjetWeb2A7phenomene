@@ -100,7 +100,7 @@ $ordersAssetsBase = (defined('BASE_URL') ? BASE_URL : '') . 'view/backoffice/ass
                                        id="nom" 
                                        name="nom" 
                                        value="<?= htmlspecialchars($this->partenaire->nom) ?>" 
-                                       data-validate="required">
+                                       >
                             </div>
 
                             <!-- Email -->
@@ -113,7 +113,7 @@ $ordersAssetsBase = (defined('BASE_URL') ? BASE_URL : '') . 'view/backoffice/ass
                                        id="email" 
                                        name="email" 
                                        value="<?= htmlspecialchars($this->partenaire->email) ?>" 
-                                       data-validate="required">
+                                       >
                             </div>
 
                             <!-- Type -->
@@ -121,7 +121,7 @@ $ordersAssetsBase = (defined('BASE_URL') ? BASE_URL : '') . 'view/backoffice/ass
                                 <label for="type" class="form-label">
                                     <i class="fas fa-tag"></i> Type <span class="text-danger">*</span>
                                 </label>
-                                <select class="form-control" id="type" name="type" data-validate="required">
+                                <select class="form-control" id="type" name="type">
                                     <option value="">Sélectionner un type</option>
                                     <option value="sponsor" <?= $this->partenaire->type === 'sponsor' ? 'selected' : '' ?>>Sponsor</option>
                                     <option value="testeur" <?= $this->partenaire->type === 'testeur' ? 'selected' : '' ?>>Testeur</option>

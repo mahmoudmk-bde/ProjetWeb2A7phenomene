@@ -680,7 +680,7 @@ $imagePath = "assets/img/" . $image;
                                             <div class="star-rating">
                                                 <?php for ($i = 5; $i >= 1; $i--): ?>
                                                     <input type="radio" id="star<?= $i ?>" name="rating" value="<?= $i ?>" 
-                                                           <?= $userFeedback && $userFeedback['rating'] == $i ? 'checked' : '' ?> required>
+                                                           <?= $userFeedback && $userFeedback['rating'] == $i ? 'checked' : '' ?>>
                                                     <label for="star<?= $i ?>" title="<?= $i ?> étoiles">
                                                         <i class="fas fa-star"></i>
                                                     </label>

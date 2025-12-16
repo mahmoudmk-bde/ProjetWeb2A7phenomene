@@ -39,17 +39,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <form method="POST">
 
         <div class="form-group-modern">
-            <input type="text" name="titre" placeholder=" " required>
+            <input type="text" name="titre" placeholder=" ">
             <label>Titre de la mission</label>
         </div>
 
         <div class="form-group-modern">
-            <input type="text" name="jeu" placeholder=" " required>
+            <input type="text" name="jeu" placeholder=" ">
             <label>Jeu utilisé</label>
         </div>
         
         <div class="form-group-modern">
-            <input type="text" name="theme" placeholder=" " required>
+            <input type="text" name="theme" placeholder=" ">
             <label>Thème</label>
         </div>
 
@@ -57,13 +57,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <label style="position:static; display:block; margin-bottom:5px; color:#ccc; font-size:14px;">
         Niveau de difficulté
     </label>
-    <select name="niveau_difficulte" style="padding:10px 15px; border-radius:12px; width:100%; background:#111; color:#fff; border:1px solid #333;" required>
+    <select name="niveau_difficulte" style="padding:10px 15px; border-radius:12px; width:100%; background:#111; color:#fff; border:1px solid #333;">
         <option value="facile">Facile</option>
         <option value="moyen">Moyen</option>
         <option value="difficile">Difficile</option>
     </select>
-    <input type="date" name="date_debut" required>
-<input type="date" name="date_fin" required>
+    <input type="date" name="date_debut">
+<input type="date" name="date_fin">
 
 </div>
 

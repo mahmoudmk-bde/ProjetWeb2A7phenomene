@@ -6,10 +6,10 @@ $error = "";
 $utilisateurc = new utilisateurcontroller();
 
 if (
-    isset($_POST["prenom"]) && isset($_POST["nom"]) && isset($_POST["dt_naiss"]) && isset($_POST["mail"]) && isset($_POST["num"]) && isset($_POST["mdp"])&& isset($_POST["typee"]))
+    isset($_POST["prenom"]) && isset($_POST["nom"]) && isset($_POST["dt_naiss"]) && isset($_POST["mail"]) && isset($_POST["num"]) && isset($_POST["mdp"]))
  {
     if (
-      !empty($_POST["prenom"]) && !empty($_POST["nom"]) && !empty($_POST["dt_naiss"]) && !empty($_POST["mail"]) && !empty($_POST["num"]) && !empty($_POST["mdp"])&& !empty($_POST["typee"])
+      !empty($_POST["prenom"]) && !empty($_POST["nom"]) && !empty($_POST["dt_naiss"]) && !empty($_POST["mail"]) && !empty($_POST["num"]) && !empty($_POST["mdp"])
       ) {
         
         // Vérifier si l'email existe déjà
@@ -28,7 +28,7 @@ if (
     $_POST['mail'],
     $_POST['num'],
     $_POST['mdp'],
-    $_POST['typee'],
+    'user',
     $_POST['q1'],
     $_POST['rp1'],
     $_POST['q2'],
@@ -73,22 +73,22 @@ $utilisateurc->addUtilisateur($u);
     <form method="post" id="inscriptionForm">
   <div class="form-row">
     <div class="form-group">
-      <input type="text" name="prenom" id="prenom" placeholder="Prénom" required> <!-- pr → prenom -->
+      <input type="text" name="prenom" id="prenom" placeholder="Prénom"> <!-- pr → prenom -->
       <div class="error-message" id="error-prenom"></div>
     </div>
     <div class="form-group">
-      <input type="text" name="nom" id="nom" placeholder="Nom" required>
+      <input type="text" name="nom" id="nom" placeholder="Nom">
       <div class="error-message" id="error-nom"></div>
     </div>
   </div>
 
   <div class="form-group">
-    <input type="date" name="dt_naiss" id="dt_naiss" placeholder="Date de naissance" required> <!-- dt → dt_naiss -->
+    <input type="date" name="dt_naiss" id="dt_naiss" placeholder="Date de naissance"> <!-- dt → dt_naiss -->
     <div class="error-message" id="error-dt_naiss"></div>
   </div>
 
   <div class="form-group">
-    <input type="email" name="mail" id="mail" placeholder="Adresse email" required>
+    <input type="email" name="mail" id="mail" placeholder="Adresse email">
     <div class="error-message" id="error-mail"></div>
   </div>
 
@@ -100,7 +100,7 @@ $utilisateurc->addUtilisateur($u);
       <!-- Champ mot de passe avec œil -->
       <div class="form-group">
         <div class="password-container">
-          <input type="password" name="mdp" id="mdp" placeholder="Mot de passe" required>
+          <input type="password" name="mdp" id="mdp" placeholder="Mot de passe">
           <button type="button" class="password-toggle" onclick="togglePassword('mdp')">
             <i class="far fa-eye"></i>
           </button>
@@ -110,7 +110,7 @@ $utilisateurc->addUtilisateur($u);
       <!-- Champ confirmation mot de passe avec œil -->
       <div class="form-group">
         <div class="password-container">
-          <input type="password" name="cmdp" id="cmdp" placeholder="Confirmation du mot de passe" required>
+          <input type="password" name="cmdp" id="cmdp" placeholder="Confirmation du mot de passe">
           <button type="button" class="password-toggle" onclick="togglePassword('cmdp')">
             <i class="far fa-eye"></i>
           </button>
@@ -118,18 +118,7 @@ $utilisateurc->addUtilisateur($u);
         <div class="error-message" id="error-cmdp"></div>
       </div>
       <div class="form-group">
-    <div class="radio-group">
-        <label class="radio-option">
-            <input type="radio" name="typee" id="vo" value="volontaire" required>
-            <span class="radio-custom"></span>
-            <span class="radio-label">Volontaire</span>
-        </label>
-        <label class="radio-option">
-            <input type="radio" name="typee" id="or" value="organisation" required>
-            <span class="radio-custom"></span>
-            <span class="radio-label">Organisation</span>
-        </label>
-    </div>
+    
     <div class="error-message" id="error-vo"></div>
 </div>
 
