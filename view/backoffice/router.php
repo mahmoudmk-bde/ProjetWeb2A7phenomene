@@ -13,6 +13,7 @@ require_once __DIR__ . '/../../db_config.php';
 // Include Admin Controllers
 require_once __DIR__ . '/../../controller/AdminStoreController.php';
 require_once __DIR__ . '/../../controller/AdminPartenaireController.php';
+require_once __DIR__ . '/../../controller/AdminOrderController.php';
 
 // Get Controller and Action
 $controllerName = isset($_GET['controller']) ? $_GET['controller'] : 'dashboard';
@@ -41,6 +42,18 @@ switch ($controllerName) {
             $controller->$action();
         } else {
             die("Action '$action' not found in AdminPartenaireController");
+        }
+        break;
+
+    case 'AdminOrder':
+        $controller = new AdminOrderController();
+        if ($action === 'index') {
+            // Include view directly
+            include __DIR__ . '/orders/orders-list.php';
+        } elseif (method_exists($controller, $action)) {
+            $controller->$action();
+        } else {
+            die("Action '$action' not found in AdminOrderController");
         }
         break;
 
