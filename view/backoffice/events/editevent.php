@@ -10,8 +10,11 @@ if (!class_exists('config')) {
     }
 }
 require_once __DIR__ . '/../../../model/evenementModel.php';
+require_once __DIR__ . '/../../../controller/utilisateurcontroller.php';
 
 $eventModel = new EvenementModel();
+$userController = new UtilisateurController();
+$usersList = $userController->listUtilisateurs();
 
 // Fallback sanitization helper
 if (!function_exists('secure_data')) {
@@ -133,16 +136,16 @@ if (!$eventData) {
             </div>
 
             <div class="form-group">
-                <label>Thème</label>
-                <select name="id_organisation">
-                    <option value="">Sélectionnez un thème</option>
-                    <option value="1" <?= $eventData['id_organisation'] == 1 ? 'selected' : '' ?>>Sport</option>
-                    <option value="2" <?= $eventData['id_organisation'] == 2 ? 'selected' : '' ?>>Éducation</option>
-                    <option value="3" <?= $eventData['id_organisation'] == 3 ? 'selected' : '' ?>>Esport</option>
-                    <option value="4" <?= $eventData['id_organisation'] == 4 ? 'selected' : '' ?>>Création</option>
-                    <option value="5" <?= $eventData['id_organisation'] == 5 ? 'selected' : '' ?>>Prévention</option>
-                    <option value="6" <?= $eventData['id_organisation'] == 6 ? 'selected' : '' ?>>Coaching</option>
-                    <option value="7" <?= $eventData['id_organisation'] == 7 ? 'selected' : '' ?>>Compétition</option>
+                <label>Organisation</label>
+                <select name="id_organisation" required>
+                    <option value="">Sélectionnez une organisation</option>
+                    <?php if ($usersList): ?>
+                        <?php foreach ($usersList as $user): ?>
+                            <option value="<?= $user['id_util'] ?>" <?= ($eventData['id_organisation'] == $user['id_util']) ? 'selected' : '' ?>>
+                                <?= htmlspecialchars($user['prenom'] . ' ' . $user['nom']) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
                 </select>
             </div>
 
