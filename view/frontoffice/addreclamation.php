@@ -1,5 +1,9 @@
 <?php
 session_start();
+
+// Run database migrations
+require_once __DIR__ . '/../../db_migrations.php';
+
 require_once "../../controller/ReclamationController.php";
 require_once "../../controller/ReclamationClassifier.php";
 require_once "../../controller/missioncontroller.php";
@@ -576,7 +580,7 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
                     const userSelect = document.getElementById('utilisateur_cible_id');
                     const techniqueInput = document.getElementById('technique_detail');
 
-                    // Track if user changed type to avoid overwriting
+                    // Track if user manually changed selections to avoid overwriting
                     const locks = {
                         type: false,
                         mission: false,
@@ -584,11 +588,23 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
                         partner: false,
                         user: false
                     };
-                    if (typeSelect) typeSelect.addEventListener('change', () => { locks.type = true; });
-                    if (missionSelect) missionSelect.addEventListener('change', () => { locks.mission = true; });
-                    if (eventSelect) eventSelect.addEventListener('change', () => { locks.event = true; });
-                    if (partnerSelect) partnerSelect.addEventListener('change', () => { locks.partner = true; });
-                    if (userSelect) userSelect.addEventListener('change', () => { locks.user = true; });
+                    
+                    // Only lock when user manually changes (not programmatic change)
+                    if (typeSelect) typeSelect.addEventListener('change', (e) => { 
+                        if (e.isTrusted) locks.type = true; 
+                    });
+                    if (missionSelect) missionSelect.addEventListener('change', (e) => { 
+                        if (e.isTrusted && missionSelect.value) locks.mission = true; 
+                    });
+                    if (eventSelect) eventSelect.addEventListener('change', (e) => { 
+                        if (e.isTrusted && eventSelect.value) locks.event = true; 
+                    });
+                    if (partnerSelect) partnerSelect.addEventListener('change', (e) => { 
+                        if (e.isTrusted && partnerSelect.value) locks.partner = true; 
+                    });
+                    if (userSelect) userSelect.addEventListener('change', (e) => { 
+                        if (e.isTrusted && userSelect.value) locks.user = true; 
+                    });
                     if (techniqueInput) techniqueInput.addEventListener('input', () => { locks.technique = true; });
 
                     function normalize(str) {
@@ -600,7 +616,10 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
                     }
 
                     function autoSelectByMatch(selectEl, lockKey, text) {
-                        if (!selectEl || locks[lockKey] || selectEl.value) return;
+                        if (!selectEl) return;
+                        // Only skip if user manually selected something AND it's still set
+                        if (locks[lockKey] && selectEl.value) return;
+                        
                         const tokens = getTokens(text);
                         if (!tokens.length) {
                             autoSelectFirst(selectEl, lockKey);
@@ -618,7 +637,6 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
                         if (best) {
                             selectEl.value = best.value;
                             selectEl.dispatchEvent(new Event('change'));
-                            locks[lockKey] = true;
                         } else {
                             autoSelectFirst(selectEl, lockKey);
                         }
@@ -677,8 +695,10 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
                     }
 
                     function autoSelectFirst(selectEl, lockKey) {
-                        if (!selectEl || locks[lockKey]) return;
-                        if (selectEl.value) return;
+                        if (!selectEl) return;
+                        // Only skip if user manually selected something AND it's still set
+                        if (locks[lockKey] && selectEl.value) return;
+                        
                         if (selectEl.options.length > 1) {
                             selectEl.selectedIndex = 1; // first real option
                             selectEl.dispatchEvent(new Event('change'));
@@ -753,18 +773,22 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
 
                                     // Auto-pick relevant entity - always update on content change
                                     if (chosenType === 'mission') {
+                                        locks.mission = false;
                                         missionSelect.value = '';
                                         autoSelectByMatch(missionSelect, 'mission', textForMatch);
                                     }
                                     if (chosenType === 'evenement') {
+                                        locks.event = false;
                                         eventSelect.value = '';
                                         autoSelectByMatch(eventSelect, 'event', textForMatch);
                                     }
                                     if (chosenType === 'partenaire') {
+                                        locks.partner = false;
                                         partnerSelect.value = '';
                                         autoSelectByMatch(partnerSelect, 'partner', textForMatch);
                                     }
                                     if (chosenType === 'utilisateur') {
+                                        locks.user = false;
                                         userSelect.value = '';
                                         autoSelectByMatch(userSelect, 'user', textForMatch);
                                     }

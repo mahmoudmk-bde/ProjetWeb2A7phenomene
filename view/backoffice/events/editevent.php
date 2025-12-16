@@ -10,8 +10,11 @@ if (!class_exists('config')) {
     }
 }
 require_once __DIR__ . '/../../../model/evenementModel.php';
+require_once __DIR__ . '/../../../controller/utilisateurcontroller.php';
 
 $eventModel = new EvenementModel();
+$userController = new UtilisateurController();
+$usersList = $userController->listUtilisateurs();
 
 // Fallback sanitization helper
 if (!function_exists('secure_data')) {
@@ -47,7 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     // Handle new image upload
     if (isset($_FILES['image']) && $_FILES['image']['error'] == 0) {
-        $uploadDir = __DIR__ . '/assets/';
+        $uploadDir = __DIR__ . '/../../../view/frontoffice/assets/img/events/';
         if (!is_dir($uploadDir)) {
             mkdir($uploadDir, 0777, true);
         }
@@ -56,7 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $uploadFile = $uploadDir . $fileName;
         
         if (move_uploaded_file($_FILES['image']['tmp_name'], $uploadFile)) {
-            $image = 'assets/' . $fileName;
+            $image = $fileName;
         }
     }
     
@@ -112,7 +115,7 @@ if (!$eventData) {
         <div class="form-row-2">
             <div class="form-group">
                 <label>Date de l'événement</label>
-                <input type="date" name="date_evenement" value="<?= htmlspecialchars($eventData['date_evenement']) ?>">
+                <input type="date" name="date_evenement" value="<?= htmlspecialchars($eventData['date_evenement']) ?>" onclick="this.showPicker()" onkeydown="return false">
             </div>
 
             <div class="form-group">
@@ -134,15 +137,15 @@ if (!$eventData) {
 
             <div class="form-group">
                 <label>Thème</label>
-                <select name="id_organisation">
+                <select name="id_organisation" required>
                     <option value="">Sélectionnez un thème</option>
-                    <option value="1" <?= $eventData['id_organisation'] == 1 ? 'selected' : '' ?>>Sport</option>
-                    <option value="2" <?= $eventData['id_organisation'] == 2 ? 'selected' : '' ?>>Éducation</option>
-                    <option value="3" <?= $eventData['id_organisation'] == 3 ? 'selected' : '' ?>>Esport</option>
-                    <option value="4" <?= $eventData['id_organisation'] == 4 ? 'selected' : '' ?>>Création</option>
-                    <option value="5" <?= $eventData['id_organisation'] == 5 ? 'selected' : '' ?>>Prévention</option>
-                    <option value="6" <?= $eventData['id_organisation'] == 6 ? 'selected' : '' ?>>Coaching</option>
-                    <option value="7" <?= $eventData['id_organisation'] == 7 ? 'selected' : '' ?>>Compétition</option>
+                    <option value="1" <?= ($eventData['id_organisation'] == 1) ? 'selected' : '' ?>>Sport</option>
+                    <option value="2" <?= ($eventData['id_organisation'] == 2) ? 'selected' : '' ?>>Éducation</option>
+                    <option value="3" <?= ($eventData['id_organisation'] == 3) ? 'selected' : '' ?>>Esport</option>
+                    <option value="4" <?= ($eventData['id_organisation'] == 4) ? 'selected' : '' ?>>Création</option>
+                    <option value="5" <?= ($eventData['id_organisation'] == 5) ? 'selected' : '' ?>>Prévention</option>
+                    <option value="6" <?= ($eventData['id_organisation'] == 6) ? 'selected' : '' ?>>Coaching</option>
+                    <option value="7" <?= ($eventData['id_organisation'] == 7) ? 'selected' : '' ?>>Compétition</option>
                 </select>
             </div>
 
@@ -166,7 +169,7 @@ if (!$eventData) {
             <?php if (!empty($eventData['image'])): ?>
                 <div style="margin-top: 10px;">
                     <p style="margin-bottom: 10px; color: rgba(255,255,255,0.7); font-size: 13px;">Image actuelle :</p>
-                    <img src="<?= htmlspecialchars($eventData['image']) ?>" alt="Image actuelle" 
+                    <img src="../../../view/frontoffice/assets/img/events/<?= htmlspecialchars(basename($eventData['image'])) ?>" alt="Image actuelle" 
                          style="max-width: 150px; max-height: 150px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.2);">
                 </div>
             <?php endif; ?>

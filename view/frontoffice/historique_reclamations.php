@@ -574,6 +574,7 @@ $headerShowUserMenu = true; // instruct header to show dropdown
 
     <script src="assets/js/jquery-1.12.1.min.js"></script>
     <script src="assets/js/bootstrap.min.js"></script>
+    
 </body>
 
 </html>

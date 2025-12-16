@@ -247,7 +247,7 @@ $ordersAssetsBase = (defined('BASE_URL') ? BASE_URL : '') . 'view/backoffice/ass
                                             <td><?= ($page - 1) * $limit + $index + 1 ?></td>
                                             <td>
                                                 <?php if ($event['image']): ?>
-                                                    <img src="<?php echo BASE_URL . 'view/frontoffice/assets/img/events/' . htmlspecialchars($event['image']); ?>"
+                                                    <img src="<?php echo BASE_URL . 'view/frontoffice/assets/img/events/' . htmlspecialchars(basename($event['image'])); ?>"
                                                         alt="<?= htmlspecialchars($event['titre']) ?>" class="game-image"
                                                         onerror="this.src='<?php echo BASE_URL; ?>view/frontoffice/assets/img/events/event-default.jpg'">
                                                 <?php else: ?>

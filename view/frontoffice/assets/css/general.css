@@ -1,0 +1,283 @@
+:root {
+    --primary-color: #ff4a57;
+    --secondary-color: #1f2235;
+    --accent-color: #24263b;
+    --text-color: #ffffff;
+    --success-color: #28a745;
+    --warning-color: #ffc107;
+    --info-color: #17a2b8;
+    --border-color: #2d3047;
+    --danger-color: #dc3545;
+    --dark-color: #15172b;
+    --light-color: #f8f9fa;
+    --gray-color: #6c757d;
+    --border-radius: 12px;
+    --box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    --box-shadow-light: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+/* Reset et styles de base */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    background: linear-gradient(135deg, var(--secondary-color) 0%, var(--dark-color) 100%);
+    color: var(--text-color);
+    line-height: 1.6;
+    min-height: 100vh;
+}
+
+.body_bg {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Header Styles */
+.main_menu {
+    background: linear-gradient(135deg, var(--secondary-color) 0%, var(--accent-color) 100%) !important;
+    border-bottom: 1px solid var(--border-color);
+    padding: 15px 0;
+}
+
+.navbar-brand img {
+    max-height: 50px;
+}
+
+.navbar-light .navbar-nav .nav-link {
+    color: var(--text-color) !important;
+    font-weight: 500;
+    padding: 10px 15px;
+    transition: color 0.3s ease;
+}
+
+.navbar-light .navbar-nav .nav-link:hover {
+    color: var(--primary-color) !important;
+}
+
+.btn_1 {
+    background: linear-gradient(45deg, var(--primary-color), #ff6b7a) !important;
+    border: none !important;
+    color: white !important;
+    padding: 10px 25px !important;
+    border-radius: 25px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn_1:hover {
+    background: linear-gradient(45deg, #ff6b7a, var(--primary-color)) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(255, 74, 87, 0.4);
+}
+
+.navbar-toggler {
+    border-color: var(--primary-color);
+}
+
+.navbar-toggler-icon {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(255, 74, 87, 1)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+}
+
+/* Banner Section Base */
+.banner_part {
+    padding: 100px 0;
+    background: linear-gradient(135deg, var(--secondary-color) 0%, var(--dark-color) 100%);
+    flex: 1;
+    display: flex;
+    align-items: center;
+}
+
+/* Footer Styles */
+.footer_part {
+    background: linear-gradient(135deg, var(--secondary-color) 0%, var(--dark-color) 100%) !important;
+    border-top: 1px solid var(--border-color);
+    color: var(--text-color);
+    padding: 70px 0 0 0;
+    margin-top: auto;
+}
+
+.footer_top {
+    padding-bottom: 50px;
+}
+
+.single_footer_part {
+    margin-bottom: 30px;
+}
+
+.single_footer_part h4 {
+    color: var(--text-color) !important;
+    font-size: 1.3rem;
+    margin-bottom: 20px;
+    font-weight: 600;
+}
+
+.single_footer_part p {
+    color: var(--gray-color) !important;
+    line-height: 1.6;
+    margin-bottom: 10px;
+}
+
+.single_footer_part ul {
+    list-style: none;
+    padding: 0;
+}
+
+.single_footer_part ul li {
+    margin-bottom: 8px;
+}
+
+.single_footer_part ul li a {
+    color: var(--gray-color) !important;
+    text-decoration: none;
+    transition: color 0.3s ease;
+    line-height: 1.6;
+}
+
+.single_footer_part ul li a:hover {
+    color: var(--primary-color) !important;
+    text-decoration: none;
+}
+
+.footer_logo_iner img {
+    max-width: 150px;
+    margin-bottom: 20px;
+}
+
+/* Newsletter Form */
+.subscribe_form {
+    position: relative;
+    display: flex;
+    margin-top: 15px;
+}
+
+.subscribe_form input {
+    background: var(--accent-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    color: var(--text-color);
+    padding: 12px 15px;
+    width: 100%;
+    transition: all 0.3s ease;
+}
+
+.subscribe_form input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(255, 74, 87, 0.2);
+}
+
+.subscribe_form input::placeholder {
+    color: var(--gray-color);
+}
+
+.newsletter-submit {
+    background: var(--primary-color);
+    border: none;
+    border-radius: var(--border-radius);
+    color: white;
+    padding: 12px 20px;
+    margin-left: 10px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    min-width: 50px;
+}
+
+.newsletter-submit:hover {
+    background: #ff6b7a;
+}
+
+/* Copyright Section */
+.copygight_text {
+    background: var(--dark-color);
+    padding: 20px 0;
+    border-top: 1px solid var(--border-color);
+}
+
+.copyright_text p {
+    color: var(--gray-color) !important;
+    margin: 0;
+}
+
+.footer_icon .list-unstyled {
+    display: flex;
+    justify-content: flex-end;
+    gap: 15px;
+    margin: 0;
+}
+
+.single_social_icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background: var(--accent-color);
+    border-radius: 50%;
+    color: var(--text-color) !important;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.single_social_icon:hover {
+    background: var(--primary-color);
+    transform: translateY(-2px);
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--secondary-color);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--primary-color);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #ff6b7a;
+}
+
+/* Responsive Design pour header/footer */
+@media (max-width: 768px) {
+    .footer_part {
+        padding: 50px 0 0 0;
+    }
+    
+    .footer_icon .list-unstyled {
+        justify-content: center;
+    }
+    
+    .copyright_text {
+        text-align: center;
+        margin-bottom: 15px;
+    }
+    
+    .single_footer_part {
+        text-align: center;
+    }
+    
+    .navbar-nav {
+        text-align: center;
+    }
+}
+
+@media (max-width: 576px) {
+    .subscribe_form {
+        flex-direction: column;
+    }
+    
+    .newsletter-submit {
+        margin-left: 0;
+        margin-top: 10px;
+        width: 100%;
+    }
+}

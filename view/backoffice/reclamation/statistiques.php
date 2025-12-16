@@ -2,6 +2,10 @@
 // Use forward slashes which PHP handles correctly on Windows
 // From view/backoffice/reclamation/ we need to go up 3 levels to reach project root
 $base_dir = str_replace('\\', '/', __DIR__) . '/../../../';
+
+// Run database migrations
+require_once $base_dir . 'db_migrations.php';
+
 require_once $base_dir . 'controller/ReclamationController.php';
 require_once $base_dir . 'controller/ResponseController.php';
 
@@ -16,11 +20,17 @@ $traitees = count(array_filter($list, function($r) { return $r['statut'] === 'Tr
 $enCours = count(array_filter($list, function($r) { return $r['statut'] === 'En cours'; }));
 
 // Statistiques par priorité
-$priorites = ['Basse' => 0, 'Moyenne' => 0, 'Haute' => 0, 'Urgente' => 0];
+$priorites = ['Basse' => 0, 'Moyenne' => 0, 'Élevée' => 0, 'Urgent' => 0];
 foreach ($list as $rec) {
     $priorite = $rec['priorite'] ?? 'Moyenne';
     if (isset($priorites[$priorite])) {
         $priorites[$priorite]++;
+    } else {
+        // Handle variations (Urgente->Urgent, Haute->Élevée)
+        $normalized = str_replace(['Urgente', 'Haute'], ['Urgent', 'Élevée'], $priorite);
+        if (isset($priorites[$normalized])) {
+            $priorites[$normalized]++;
+        }
     }
 }
 
@@ -384,8 +394,8 @@ $tauxTraitement = $totalReclamations > 0 ? round(($traitees / $totalReclamations
         };
 
         const priorityData = {
-            labels: ['Basse', 'Moyenne', 'Haute', 'Urgente'],
-            values: [<?= $priorites['Basse'] ?>, <?= $priorites['Moyenne'] ?>, <?= $priorites['Haute'] ?>, <?= $priorites['Urgente'] ?>],
+            labels: ['Basse', 'Moyenne', 'Élevée', 'Urgent'],
+            values: [<?= $priorites['Basse'] ?>, <?= $priorites['Moyenne'] ?>, <?= $priorites['Élevée'] ?>, <?= $priorites['Urgent'] ?>],
             colors: ['#6c757d', '#17a2b8', '#ffc107', '#dc3545']
         };
 

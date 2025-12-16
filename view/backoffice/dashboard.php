@@ -11,6 +11,10 @@ if (!isset($_SESSION['user_id']) || !isset($_SESSION['user_type']) || strtolower
     header('Location: login.php');
     exit();
 }
+
+// Run database migrations
+require_once __DIR__ . '/../../db_migrations.php';
+
 include_once __DIR__ . '/../../Controller/QuizController.php';
 $base_dir = __DIR__ . '/../../';
 require_once $base_dir . 'controller/missioncontroller.php';

@@ -1,5 +1,9 @@
 <?php
 session_start();
+
+// Run database migrations
+require_once __DIR__ . '/../../db_migrations.php';
+
 include '../../controller/utilisateurcontroller.php';
 require_once __DIR__ . '/../../model/utilisateur.php';
 
