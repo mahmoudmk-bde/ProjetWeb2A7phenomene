@@ -58,7 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['profile_picture'])) 
 
                 if (move_uploaded_file($fileTmpName, $fileDestination)) {
                     // Update database
-                    if ($utilisateurController->updateImg($user_id, $fileNameNew)) {
+                    if ($utilisateurController->updateImage($user_id, $fileNameNew)) {
                         // Update session
                          $_SESSION['profile_picture'] = $fileNameNew;
                          $profile_picture = $fileNameNew;
@@ -103,27 +103,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-                    if ($utilisateurController->updateImage($user_id, $fileNameNew)) {
-                        $_SESSION['profile_picture'] = $fileNameNew;
-                        // Refresh to see changes
-                        header("Location: profile.php?upload=success");
-                        exit();
-                    } else {
-                        $upload_message = "Erreur lors de la mise à jour de la base de données.";
-                    }
-                } else {
-                    $upload_message = "Erreur lors du téléchargement du fichier.";
-                }
-            } else {
-                $upload_message = "Le fichier est trop volumineux.";
-            }
-        } else {
-            $upload_message = "Une erreur est survenue lors du téléchargement.";
-        }
-    } else {
-        $upload_message = "Type de fichier non autorisé (autorisés: jpg, jpeg, png, gif).";
-    }
-}
+
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -405,9 +385,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     uploadActions.style.display = 'block';
                 }
                 reader.readAsDataURL(file);
-            }
         });
-    
+    </script>
     <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
