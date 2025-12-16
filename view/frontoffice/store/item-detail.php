@@ -358,10 +358,11 @@
                                         <button class="btn-buy-now">Ajouter au panier</button>
                                     </form>
                                     <a href="?controller=Store&action=toggleLike&id=<?= $this->storeItem->id ?>"
-                                        class="btn-view-game btn-like" aria-label="Ajouter à la liste d'envies"
-                                        style="width: auto; padding: 14px 18px; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; margin-top: 0;">
+                                        class="btn-buy-now"
+                                        style="background: transparent; border: 2px solid #ff4a57; color: #ff4a57; margin-left: 10px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: auto; padding: 0 25px;">
                                         <?php $inWish = isset($_SESSION['liked_items']) && isset($_SESSION['liked_items'][$this->storeItem->id]); ?>
                                         <i class="<?= $inWish ? 'fas' : 'far' ?> fa-heart"></i>
+                                        <?= $inWish ? 'Retirer de ma liste' : 'Ajouter à ma liste' ?>
                                     </a>
                                     <div style="display:flex; gap:8px; align-items:center; margin-left:auto;">
                                         <?php $shareUrl = (defined('BASE_URL') ? BASE_URL : '') . 'view/frontoffice/store.php?controller=Store&action=show&id=' . $this->storeItem->id;

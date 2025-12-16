@@ -449,12 +449,98 @@ class StoreController
             return;
         }
 
+        $paymentMethod = isset($_POST['payment_method']) ? $_POST['payment_method'] : 'onsite';
+
+        // --- PROCESS PAYMENT ---
+        // --- STOCK VALIDATION ---
+        foreach ($items as $it) {
+            $stmtStock = $this->db->prepare("SELECT stock, nom FROM store_items WHERE id = :id");
+            $stmtStock->execute([':id' => $it['id']]);
+            $stockData = $stmtStock->fetch(PDO::FETCH_ASSOC);
+
+            if (!$stockData || $stockData['stock'] < $it['qty']) {
+                $errorMsg = "Stock insuffisant pour l'article : " . ($stockData['nom'] ?? 'Inconnu');
+                header("Location: ?controller=Store&action=cart&order=invalid&error=" . urlencode($errorMsg));
+                return;
+            }
+        }
+        // --- END STOCK VALIDATION ---
+
+        // --- PROCESS PAYMENT ---
+        if ($paymentMethod === 'online') {
+            require_once __DIR__ . '/../view/frontoffice/vender/stripe-php-19.0.0/stripe-php-19.0.0/init.php';
+
+            // API Keys (Test Keys)
+            // Load .env if not using a library
+            if (file_exists(__DIR__ . '/../../.env')) {
+                $lines = file(__DIR__ . '/../../.env', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+                foreach ($lines as $line) {
+                    if (strpos(trim($line), '#') === 0)
+                        continue;
+                    list($name, $value) = explode('=', $line, 2);
+                    $_ENV[trim($name)] = trim($value);
+                }
+            }
+
+            $stripeSecretKey = $_ENV['STRIPE_SECRET_KEY'] ?? getenv('STRIPE_SECRET_KEY');
+            if (!$stripeSecretKey) {
+                // Fallback or Error handling
+                $stripeSecretKey = 'SIMULATION_MODE';
+            }
+            \Stripe\Stripe::setApiKey($stripeSecretKey);
+
+            $cardNumber = isset($_POST['card_number']) ? str_replace(' ', '', $_POST['card_number']) : '';
+            $cardExpiry = isset($_POST['card_expiry']) ? explode('/', $_POST['card_expiry']) : [];
+            $cardCvc = isset($_POST['card_cvc']) ? $_POST['card_cvc'] : '';
+
+            $expMonth = isset($cardExpiry[0]) ? trim($cardExpiry[0]) : '';
+            $expYear = isset($cardExpiry[1]) ? trim($cardExpiry[1]) : '';
+            // Handle 2 digit year (assume 20xx)
+            if (strlen($expYear) == 2)
+                $expYear = '20' . $expYear;
+
+            $isSimulation = ($stripeSecretKey === 'SIMULATION_MODE');
+
+            if (!$isSimulation) {
+                try {
+                    // 1. Create Token
+                    $token = \Stripe\Token::create([
+                        'card' => [
+                            'number' => $cardNumber,
+                            'exp_month' => $expMonth,
+                            'exp_year' => $expYear,
+                            'cvc' => $cardCvc,
+                        ],
+                    ]);
+
+                    // 2. Create Charge
+                    $charge = \Stripe\Charge::create([
+                        'amount' => (int) ($total * 100 * 3.3),
+                        'currency' => 'usd',
+                        'description' => 'Commande Engage Store - ' . $email,
+                        'source' => $token->id,
+                    ]);
+
+                } catch (\Exception $e) {
+                    $errorMsg = "Erreur paiement: " . $e->getMessage();
+                    $_SESSION['checkout_error'] = $errorMsg;
+                    header("Location: ?controller=Store&action=cart&order=invalid&error=" . urlencode($errorMsg));
+                    return;
+                }
+            } else {
+                // SIMULATION MODE: Simulate 1 second delay
+                sleep(1);
+            }
+        }
+        // --- END PAYMENT ---
+
+        // Create Order in DB
         $userId = (int) $_SESSION['user_id'];
 
         try {
             $this->db->beginTransaction();
 
-            $stmtOrder = $this->db->prepare("INSERT INTO orders (utilisateur_id, name, email, phone, address, city, shipping, total, created_at) VALUES (:utilisateur_id, :name, :email, :phone, :address, :city, :shipping, :total, NOW())");
+            $stmtOrder = $this->db->prepare("INSERT INTO orders (utilisateur_id, name, email, phone, address, city, shipping, total, payment_method, created_at) VALUES (:utilisateur_id, :name, :email, :phone, :address, :city, :shipping, :total, :payment_method, NOW())");
             $stmtOrder->bindParam(':utilisateur_id', $userId);
             $stmtOrder->bindParam(':name', $name);
             $stmtOrder->bindParam(':email', $email);
@@ -462,11 +548,18 @@ class StoreController
             $stmtOrder->bindParam(':address', $address);
             $stmtOrder->bindParam(':city', $city);
             $stmtOrder->bindParam(':shipping', $shipping);
+            $stmtOrder->bindParam(':payment_method', $paymentMethod);
+
             $stmtOrder->bindParam(':total', $total);
             $stmtOrder->execute();
             $orderId = (int) $this->db->lastInsertId();
+
             $itemsSql = "INSERT INTO order_items (order_id, item_id, name, price, qty) VALUES (:order_id, :item_id, :name, :price, :qty)";
             $stmtItem = $this->db->prepare($itemsSql);
+
+            // Prepare Stock Update Statement
+            $stmtUpdateStock = $this->db->prepare("UPDATE store_items SET stock = stock - :qty WHERE id = :id");
+
             try {
                 foreach ($items as $it) {
                     $stmtItem->bindParam(':order_id', $orderId);
@@ -475,6 +568,9 @@ class StoreController
                     $stmtItem->bindParam(':price', $it['prix']);
                     $stmtItem->bindParam(':qty', $it['qty']);
                     $stmtItem->execute();
+
+                    // Decrement Stock
+                    $stmtUpdateStock->execute([':qty' => $it['qty'], ':id' => $it['id']]);
                 }
             } catch (PDOException $eItems) {
                 $fallbackSql = "INSERT INTO oder_items (order_id, item_id, name, price, qty) VALUES (:order_id, :item_id, :name, :price, :qty)";
@@ -486,6 +582,9 @@ class StoreController
                     $stmtItemFallback->bindParam(':price', $it['prix']);
                     $stmtItemFallback->bindParam(':qty', $it['qty']);
                     $stmtItemFallback->execute();
+
+                    // Decrement Stock (Also here just in case)
+                    $stmtUpdateStock->execute([':qty' => $it['qty'], ':id' => $it['id']]);
                 }
             }
             $this->db->commit();
@@ -499,5 +598,125 @@ class StoreController
         $_SESSION['cart'] = [];
         header("Location: ?controller=Store&action=cart&order=success");
     }
+    public function getUserOrders($userId)
+    {
+        try {
+            $stmt = $this->db->prepare("SELECT * FROM orders WHERE utilisateur_id = :uid ORDER BY created_at DESC");
+            $stmt->bindParam(':uid', $userId);
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            return [];
+        }
+    }
+
+    public function getOrderItems($orderId)
+    {
+        try {
+            $stmt = $this->db->prepare("SELECT * FROM order_items WHERE order_id = :oid");
+            $stmt->bindParam(':oid', $orderId);
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            try {
+                $stmt = $this->db->prepare("SELECT * FROM oder_items WHERE order_id = :oid");
+                $stmt->bindParam(':oid', $orderId);
+                $stmt->execute();
+                return $stmt->fetchAll(PDO::FETCH_ASSOC);
+            } catch (PDOException $e2) {
+                return [];
+            }
+        }
+    }
+
+    // --- AI RECOMMENDATION SYSTEM ---
+    public function recommendations()
+    {
+        if (!isset($_SESSION['user_id'])) {
+            header('Location: connexion.php');
+            exit();
+        }
+
+        $userId = $_SESSION['user_id'];
+        $recommendations = $this->getRecommendations($userId);
+
+        include __DIR__ . '/../view/frontoffice/store/recommendations.php';
+    }
+
+    private function getRecommendations($userId)
+    {
+        // 1. Fetch User Preferences (Categories from Orders & Wishlist)
+        $preferences = [];
+
+        // From Orders
+        $stmtOrders = $this->db->prepare("
+            SELECT DISTINCT si.categorie 
+            FROM store_items si
+            JOIN order_items oi ON si.id = oi.product_id
+            JOIN orders o ON oi.order_id = o.id
+            WHERE o.utilisateur_id = :uid
+        ");
+        $stmtOrders->execute([':uid' => $userId]);
+        $boughtCategories = $stmtOrders->fetchAll(PDO::FETCH_COLUMN);
+
+        // From Wishlist
+        $stmtWish = $this->db->prepare("
+            SELECT DISTINCT si.categorie 
+            FROM store_items si
+            JOIN wishlist w ON si.id = w.store_item_id
+            WHERE w.user_id = :uid
+        ");
+        $stmtWish->execute([':uid' => $userId]);
+        $wishCategories = $stmtWish->fetchAll(PDO::FETCH_COLUMN);
+
+        // 2. Fetch All Candidate Items (Not owned, Not in wishlist)
+        // We exclude items the user already has strictly to suggest NEW things
+        $sqlCandidates = "
+            SELECT * FROM store_items 
+            WHERE id NOT IN (
+                SELECT product_id FROM order_items oi JOIN orders o ON oi.order_id = o.id WHERE o.utilisateur_id = :uid1
+            )
+            AND id NOT IN (
+                SELECT store_item_id FROM wishlist WHERE user_id = :uid2
+            )
+        ";
+        $stmtCand = $this->db->prepare($sqlCandidates);
+        $stmtCand->execute([':uid1' => $userId, ':uid2' => $userId]);
+        $candidates = $stmtCand->fetchAll(PDO::FETCH_ASSOC);
+
+        // 3. Score Candidates
+        $scoredItems = [];
+        foreach ($candidates as $item) {
+            $score = 0;
+
+            // +10 points if category matches purchase history
+            if (in_array($item['categorie'], $boughtCategories)) {
+                $score += 10;
+            }
+
+            // +5 points if category matches wishlist
+            if (in_array($item['categorie'], $wishCategories)) {
+                $score += 5;
+            }
+
+            // Bonus: New items get a small boost (+1)
+            // (Optional, keeps content fresh)
+            $score += 1;
+
+            if ($score > 1) { // Only recommend if there's some relevance
+                $item['match_score'] = $score;
+                $scoredItems[] = $item;
+            }
+        }
+
+        // 4. Sort by Score Descending
+        usort($scoredItems, function ($a, $b) {
+            return $b['match_score'] <=> $a['match_score'];
+        });
+
+        // Return top 6
+        return array_slice($scoredItems, 0, 6);
+    }
 }
+
 ?>

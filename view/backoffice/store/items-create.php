@@ -21,41 +21,7 @@ $ordersAssetsBase = (defined('BASE_URL') ? BASE_URL : '') . 'view/backoffice/ass
 
 <body>
     <!-- Sidebar -->
-    <nav id="sidebar">
-        <div class="sidebar-header">
-            <h3>
-                <img src="<?php echo $ordersAssetsBase; ?>img/logo.png" alt="logo" style="height: 120px;" /> 
-                ENGAGE
-            </h3>
-        </div>
-        <ul class="list-unstyled components">
-            <li>
-                <a href="<?php echo BASE_URL; ?>"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
-            </li>
-            <li class="active">
-                <a href="#gamificationSubmenu" data-toggle="collapse" aria-expanded="true">
-                    <i class="fas fa-gamepad"></i> Gamification
-                </a>
-                <ul class="collapse show list-unstyled" id="gamificationSubmenu">
-                    <li>
-                        <a href="?controller=AdminPartenaire&action=index">
-                            <i class="fas fa-handshake"></i> Partenaires
-                        </a>
-                    </li>
-                    <li class="active">
-                        <a href="?controller=AdminStore&action=index">
-                            <i class="fas fa-store"></i> Store Items
-                        </a>
-                    </li>
-                    <li>
-                        <a href="?controller=AdminOrder&action=index">
-                            <i class="fas fa-shopping-cart"></i> Commandes
-                        </a>
-                    </li>
-                </ul>
-            </li>
-        </ul>
-    </nav>
+    
 
     <!-- Page Content -->
     <div id="content">
@@ -105,7 +71,7 @@ $ordersAssetsBase = (defined('BASE_URL') ? BASE_URL : '') . 'view/backoffice/ass
                     <h5 class="mb-0"><i class="fas fa-gamepad"></i> Informations du Jeu</h5>
                 </div>
                 <div class="card-body">
-                    <form action="../router.php?controller=AdminStore&action=store" method="POST" enctype="multipart/form-data">
+                    <form action="?controller=AdminStore&action=store" method="POST" enctype="multipart/form-data">
                         <div class="row">
                             <!-- Nom du jeu -->
                             <div class="col-md-6 mb-3">
@@ -257,7 +223,7 @@ $ordersAssetsBase = (defined('BASE_URL') ? BASE_URL : '') . 'view/backoffice/ass
 
                         <!-- Buttons -->
                         <div class="d-flex justify-content-between mt-4">
-                            <a href="../router.php?controller=AdminStore&action=index" class="btn btn-secondary">
+                            <a href="?controller=AdminStore&action=index" class="btn btn-secondary">
                                 <i class="fas fa-arrow-left"></i> Retour
                             </a>
                             <button type="submit" class="btn btn-primary">

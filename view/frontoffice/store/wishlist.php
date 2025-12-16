@@ -29,6 +29,8 @@
             transition: transform 0.3s;
             height: 100%;
             border: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            flex-direction: column;
         }
 
         .wishlist-card:hover {
@@ -38,7 +40,7 @@
 
         .wishlist-img {
             width: 100%;
-            height: 200px;
+            height: 300px;
             object-fit: cover;
         }
 
@@ -46,7 +48,7 @@
             padding: 20px;
             display: flex;
             flex-direction: column;
-            height: calc(100% - 200px);
+            flex: 1;
         }
 
         .wishlist-title {
@@ -118,7 +120,7 @@
                 <?php else: ?>
                     <div class="row">
                         <?php foreach ($items as $item): ?>
-                            <div class="col-lg-3 col-md-6 mb-4">
+                            <div class="col-lg-6 col-md-6 mb-4">
                                 <div class="wishlist-card">
                                     <a href="?controller=Store&action=show&id=<?= $item['id'] ?>">
                                         <?php if ($item['image']): ?>
@@ -131,19 +133,22 @@
                                     </a>
                                     <div class="wishlist-body">
                                         <a href="?controller=Store&action=show&id=<?= $item['id'] ?>">
-                                            <h5 class="wishlist-title"><?= htmlspecialchars($item['nom']) ?></h5>
+                                            <h5 class="wishlist-title" style="font-size: 22px;">
+                                                <?= htmlspecialchars($item['nom']) ?></h5>
                                         </a>
-                                        <div class="wishlist-price"><?= number_format($item['prix'], 2) ?> DT</div>
+                                        <div class="wishlist-price" style="font-size: 24px;">
+                                            <?= number_format($item['prix'], 2) ?> DT</div>
 
-                                        <div class="wishlist-actions">
+                                        <div class="wishlist-actions" style="flex-direction: column; gap: 10px;">
                                             <form action="?controller=Store&action=addToCart&id=<?= $item['id'] ?>"
-                                                method="post" style="flex:1;">
-                                                <button type="submit" class="btn_1 w-100" style="padding: 10px;">Au
-                                                    panier</button>
+                                                method="post" style="width: 100%;">
+                                                <button type="submit" class="btn_1 w-100"
+                                                    style="padding: 12px; font-size: 16px;">Ajouter au panier</button>
                                             </form>
                                             <a href="?controller=Store&action=toggleLike&id=<?= $item['id'] ?>"
-                                                class="btn-remove-wish" title="Retirer">
-                                                <i class="fas fa-trash"></i>
+                                                class="btn btn-outline-danger w-100" style="border-radius: 50px; padding: 10px;"
+                                                title="Retirer">
+                                                <i class="fas fa-trash mr-2"></i> Retirer
                                             </a>
                                         </div>
                                     </div>
