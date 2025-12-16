@@ -1,4 +1,3 @@
-
 <?php
 // cv.php - sert un CV en mode 'view' (inline) ou 'download' (attachment)
 // Usage: /cv.php?id=123&mode=view|download
@@ -29,50 +28,50 @@ try {
     $cv_rel = str_replace('\\', '/', $row['cv']);
     $cv_rel = ltrim($cv_rel, '/');
 
-    // Définir la racine du projet (depuis le dossier où se trouve cv.php)
-    $projectRoot = realpath(__DIR__ . '/..'); // Remonte d'un niveau si cv.php est dans un sous-dossier
-    
+    // Définir la racine du projet (cv.php est à la racine du projet)
+    $projectRoot = __DIR__; // cv.php est dans ProjetWeb2A7phenomene/
+
     // Mode debug
     $debug = isset($_GET['debug']) && $_GET['debug'] == '1';
-    
+
     // Liste des chemins possibles à essayer (du plus spécifique au plus général)
     $possiblePaths = [];
-    
+
     // 1. Chemin tel qu'enregistré dans la DB (relatif)
     $possiblePaths[] = $projectRoot . '/' . $cv_rel;
-    
+
     // 2. Chemin absolu si déjà stocké en absolu (peu probable)
     $possiblePaths[] = $cv_rel;
-    
+
     // 3. Si le chemin contient 'view/frontoffice/', essayer sans ce préfixe
     if (strpos($cv_rel, 'view/frontoffice/') === 0) {
         $withoutView = substr($cv_rel, strlen('view/frontoffice/'));
         $possiblePaths[] = $projectRoot . '/' . $withoutView;
     }
-    
+
     // 4. Si le chemin commence par 'assets/', essayer directement
     if (strpos($cv_rel, 'assets/') === 0) {
         $possiblePaths[] = $projectRoot . '/' . $cv_rel;
         // Essayer aussi depuis la racine web
         $possiblePaths[] = $_SERVER['DOCUMENT_ROOT'] . '/' . $cv_rel;
     }
-    
+
     // 5. Extraire juste le nom du fichier et chercher dans les dossiers communs
     $filename = basename($cv_rel);
     $possiblePaths[] = $projectRoot . '/assets/uploads/cv/' . $filename;
     $possiblePaths[] = $projectRoot . '/view/frontoffice/assets/uploads/cv/' . $filename;
     $possiblePaths[] = $_SERVER['DOCUMENT_ROOT'] . '/assets/uploads/cv/' . $filename;
     $possiblePaths[] = $_SERVER['DOCUMENT_ROOT'] . '/view/frontoffice/assets/uploads/cv/' . $filename;
-    
+
     // 6. Chemin relatif depuis la racine web
     $possiblePaths[] = $_SERVER['DOCUMENT_ROOT'] . '/' . $cv_rel;
-    
+
     // Nettoyer et dédupliquer les chemins
-    $possiblePaths = array_map(function($path) {
+    $possiblePaths = array_map(function ($path) {
         return str_replace('\\', '/', $path);
     }, $possiblePaths);
     $possiblePaths = array_unique($possiblePaths);
-    
+
     if ($debug) {
         header('Content-Type: text/plain; charset=utf-8');
         echo "=== CV Debug Info ===\n";
@@ -82,13 +81,13 @@ try {
         echo "DOCUMENT_ROOT: " . htmlspecialchars($_SERVER['DOCUMENT_ROOT']) . "\n";
         echo "\nPossible paths tried:\n";
     }
-    
+
     $realFile = false;
     $triedPaths = [];
     foreach ($possiblePaths as $path) {
         $triedPaths[] = $path;
         $resolved = realpath($path);
-        
+
         if ($debug) {
             $exists = file_exists($path);
             echo "  - " . $path . "\n";
@@ -100,10 +99,11 @@ try {
             }
             echo "\n";
         }
-        
+
         if ($resolved !== false && is_file($resolved) && is_readable($resolved)) {
             $realFile = $resolved;
-            if ($debug) echo "    *** SELECTED THIS PATH ***\n";
+            if ($debug)
+                echo "    *** SELECTED THIS PATH ***\n";
             break;
         }
     }
@@ -132,7 +132,7 @@ try {
         strtolower(realpath($_SERVER['DOCUMENT_ROOT'] . '/assets/uploads/cv')),
         strtolower(realpath($_SERVER['DOCUMENT_ROOT'] . '/view/frontoffice/assets/uploads/cv'))
     ];
-    
+
     $allowed = false;
     $fileDir = strtolower(dirname($realFile));
     foreach ($allowedDirs as $allowedDir) {
@@ -141,7 +141,7 @@ try {
             break;
         }
     }
-    
+
     if (!$allowed) {
         http_response_code(403);
         echo "Access denied. File not in allowed directory.";

@@ -13,6 +13,62 @@ if (isset($_GET['retour']) && $_GET['retour'] == 1) {
     exit();
 }
 
+// AJOUT: Traitement de la connexion par reconnaissance faciale
+if (isset($_POST['face_login']) && isset($_POST['descriptor'])) {
+    header('Content-Type: application/json');
+    $incomingDescriptor = json_decode($_POST['descriptor']);
+    
+    if (!$incomingDescriptor) {
+        echo json_encode(['success' => false, 'message' => 'Descripteur invalide']);
+        exit;
+    }
+
+    $allUsers = $utilisateurc->getAllFaces(); 
+    $matchFound = false;
+    $matchedUserId = null;
+
+    foreach ($allUsers as $user) {
+        $storedDescriptor = json_decode($user['face']); 
+        if (!$storedDescriptor) continue;
+
+        $distance = 0;
+        for ($i = 0; $i < count($incomingDescriptor); $i++) {
+            $diff = $incomingDescriptor[$i] - $storedDescriptor[$i];
+            $distance += $diff * $diff;
+        }
+        $distance = sqrt($distance);
+
+        if ($distance < 0.5) { 
+            $matchFound = true;
+            $matchedUserId = $user['id_util'];
+            break;
+        }
+    }
+
+    if ($matchFound) {
+        $user = $utilisateurc->showUtilisateur($matchedUserId);
+        if ($user) {
+            // Connexion réussie
+            $_SESSION['user_id'] = $user['id_util'];
+            $_SESSION['user_name'] = $user['prenom'] . ' ' . $user['nom'];
+            $_SESSION['user_type'] = $user['typee'];
+            $_SESSION['user_email'] = $user['mail'];
+            $_SESSION['profile_picture'] = $user['img'];
+
+            $redirect = ($user['typee'] === 'admin') 
+                ? '../backoffice/dashboard.php' 
+                : 'index1.php';
+            
+            echo json_encode(['success' => true, 'redirect' => $redirect]);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Utilisateur introuvable']);
+        }
+    } else {
+        echo json_encode(['success' => false, 'message' => 'Visage non reconnu']);
+    }
+    exit;
+}
+
 // AJOUT: Vérifier si c'est une tentative de vérification 2FA
 if (isset($_POST["verify_2fa_code"])) {
     $entered_code = $_POST["verification_code"];
@@ -470,7 +526,11 @@ if (isset($_POST["username"]) && isset($_POST["password"]) && !isset($show_2fa_f
 
             <input type="submit" value="Se connecter" class="btn">
         </form>
-
+        <div style="text-align: center; margin-top: 20px;">
+            <button type="button" id="face-login-btn" class="btn" style="background-color: #2c3e50; width: auto; padding: 10px 20px;">
+                <i class="fas fa-camera"></i> Se connecter avec reconnaissance faciale
+            </button>
+        </div>
         <!-- Social Login -->
         <div class="social-login" style="margin-top: 20px; text-align: center;">
             <p style="color: #fff; margin-bottom: 10px; font-size: 0.9rem;">Ou se connecter avec</p>
@@ -483,11 +543,146 @@ if (isset($_POST["username"]) && isset($_POST["password"]) && !isset($show_2fa_f
                 .social-login a:hover { transform: scale(1.1); }
             </style>
         </div>
-
+      
         <p class="signup">INSCRIVEZ-VOUS</p>
         <a href="inscription.php" class="signup-link">S'INSCRIRE</a>
+        
+        <!-- Face Login Button -->
+        
     <?php endif; ?>
   </div>
+
+    <!-- Face Login Modal -->
+    <div id="face-login-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; flex-direction: column;">
+        <div style="background: white; padding: 20px; border-radius: 10px; text-align: center; position: relative; max-width: 90%; width: 500px;">
+            <h2 style="color: #333; margin-bottom: 20px;">Reconnaissance Faciale</h2>
+            <div style="position: relative; width: 100%; height: 350px; background: #000; margin-bottom: 20px; display: flex; justify-content: center;">
+                <video id="video" width="480" height="360" autoplay muted style="position: absolute;"></video>
+                <canvas id="overlay" style="position: absolute;"></canvas>
+            </div>
+            <p id="status-msg" style="color: #666; margin-bottom: 15px;">Chargement des modèles...</p>
+            <button id="close-modal-btn" class="btn" style="background: #e74c3c;">Annuler</button>
+        </div>
+    </div>
+
+    <!-- Face API JS -->
+    <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const faceLoginBtn = document.getElementById('face-login-btn');
+            const modal = document.getElementById('face-login-modal');
+            const closeModalBtn = document.getElementById('close-modal-btn');
+            const video = document.getElementById('video');
+            const statusMsg = document.getElementById('status-msg');
+            let isModelLoaded = false;
+            let stream = null;
+
+            const MODEL_URL = 'https://justadudewhohacks.github.io/face-api.js/models'; 
+
+            async function loadModels() {
+                try {
+                    statusMsg.innerText = "Chargement des modèles AI...";
+                    await faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL);
+                    await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
+                    await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
+                    isModelLoaded = true;
+                    statusMsg.innerText = "Modèles chargés. Veuillez centrer votre visage.";
+                    startVideo();
+                } catch (err) {
+                    console.error("Erreur chargement modèles:", err);
+                    statusMsg.innerText = "Erreur de chargement des modèles. Vérifiez votre connexion.";
+                }
+            }
+
+            function startVideo() {
+                navigator.mediaDevices.getUserMedia({ video: {} })
+                    .then(s => {
+                        stream = s;
+                        video.srcObject = stream;
+                    })
+                    .catch(err => {
+                        console.error("Erreur caméra:", err);
+                        statusMsg.innerText = "Impossible d'accéder à la caméra.";
+                    });
+            }
+
+            function stopVideo() {
+                if (stream) {
+                    stream.getTracks().forEach(track => track.stop());
+                }
+                video.srcObject = null;
+            }
+
+            if (faceLoginBtn) {
+                faceLoginBtn.addEventListener('click', () => {
+                    modal.style.display = 'flex';
+                    if (!isModelLoaded) {
+                        loadModels();
+                    } else {
+                        startVideo();
+                    }
+                });
+            }
+
+            if (closeModalBtn) {
+                closeModalBtn.addEventListener('click', () => {
+                    modal.style.display = 'none';
+                    stopVideo();
+                });
+            }
+
+            video.addEventListener('play', () => {
+                const canvas = document.getElementById('overlay');
+                const displaySize = { width: 480, height: 360 }; 
+                faceapi.matchDimensions(canvas, displaySize);
+
+                const interval = setInterval(async () => {
+                    if (modal.style.display === 'none') {
+                        clearInterval(interval);
+                        return;
+                    }
+
+                    const detections = await faceapi.detectAllFaces(video).withFaceLandmarks().withFaceDescriptors();
+                    
+                    if (detections.length > 0) {
+                        const resizedDetections = faceapi.resizeResults(detections, displaySize);
+                        canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+                        faceapi.draw.drawDetections(canvas, resizedDetections);
+
+                        if (detections[0].descriptor) {
+                            statusMsg.innerText = "Visage détecté ! Authentification...";
+                            
+                            const descriptorArray = Array.from(detections[0].descriptor);
+                            
+                            const formData = new FormData();
+                            formData.append('face_login', '1');
+                            formData.append('descriptor', JSON.stringify(descriptorArray));
+
+                            fetch('connexion.php', {
+                                method: 'POST',
+                                body: formData
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    statusMsg.innerText = "Succès ! Redirection...";
+                                    statusMsg.style.color = "green";
+                                    clearInterval(interval); 
+                                    stopVideo();
+                                    setTimeout(() => window.location.href = data.redirect, 1000);
+                                } else {
+                                    console.log("Auth failed:", data.message);
+                                }
+                            })
+                            .catch(err => {
+                                console.error(err);
+                            });
+                        }
+                    }
+                }, 500); 
+            });
+        });
+    </script>
 </body>
 </html>
 <?php

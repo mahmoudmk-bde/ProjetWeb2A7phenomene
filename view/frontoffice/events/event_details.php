@@ -172,13 +172,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && isset($e
             if (isset($_SESSION['user_id']) && $_SESSION['user_id']) {
                 $user_id = (int) $_SESSION['user_id'];
             } else {
-                $stmt = $db->prepare('SELECT id_utilisateur FROM utilisateur WHERE email = :email LIMIT 1');
+                $stmt = $db->prepare('SELECT id_util FROM utilisateur WHERE mail = :email LIMIT 1');
                 $stmt->execute([':email' => $email]);
                 $row = $stmt->fetch();
-                if ($row && isset($row['id_utilisateur'])) {
-                    $user_id = (int)$row['id_utilisateur'];
+                if ($row && isset($row['id_util'])) {
+                    $user_id = (int)$row['id_util'];
                 } else {
-                    $ins = $db->prepare('INSERT INTO utilisateur (nom, prenom, email) VALUES (:nom, :prenom, :email)');
+                    $ins = $db->prepare('INSERT INTO utilisateur (nom, prenom, mail) VALUES (:nom, :prenom, :email)');
                     $ins->execute([':nom' => $nom, ':prenom' => $prenom, ':email' => $email]);
                     $user_id = (int)$db->lastInsertId();
                 }
@@ -262,13 +262,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && isset($e
                 } else {
                     $db = config::getConnexion();
                     try {
-                        $stmt = $db->prepare('SELECT id_utilisateur FROM utilisateur WHERE email = :email LIMIT 1');
+                        $stmt = $db->prepare('SELECT id_util FROM utilisateur WHERE mail = :email LIMIT 1');
                         $stmt->execute([':email' => $email]);
                         $row = $stmt->fetch();
-                        if ($row && isset($row['id_utilisateur'])) {
-                            $user_id = (int)$row['id_utilisateur'];
+                        if ($row && isset($row['id_util'])) {
+                            $user_id = (int)$row['id_util'];
                         } else {
-                            $ins = $db->prepare('INSERT INTO utilisateur (nom, prenom, email) VALUES (:nom, :prenom, :email)');
+                            $ins = $db->prepare('INSERT INTO utilisateur (nom, prenom, mail) VALUES (:nom, :prenom, :email)');
                             $ins->execute([':nom' => $nom, ':prenom' => $prenom, ':email' => $email]);
                             $user_id = (int)$db->lastInsertId();
                         }
@@ -277,13 +277,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && isset($e
                         if (isset($_SESSION['user_id']) && $_SESSION['user_id']) {
                             $user_id = (int) $_SESSION['user_id'];
                         } else {
-                            $stmt = $db->prepare('SELECT id_utilisateur FROM utilisateur WHERE email = :email LIMIT 1');
+                            $stmt = $db->prepare('SELECT id_util FROM utilisateur WHERE mail = :email LIMIT 1');
                             $stmt->execute([':email' => $email]);
                             $row = $stmt->fetch();
-                            if ($row && isset($row['id_utilisateur'])) {
-                                $user_id = (int)$row['id_utilisateur'];
+                            if ($row && isset($row['id_util'])) {
+                                $user_id = (int)$row['id_util'];
                             } else {
-                                $ins = $db->prepare('INSERT INTO utilisateur (nom, prenom, email) VALUES (:nom, :prenom, :email)');
+                                $ins = $db->prepare('INSERT INTO utilisateur (nom, prenom, mail) VALUES (:nom, :prenom, :email)');
                                 $ins->execute([':nom' => $nom, ':prenom' => $prenom, ':email' => $email]);
                                 $user_id = (int)$db->lastInsertId();
                             }
@@ -1374,10 +1374,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_feedback'])) {
                                 </div>
                             </div>
                         </div>
-                        <div class="form-group">
-                            <label for="card_cvv">CVV</label>
-                            <input type="text" name="card_cvv" id="card_cvv" class="form-control" placeholder="123">
-                        </div>
+
                         <div class="alert alert-secondary" id="paymentSummary" style="margin-top: 20px;">
                             Total: <strong><?= number_format(max(1, $price), 2) ?> TND</strong>
                         </div>

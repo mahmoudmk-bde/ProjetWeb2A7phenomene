@@ -1,8 +1,8 @@
 <?php
 class config
-{   
+{
     private static $pdo = null;
-    
+
     public static function getConnexion()
     {
         if (!isset(self::$pdo)) {
@@ -24,7 +24,7 @@ class config
                         PDO::ATTR_EMULATE_PREPARES => false
                     ]
                 );
-               
+
             } catch (PDOException $e) {
                 die('Erreur de connexion: ' . $e->getMessage());
             }
