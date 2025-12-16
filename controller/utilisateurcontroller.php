@@ -1,0 +1,320 @@
+<?php
+include_once(__DIR__ . '/../config.php');
+include_once(__DIR__ . '/../Model/Utilisateur.php');
+
+class UtilisateurController {
+
+    public function listUtilisateurs() {
+        $sql = "SELECT * FROM utilisateur";
+        $db = config::getConnexion();
+        try {
+            $list = $db->query($sql);
+            return $list;
+        } catch (Exception $e) {
+            error_log('Error listing users: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    public function deleteUtilisateur($id_util) {
+        $sql = "DELETE FROM utilisateur WHERE id_util = :id_util";
+        $db = config::getConnexion();
+        $req = $db->prepare($sql);
+        $req->bindValue(':id_util', $id_util);
+        try {
+            return $req->execute();
+        } catch (Exception $e) {
+            error_log('Error deleting user: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    public function addUtilisateur(Utilisateur $utilisateur) {
+        $sql = "INSERT INTO utilisateur 
+                (prenom, nom, dt_naiss, mail, num, mdp, typee, q1, rp1, q2, rp2, auth, img) 
+                VALUES 
+                (:prenom, :nom, :dt_naiss, :mail, :num, :mdp, :typee, :q1, :rp1, :q2, :rp2, :auth, :img)";
+        
+        $db = config::getConnexion();
+        try {
+            $query = $db->prepare($sql);
+            
+            // Gestion de la date de naissance
+            $dt_naiss = $utilisateur->getDtNaiss();
+            if ($dt_naiss instanceof DateTime) {
+                $dt_naiss = $dt_naiss->format('Y-m-d');
+            } else {
+                $dt_naiss = null;
+            }
+            
+            $query->execute([
+                'prenom' => $utilisateur->getPrenom(),
+                'nom' => $utilisateur->getNom(),
+                'dt_naiss' => $dt_naiss,
+                'mail' => $utilisateur->getMail(),
+                'num' => $utilisateur->getNum(),
+                'mdp' => $utilisateur->getMdp(),
+                'typee' => $utilisateur->getType(),
+                'q1' => $utilisateur->getQ1(),
+                'rp1' => $utilisateur->getRp1(),
+                'q2' => $utilisateur->getQ2(),
+                'rp2' => $utilisateur->getRp2(),
+                'auth' => $utilisateur->getAuth(),
+                'img' => $utilisateur->getImg()
+            ]);
+            
+            return true;
+        } catch (Exception $e) {
+            error_log('Error adding user: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    public function updateUtilisateur(Utilisateur $utilisateur, $id_util) {
+        try {
+            $db = config::getConnexion();
+            $query = $db->prepare(
+                'UPDATE utilisateur SET 
+                    prenom = :prenom,
+                    nom = :nom,
+                    dt_naiss = :dt_naiss,
+                    mail = :mail,
+                    num = :num,
+                    mdp = :mdp,
+                    typee = :typee,
+                    q1 = :q1,
+                    rp1 = :rp1,
+                    q2 = :q2,
+                    rp2 = :rp2,
+                    auth = :auth,
+                    img = :img
+                WHERE id_util = :id_util'
+            );
+            
+            // Gestion de la date de naissance
+            $dt_naiss = $utilisateur->getDtNaiss();
+            if ($dt_naiss instanceof DateTime) {
+                $dt_naiss = $dt_naiss->format('Y-m-d');
+            } else {
+                $dt_naiss = null;
+            }
+            
+            $query->execute([
+                'id_util' => $id_util,
+                'prenom' => $utilisateur->getPrenom(),
+                'nom' => $utilisateur->getNom(),
+                'dt_naiss' => $dt_naiss,
+                'mail' => $utilisateur->getMail(),
+                'num' => $utilisateur->getNum(),
+                'mdp' => $utilisateur->getMdp(),
+                'typee' => $utilisateur->getType(),
+                'q1' => $utilisateur->getQ1(),
+                'rp1' => $utilisateur->getRp1(),
+                'q2' => $utilisateur->getQ2(),
+                'rp2' => $utilisateur->getRp2(),
+                'auth' => $utilisateur->getAuth(),
+                'img' => $utilisateur->getImg()
+            ]);
+            
+            return true;
+            
+        } catch (PDOException $e) {
+            error_log('Error updating user: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    public function showUtilisateur($id_util) {
+        $sql = "SELECT * FROM utilisateur WHERE id_util = :id_util";
+        $db = config::getConnexion();
+        $query = $db->prepare($sql);
+        $query->bindValue(':id_util', $id_util);
+
+        try {
+            $query->execute();
+            $utilisateur = $query->fetch();
+            return $utilisateur;
+        } catch (Exception $e) {
+            error_log('Error showing user: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    // Méthode pour mettre à jour uniquement le champ auth
+    public function updateAuth($user_id, $auth_value) {
+        try {
+            $db = config::getConnexion();
+            $query = $db->prepare(
+                'UPDATE utilisateur SET auth = :auth WHERE id_util = :id_util'
+            );
+            
+            $query->execute([
+                'id_util' => $user_id,
+                'auth' => $auth_value
+            ]);
+            
+            return true;
+            
+        } catch (PDOException $e) {
+            error_log('Error updating auth: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    // Méthode pour mettre à jour uniquement l'image
+    public function updateImage($user_id, $image_path) {
+        try {
+            $db = config::getConnexion();
+            $query = $db->prepare(
+                'UPDATE utilisateur SET img = :img WHERE id_util = :id_util'
+            );
+            
+            $query->execute([
+                'id_util' => $user_id,
+                'img' => $image_path
+            ]);
+            
+            return true;
+            
+        } catch (PDOException $e) {
+            error_log('Error updating image: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    public function emailExists($email) {
+        $sql = "SELECT COUNT(*) FROM utilisateur WHERE mail = :email";
+        $db = config::getConnexion();
+        $query = $db->prepare($sql);
+        $query->bindValue(':email', $email);
+        
+        try {
+            $query->execute();
+            $count = $query->fetchColumn();
+            return $count > 0;
+        } catch (Exception $e) {
+            error_log('Error checking email: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    public function numExists($num) {
+        $sql = "SELECT COUNT(*) FROM utilisateur WHERE num = :num";
+        $db = config::getConnexion();
+        $query = $db->prepare($sql);
+        $query->bindValue(':num', $num);
+        
+        try {
+            $query->execute();
+            $count = $query->fetchColumn();
+            return $count > 0;
+        } catch (Exception $e) {
+            error_log('Error checking number: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    public function getUtilisateursCount() {
+        $sql = "SELECT COUNT(*) as count FROM utilisateur";
+        $db = config::getConnexion();
+        try {
+            $query = $db->query($sql);
+            $result = $query->fetch();
+            return $result['count'];
+        } catch (Exception $e) {
+            error_log('Error counting users: ' . $e->getMessage());
+            return 0;
+        }
+    }
+
+    public function verifySecurityQuestions($user_id, $answer1, $answer2) {
+        $sql = "SELECT * FROM utilisateur WHERE id_util = :id_util AND rp1 = :rp1 AND rp2 = :rp2";
+        $db = config::getConnexion();
+        $query = $db->prepare($sql);
+        $query->execute([
+            'id_util' => $user_id,
+            'rp1' => $answer1,
+            'rp2' => $answer2
+        ]);
+        
+        try {
+            $user = $query->fetch();
+            return $user !== false;
+        } catch (Exception $e) {
+            error_log('Error verifying security questions: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    public function getUserByEmail($email) {
+        $sql = "SELECT * FROM utilisateur WHERE mail = :email";
+        $db = config::getConnexion();
+        $query = $db->prepare($sql);
+        $query->bindValue(':email', $email);
+        
+        try {
+            $query->execute();
+            $user = $query->fetch();
+            return $user;
+        } catch (Exception $e) {
+            error_log('Error getting user by email: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    public function updatePassword($user_id, $new_password) {
+        try {
+            $db = config::getConnexion();
+            $query = $db->prepare(
+                'UPDATE utilisateur SET mdp = :mdp WHERE id_util = :id_util'
+            );
+            
+            $query->execute([
+                'id_util' => $user_id,
+                'mdp' => $new_password
+            ]);
+            
+            return true;
+            
+        } catch (PDOException $e) {
+            error_log('Error updating password: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    public function getSecurityQuestions($user_id) {
+        $sql = "SELECT q1, q2 FROM utilisateur WHERE id_util = :id_util";
+        $db = config::getConnexion();
+        $query = $db->prepare($sql);
+        $query->bindValue(':id_util', $user_id);
+        
+        try {
+            $query->execute();
+            $result = $query->fetch();
+            return [
+                'q1' => $result['q1'] ?? null,
+                'q2' => $result['q2'] ?? null
+            ];
+        } catch (Exception $e) {
+            error_log('Error getting security questions: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    public function updateProfilePicture($user_id, $image_filename) {
+        $sql = "UPDATE utilisateur SET img = :img WHERE id_util = :id_util";
+        $db = config::getConnexion();
+        
+        try {
+            $query = $db->prepare($sql);
+            $query->execute([
+                'img' => $image_filename,
+                'id_util' => $user_id
+            ]);
+            return true;
+        } catch (Exception $e) {
+            throw new Exception('Erreur lors de la mise à jour de la photo de profil: ' . $e->getMessage());
+        }
+    }
+}
+?>
