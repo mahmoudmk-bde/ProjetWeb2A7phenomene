@@ -1,8 +1,8 @@
 <?php
 class config
-{   
+{
     private static $pdo = null;
-    
+
     public static function getConnexion()
     {
         if (!isset(self::$pdo)) {
@@ -10,8 +10,8 @@ class config
             $username = "root";
             $password = "";
             $dbname = "projetweb3";
-            $port = 3307; // Vérifiez si c'est bien le bon port
-            
+            $port = 3306; // Vérifiez si c'est bien le bon port
+
             try {
                 // Ajout du port dans la chaîne de connexion
                 self::$pdo = new PDO(
@@ -24,7 +24,7 @@ class config
                         PDO::ATTR_EMULATE_PREPARES => false
                     ]
                 );
-               
+
             } catch (PDOException $e) {
                 die('Erreur de connexion: ' . $e->getMessage());
             }
