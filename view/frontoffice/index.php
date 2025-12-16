@@ -52,8 +52,7 @@ session_start();
                             
                             <?php if (!isset($_SESSION['user_id'])): ?>
                                 <a href="inscription.php" class="btn_1 mt-3" style="margin-left: 10px;">Créer un compte</a>
-                            <?php else: ?>
-                                <a href="index1.php" class="btn_1 mt-3" style="margin-left: 10px;">Mon Espace</a>
+                            
                             <?php endif; ?>
                         </div>
                     </div>
