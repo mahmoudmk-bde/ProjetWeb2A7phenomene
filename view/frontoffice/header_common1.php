@@ -219,7 +219,7 @@ $headerShowUserMenu = isset($headerShowUserMenu) ? (bool) $headerShowUserMenu : 
                                 $headerUserImg = $userData['img'];
                                 $headerImgPath = $frontOfficePath . 'assets/uploads/profiles/' . $headerUserImg;
                                 // Check if file exists
-                                $fullPath = $_SERVER['DOCUMENT_ROOT'] . '/ProjetWeb2A7phenomene/view/frontoffice/assets/uploads/profiles/' . $headerUserImg;
+                                $fullPath = __DIR__ . '/assets/uploads/profiles/' . $headerUserImg;
                                 $headerImgExists = file_exists($fullPath);
                             }
                         } catch (Exception $e) {
