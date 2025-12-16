@@ -16,7 +16,7 @@ $profile_picture = $_SESSION['profile_picture'] ?? $current_user['img'] ?? 'defa
 
 // Vérifier si l'image existe physiquement
 $image_path = "assets/uploads/profiles/" . $profile_picture;
-$full_image_path = $_SERVER['DOCUMENT_ROOT'] . '/ProjetWeb2A7phenomene/view/frontoffice/' . $image_path;
+$full_image_path = __DIR__ . '/' . $image_path;
 $image_exists = file_exists($full_image_path) && !empty($profile_picture) && $profile_picture !== 'default_avatar.jpg';
 
 // Si l'image n'existe pas, utiliser l'avatar par défaut
