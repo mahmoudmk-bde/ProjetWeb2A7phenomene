@@ -151,7 +151,7 @@ $headerShowUserMenu = isset($headerShowUserMenu) ? (bool)$headerShowUserMenu : f
             <div class="col-lg-12">
                 <nav class="navbar navbar-expand-lg navbar-light">
                     <a class="navbar-brand" href="<?= isset($_SESSION['user_id']) ? $frontOfficePath.'index1.php' : $frontOfficePath.'index.php' ?>">
-                        <img src="<?= $frontOfficePath ?>assets/img/logo.png" alt="logo" style="height: 135px; width: auto;" />
+                        <img src="<?= $frontOfficePath ?>assets/img/logo.png" alt="logo" style="height: 68px; width: auto;" />
                     </a>
                     <button class="navbar-toggler" type="button" data-toggle="collapse" 
                             data-target="#navbarSupportedContent">
