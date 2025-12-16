@@ -44,6 +44,20 @@ INSERT INTO `article` (`id_article`, `titre`, `contenu`, `date_publication`) VAL
 (5, 'education', 'Chaque enfant mérite une éducation de qualité pour réussir dans la vie.', '2025-11-23');
 
 -- --------------------------------------------------------
+CREATE TABLE `quiz` (
+  `id_quiz` int(11) NOT NULL,
+  `question` text NOT NULL,
+  `reponse1` varchar(255) NOT NULL,
+  `reponse2` varchar(255) NOT NULL,
+  `reponse3` varchar(255) NOT NULL,
+  `bonne_reponse` varchar(10) NOT NULL,
+  `id_article` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+INSERT INTO `quiz` (`id_quiz`, `question`, `reponse1`, `reponse2`, `reponse3`, `bonne_reponse`, `id_article`) VALUES
+(1, 'Pourquoi est-il important de faire du sport régulièrement ?', 'Pour s’ennuyer', 'Pour rester en bonne santé', 'Pour regarder la télévision', '2', 4),
+(3, 'Quelle habitude aide à renforcer le corps et prévenir les maladies ?', 'Manger équilibré', 'Rester assis toute la journée', 'Dormir très peu', '1', 4),
+(4, 'Le sommeil contribue à', 'Améliorer la santé mentale et physique', 'Ralentir le corps', 'Rien du tout', '1', 4),
+(5, 'Pourquoi aller à l’école est important ?', 'Pour apprendre et grandir', 'Pour ne rien faire', 'Pour dormir', '1', 5);
 
 --
 -- Table structure for table `bad_words`

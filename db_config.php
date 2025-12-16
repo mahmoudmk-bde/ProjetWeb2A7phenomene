@@ -1,9 +1,6 @@
 <?php
-class config
-{
-    private static $pdo = null;
-
-    public static function getConnexion()
+if (!class_exists('config')) {
+    class config
     {
         public static function getConnexion()
         {
@@ -15,18 +12,9 @@ class config
             $dsn = "mysql:host=$host;dbname=$db;charset=utf8";
 
             try {
-                // Ajout du port dans la chaîne de connexion
-                self::$pdo = new PDO(
-                    "mysql:host=$servername;port=$port;dbname=$dbname",
-                    $username,
-                    $password,
-                    [
-                        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-                        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-                        PDO::ATTR_EMULATE_PREPARES => false
-                    ]
-                );
-
+                $pdo = new PDO($dsn, $user, $pass);
+                $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+                return $pdo;
             } catch (PDOException $e) {
                 die("Erreur de connexion : " . $e->getMessage());
             }
