@@ -11,13 +11,13 @@ echo "<h1>TEST PAGE - If you see this, PHP is working</h1>";
 try {
     require_once __DIR__ . '/../../../controller/AdminStoreController.php';
     echo "<p>Controller loaded successfully</p>";
-    
+
     $storeC = new AdminStoreController();
     echo "<p>Controller instantiated successfully</p>";
-    
+
     $items = $storeC->index();
     echo "<p>Items fetched: " . count($items) . " items found</p>";
-    
+
     echo "<pre>";
     print_r($items);
     echo "</pre>";

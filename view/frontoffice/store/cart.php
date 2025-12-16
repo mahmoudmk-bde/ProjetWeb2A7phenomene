@@ -72,18 +72,21 @@ foreach ($items as $item) {
         .btn-remove {
             color: var(--danger);
             background: rgba(220, 53, 69, 0.1);
-            width: 35px;
-            height: 35px;
+            padding: 5px 12px;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            border-radius: 50%;
+            border-radius: 5px;
             transition: all 0.3s;
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 600;
         }
 
         .btn-remove:hover {
             background: var(--danger);
             color: white;
+            text-decoration: none;
         }
 
         .cart-summary {
@@ -188,7 +191,7 @@ foreach ($items as $item) {
                                                     </td>
                                                     <td>
                                                         <a href="?controller=Store&action=removeFromCart&id=<?= $item['id'] ?>"
-                                                            class="btn-remove"><i class="fas fa-times"></i></a>
+                                                            class="btn-remove"> Retirer</a>
                                                     </td>
                                                 </tr>
                                             <?php endforeach; ?>
@@ -225,38 +228,141 @@ foreach ($items as $item) {
 
                                 <hr style="border-color: rgba(255,255,255,0.1); margin: 25px 0;">
 
-                                <form action="?controller=Store&action=checkout" method="post">
+                                <form action="?controller=Store&action=checkout" method="post"
+                                    onsubmit="return validateForm()">
                                     <h5 class="text-white mb-3">Informations de livraison</h5>
+                                    <div id="js-errors" class="alert alert-danger" style="display:none;"></div>
+
                                     <div class="form-group mb-3">
-                                        <input type="text" name="name" class="form-control" placeholder="Nom complet"
-                                            required
+                                        <input type="text" name="name" id="name" class="form-control"
+                                            placeholder="Nom complet"
                                             style="background: rgba(0,0,0,0.3); border-color: rgba(255,255,255,0.1); color: white;">
                                     </div>
                                     <div class="form-group mb-3">
-                                        <input type="email" name="email" class="form-control" placeholder="Email" required
+                                        <input type="text" name="email" id="email" class="form-control" placeholder="Email"
                                             style="background: rgba(0,0,0,0.3); border-color: rgba(255,255,255,0.1); color: white;">
                                     </div>
                                     <div class="form-group mb-3">
-                                        <input type="tel" name="phone" class="form-control" placeholder="Téléphone" required
+                                        <input type="text" name="phone" id="phone" class="form-control"
+                                            placeholder="Téléphone"
                                             style="background: rgba(0,0,0,0.3); border-color: rgba(255,255,255,0.1); color: white;">
                                     </div>
                                     <div class="form-group mb-3">
-                                        <input type="text" name="address" class="form-control" placeholder="Adresse"
-                                            required
+                                        <input type="text" name="address" id="address" class="form-control"
+                                            placeholder="Adresse"
                                             style="background: rgba(0,0,0,0.3); border-color: rgba(255,255,255,0.1); color: white;">
                                     </div>
                                     <div class="form-group mb-3">
-                                        <input type="text" name="city" class="form-control" placeholder="Ville" required
+                                        <input type="text" name="city" id="city" class="form-control" placeholder="Ville"
                                             style="background: rgba(0,0,0,0.3); border-color: rgba(255,255,255,0.1); color: white;">
                                     </div>
                                     <div class="form-group mb-4">
-                                        <select name="shipping" class="form-control" required
+                                        <select name="shipping" id="shipping" class="form-control"
                                             style="background: rgba(0,0,0,0.3); border-color: rgba(255,255,255,0.1); color: white;">
                                             <option value="" disabled selected>Mode de livraison</option>
                                             <option value="standard" style="color:black">Standard (3-5 jours)</option>
                                             <option value="express" style="color:black">Express (24h)</option>
                                         </select>
                                     </div>
+
+                                    <!-- Payment Method Selection -->
+                                    <h5 class="text-white mb-3 mt-4">Paiement</h5>
+                                    <div class="form-group mb-3">
+                                        <div class="custom-control custom-radio mb-2">
+                                            <input type="radio" id="pay_onsite" name="payment_method" value="onsite"
+                                                class="custom-control-input" checked onchange="togglePaymentFields()">
+                                            <label class="custom-control-label text-white" for="pay_onsite">Payer sur place
+                                                (Cash)</label>
+                                        </div>
+                                        <div class="custom-control custom-radio">
+                                            <input type="radio" id="pay_online" name="payment_method" value="online"
+                                                class="custom-control-input" onchange="togglePaymentFields()">
+                                            <label class="custom-control-label text-white" for="pay_online">Payer en ligne
+                                                (Carte Bancaire)</label>
+                                        </div>
+                                    </div>
+
+                                    <!-- Credit Card Fields (Hidden by default) -->
+                                    <div id="card-element-container"
+                                        style="display: none; background: rgba(255, 255, 255, 0.05); padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+                                        <div class="form-group mb-3">
+                                            <label class="text-white small">Numéro de carte</label>
+                                            <input type="text" name="card_number" id="card_number" class="form-control"
+                                                placeholder="0000 0000 0000 0000" maxlength="19"
+                                                style="background: rgba(0,0,0,0.3); border-color: rgba(255,255,255,0.1); color: white;">
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-6">
+                                                <div class="form-group mb-0">
+                                                    <label class="text-white small">Expiration (MM/YY)</label>
+                                                    <input type="text" name="card_expiry" id="card_expiry"
+                                                        class="form-control" placeholder="MM/YY" maxlength="5"
+                                                        style="background: rgba(0,0,0,0.3); border-color: rgba(255,255,255,0.1); color: white;">
+                                                </div>
+                                            </div>
+                                            <div class="col-6">
+                                                <div class="form-group mb-0">
+                                                    <label class="text-white small">CVC</label>
+                                                    <input type="text" name="card_cvc" id="card_cvc" class="form-control"
+                                                        placeholder="123" maxlength="4"
+                                                        style="background: rgba(0,0,0,0.3); border-color: rgba(255,255,255,0.1); color: white;">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <script>
+                                        function togglePaymentFields() {
+                                            var online = document.getElementById('pay_online').checked;
+                                            var container = document.getElementById('card-element-container');
+
+                                            if (online) {
+                                                container.style.display = 'block';
+                                            } else {
+                                                container.style.display = 'none';
+                                            }
+                                        }
+
+                                        function validateForm() {
+                                            var errors = [];
+                                            var name = document.getElementById('name').value;
+                                            var email = document.getElementById('email').value;
+                                            var phone = document.getElementById('phone').value;
+                                            var address = document.getElementById('address').value;
+                                            var city = document.getElementById('city').value;
+                                            var shipping = document.getElementById('shipping').value;
+
+                                            if (name.length < 3) errors.push("Le nom doit contenir au moins 3 caractères.");
+
+                                            var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                                            if (!emailRegex.test(email)) errors.push("L'email n'est pas valide.");
+
+                                            var phoneRegex = /^[0-9]{8,}$/;
+                                            if (!phoneRegex.test(phone.replace(/\s/g, ''))) errors.push("Le numéro de téléphone doit contenir au moins 8 chiffres.");
+
+                                            if (address.length < 5) errors.push("L'adresse est trop courte.");
+                                            if (city.length < 2) errors.push("La ville est invalide.");
+                                            if (shipping === "") errors.push("Veuillez choisir un mode de livraison.");
+
+                                            if (document.getElementById('pay_online').checked) {
+                                                var cn = document.getElementById('card_number').value;
+                                                var ce = document.getElementById('card_expiry').value;
+                                                var cc = document.getElementById('card_cvc').value;
+
+                                                if (cn.length < 13) errors.push("Numéro de carte invalide.");
+                                                if (ce.length < 5) errors.push("Date d'expiration invalide (MM/YY).");
+                                                if (cc.length < 3) errors.push("CVC invalide.");
+                                            }
+
+                                            if (errors.length > 0) {
+                                                var errorDiv = document.getElementById('js-errors');
+                                                errorDiv.innerHTML = errors.join("<br>");
+                                                errorDiv.style.display = 'block';
+                                                return false;
+                                            }
+                                            return true;
+                                        }
+                                    </script>
                                     <button type="submit" class="btn_1 w-100">Commander</button>
                                 </form>
                             </div>
