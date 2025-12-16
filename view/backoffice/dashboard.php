@@ -18,6 +18,17 @@ require_once $base_dir . 'controller/condidaturecontroller.php';
 require_once $base_dir . 'controller/utilisateurcontroller.php';
 require_once $base_dir . 'model/evenementModel.php';
 require_once $base_dir . 'model/participationModel.php';
+require_once $base_dir . 'controller/NotificationController.php';
+
+// Initialize notifications
+$notificationController = new NotificationController();
+$notifications = $notificationController->getBackofficeNotifications(20);
+$notificationCount = count($notifications);
+
+// Debug: Log if no notifications found
+if (empty($notifications)) {
+    error_log('DEBUG: No notifications found in backoffice dashboard');
+}
 
 // Récupération des infos utilisateur pour le header
 $utilisateurC = new UtilisateurController();
@@ -605,6 +616,7 @@ ksort($feedbackRatings);
                 <li><a href="#" onclick="openPage('events/evenement.php?embed=1')">🎟️ Événements</a></li>
                 <li><a href="#" onclick="openPage('events/createevent.php?embed=1')">➕ Créer événement</a></li>
                 <li><a href="#" onclick="openPage('events/participation_history.php?embed=1')">👥 Participations</a></li>
+                <li><a href="#" onclick="openPage('events/list_event_feedback.php')">💬 Avis Événements</a></li>
             </ul>
         </li>
 
@@ -630,8 +642,19 @@ ksort($feedbackRatings);
             <i class="fas fa-bars"></i>
         </button>
 
+        <!-- Notifications Center -->
+        <div style="margin-left: auto; margin-right: 20px;">
+            <?php 
+            if (file_exists(__DIR__ . '/assets/notifications_partial.php')) {
+                include __DIR__ . '/assets/notifications_partial.php';
+            } else {
+                echo '<div style="color: #999;">Notifications unavailable</div>';
+            }
+            ?>
+        </div>
+
         <!-- User Menu -->
-        <div class="user-menu ml-auto">
+        <div class="user-menu">
             <div class="user-wrapper">
                 <span class="user-name"><?= htmlspecialchars($userName) ?></span>
                 <div class="user-avatar">
@@ -824,6 +847,9 @@ ksort($feedbackRatings);
                                     </button>
                                     <button class="btn btn-sm btn-secondary" onclick="openPage('events/participation.php?event_id=<?= $ev['id_evenement'] ?>')">
                                         <i class="fas fa-users mr-1"></i>Participations
+                                    </button>
+                                    <button class="btn btn-sm btn-warning" onclick="openPage('events/event_feedback.php?event_id=<?= $ev['id_evenement'] ?>')">
+                                        <i class="fas fa-comments mr-1"></i>Avis
                                     </button>
                                     <button class="btn btn-sm btn-danger" onclick="if(confirm('Supprimer cet événement ?')) { openPage('events/evenement.php?action=delete&id=<?= $ev['id_evenement'] ?>'); }">
                                         <i class="fas fa-trash mr-1"></i>Supprimer

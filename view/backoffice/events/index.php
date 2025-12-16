@@ -290,8 +290,8 @@
 <body>
 <?php
 // Load statistics data
-require_once '../../model/participationModel.php';
-require_once '../../model/evenementModel.php';
+require_once '../../../model/participationModel.php';
+require_once '../../../model/evenementModel.php';
 $partModel = new ParticipationModel();
 $evtModel = new EvenementModel();
 
