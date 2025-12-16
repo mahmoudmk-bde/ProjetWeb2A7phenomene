@@ -16,11 +16,17 @@ $traitees = count(array_filter($list, function($r) { return $r['statut'] === 'Tr
 $enCours = count(array_filter($list, function($r) { return $r['statut'] === 'En cours'; }));
 
 // Statistiques par priorité
-$priorites = ['Basse' => 0, 'Moyenne' => 0, 'Haute' => 0, 'Urgente' => 0];
+$priorites = ['Basse' => 0, 'Moyenne' => 0, 'Élevée' => 0, 'Urgent' => 0];
 foreach ($list as $rec) {
     $priorite = $rec['priorite'] ?? 'Moyenne';
     if (isset($priorites[$priorite])) {
         $priorites[$priorite]++;
+    } else {
+        // Handle variations (Urgente->Urgent, Haute->Élevée)
+        $normalized = str_replace(['Urgente', 'Haute'], ['Urgent', 'Élevée'], $priorite);
+        if (isset($priorites[$normalized])) {
+            $priorites[$normalized]++;
+        }
     }
 }
 
@@ -384,8 +390,8 @@ $tauxTraitement = $totalReclamations > 0 ? round(($traitees / $totalReclamations
         };
 
         const priorityData = {
-            labels: ['Basse', 'Moyenne', 'Haute', 'Urgente'],
-            values: [<?= $priorites['Basse'] ?>, <?= $priorites['Moyenne'] ?>, <?= $priorites['Haute'] ?>, <?= $priorites['Urgente'] ?>],
+            labels: ['Basse', 'Moyenne', 'Élevée', 'Urgent'],
+            values: [<?= $priorites['Basse'] ?>, <?= $priorites['Moyenne'] ?>, <?= $priorites['Élevée'] ?>, <?= $priorites['Urgent'] ?>],
             colors: ['#6c757d', '#17a2b8', '#ffc107', '#dc3545']
         };
 
