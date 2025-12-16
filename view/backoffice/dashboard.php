@@ -857,13 +857,29 @@ ksort($feedbackRatings);
                                 </div>
                             </div>
                         </div>
-                    <?php endforeach; ?>
-                <?php else: ?>
-                    <div class="col-12">
-                        <div class="alert alert-info">Aucun événement pour le moment.</div>
                     </div>
-                <?php endif; ?>
+                </div>
+                <div class="col-lg-4 mb-4">
+                    <div class="chart-container-balanced">
+                        <div class="chart-title-balanced">👥 Top 5 Participants</div>
+                        <div class="chart-wrapper-balanced">
+                            <canvas id="eventParticipantsChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 mb-4">
+                    <div class="chart-container-balanced">
+                        <div class="chart-title-balanced">💰 Top 5 Revenus</div>
+                        <div class="chart-wrapper-balanced">
+                            <canvas id="eventRevenueChart"></canvas>
+                        </div>
+                    </div>
+                </div>
             </div>
+
+            <hr style="border-color:#ff0066; margin: 25px 0;">
+
+
 
             <h2 id="stats" class="text-white mb-4 section-title">📈 Statistiques Détaillées</h2>
 
@@ -1035,6 +1051,82 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+
+    // --- CHARTS ÉVÉNEMENTS ---
+    const eventStats = <?= json_encode($eventStatsResult ?? []) ?>;
+    
+    if (eventStats && document.getElementById('eventViewsChart')) {
+        // 1. Vues
+        new Chart(document.getElementById('eventViewsChart'), {
+            type: 'bar',
+            data: {
+                labels: eventStats.views.map(e => e.titre),
+                datasets: [{
+                    label: 'Vues',
+                    data: eventStats.views.map(e => e.vues),
+                    backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                indexAxis: 'y',
+                plugins: { legend: { display: false }, title: { display: false } },
+                scales: {
+                    x: { ticks: { color: 'white' }, grid: { color: '#333' } },
+                    y: { ticks: { color: 'white' }, grid: { display: false } }
+                }
+            }
+        });
+
+        // 2. Participants
+        new Chart(document.getElementById('eventParticipantsChart'), {
+            type: 'bar',
+            data: {
+                labels: eventStats.participants.map(e => e.titre),
+                datasets: [{
+                    label: 'Participants',
+                    data: eventStats.participants.map(e => e.count),
+                    backgroundColor: 'rgba(255, 99, 132, 0.7)',
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { ticks: { color: 'white' }, grid: { color: '#333' } },
+                    x: { ticks: { display: false }, grid: { display: false } }
+                }
+            }
+        });
+
+        // 3. Revenus
+        new Chart(document.getElementById('eventRevenueChart'), {
+            type: 'doughnut',
+            data: {
+                labels: eventStats.revenue.map(e => e.titre),
+                datasets: [{
+                    data: eventStats.revenue.map(e => e.total),
+                    backgroundColor: [
+                        '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'
+                    ],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom', labels: { color: 'white', boxWidth: 10, font: {size: 10} } }
+                }
+            }
+        });
+    }
 });
 </script>
 
@@ -1047,4 +1139,51 @@ document.addEventListener('DOMContentLoaded', function() {
 <script src="assets/js/charts.js"></script>
 
 </body>
+<script>
+    // Modal Details Logic
+    function openEventDetailsModal(event) {
+        // Create modal HTML dynamically
+        const modalId = 'eventDetailsModal';
+        let modalHtml = `
+            <div class="modal fade" id="${modalId}" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content" style="background-color: #1e1e1e; color: white;">
+                        <div class="modal-header border-secondary">
+                            <h5 class="modal-title">${event.titre}</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row">
+                                <div class="col-md-5">
+                                    <img src="../frontoffice/assets/img/events/${event.image}" class="img-fluid rounded mb-3" alt="${event.titre}" onerror="this.src='../frontoffice/assets/img/events/event-default.jpg'">
+                                </div>
+                                <div class="col-md-7">
+                                    <p><strong><i class="fas fa-calendar me-2 text-primary"></i>Date:</strong> ${event.date_evenement} à ${event.heure_evenement}</p>
+                                    <p><strong><i class="fas fa-clock me-2 text-primary"></i>Durée:</strong> ${event.duree_minutes} min</p>
+                                    <p><strong><i class="fas fa-map-marker-alt me-2 text-primary"></i>Lieu:</strong> ${event.lieu}</p>
+                                    <p><strong><i class="fas fa-euro-sign me-2 text-primary"></i>Prix:</strong> ${event.prix > 0 ? event.prix + ' DT' : 'Gratuit'}</p>
+                                    <p class="mt-3">${event.description}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer border-secondary">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // Update or append modal
+        let existingModal = document.getElementById(modalId);
+        if (existingModal) {
+            existingModal.remove();
+        }
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+        // Show modal
+        const modal = new bootstrap.Modal(document.getElementById(modalId));
+        modal.show();
+    }
+</script>
 </html>
