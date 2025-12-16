@@ -304,5 +304,39 @@ class UtilisateurController {
             return false;
         }
     }
+
+    // AJOUT: Récupérer tous les utilisateurs ayant un visage enregistré
+    public function getAllFaces() {
+        $sql = "SELECT id_util, prenom, nom, mail, typee, img, face FROM utilisateur WHERE face IS NOT NULL AND face != ''";
+        $db = config::getConnexion();
+        try {
+            $query = $db->query($sql);
+            return $query->fetchAll(PDO::FETCH_ASSOC);
+        } catch (Exception $e) {
+            error_log('Error fetching faces: ' . $e->getMessage());
+            return [];
+        }
+    }
+
+    // AJOUT: Mettre à jour le descripteur facial
+    public function updateFace($user_id, $descriptor) {
+        try {
+            $db = config::getConnexion();
+            $query = $db->prepare(
+                'UPDATE utilisateur SET face = :face WHERE id_util = :id_util'
+            );
+            
+            $query->execute([
+                'id_util' => $user_id,
+                'face' => $descriptor
+            ]);
+            
+            return true;
+            
+        } catch (PDOException $e) {
+            error_log('Error updating face: ' . $e->getMessage());
+            return false;
+        }
+    }
 }
 ?>

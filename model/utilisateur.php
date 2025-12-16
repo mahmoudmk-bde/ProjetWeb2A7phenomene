@@ -14,10 +14,11 @@ class Utilisateur {
     private ?string $rp2;
     private ?string $img;
     private ?string $auth;
+    private ?string $face;
 
     public function __construct(
         $prenom, $nom, $dt_naiss, $mail, $num, $mdp, $typee,
-        $q1, $rp1, $q2, $rp2, $auth = 'desactive', $img = null
+        $q1, $rp1, $q2, $rp2, $auth = 'desactive', $img = null, $face = null
     ) {
         $this->prenom = $prenom;
         $this->nom = $nom;
@@ -35,6 +36,7 @@ class Utilisateur {
         $this->rp2 = $rp2;
         $this->auth = $auth;
         $this->img = $img;
+        $this->face = $face;
     }
 
     public function getPrenom() { return $this->prenom; }
@@ -55,5 +57,6 @@ class Utilisateur {
     public function getRp2() { return $this->rp2; }
     public function getAuth() { return $this->auth; }
     public function getImg() { return $this->img; }
+    public function getFace() { return $this->face; }
 }
 ?>
