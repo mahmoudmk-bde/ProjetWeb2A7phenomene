@@ -122,6 +122,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && isset($e
         $prenom = trim(htmlspecialchars($_POST['prenom'] ?? '', ENT_QUOTES, 'UTF-8'));
         $nom = trim(htmlspecialchars($_POST['nom'] ?? '', ENT_QUOTES, 'UTF-8'));
         $email = isset($_POST['email']) ? filter_var($_POST['email'], FILTER_SANITIZE_EMAIL) : '';
+        $phone = trim(htmlspecialchars($_POST['phone'] ?? '', ENT_QUOTES, 'UTF-8'));
+        $ingameName = trim(htmlspecialchars($_POST['ingame_name'] ?? '', ENT_QUOTES, 'UTF-8'));
+        $age = isset($_POST['age']) ? (int)$_POST['age'] : 0;
+        $team = trim(htmlspecialchars($_POST['team'] ?? '', ENT_QUOTES, 'UTF-8'));
 
         // Validation du prénom
         if (empty($prenom) || strlen($prenom) < 2) {
@@ -137,9 +141,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && isset($e
         elseif (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $message = 'Veuillez fournir un email valide.';
             $alertType = 'danger';
-        } else {
+        }
+        // Validation du téléphone
+        elseif (empty($phone) || strlen($phone) < 8) {
+            $message = 'Le numéro de téléphone doit contenir au moins 8 chiffres.';
+            $alertType = 'danger';
+        }
+        // Validation du nom in-game
+        elseif (empty($ingameName) || strlen($ingameName) < 2) {
+            $message = 'Le nom in-game doit contenir au moins 2 caractères.';
+            $alertType = 'danger';
+        }
+        // Validation de l'âge
+        elseif ($age < 10 || $age > 100) {
+            $message = 'L\'âge doit être entre 10 et 100 ans.';
+            $alertType = 'danger';
+        }
+        else {
         $db = config::getConnexion();
         try {
+            // Store additional info in session or database comment field
+            $additionalInfo = json_encode([
+                'phone' => $phone,
+                'ingame_name' => $ingameName,
+                'age' => $age,
+                'team' => $team
+            ]);
+            
             // If user is already logged in, use their session id and skip lookup/creation
             if (isset($_SESSION['user_id']) && $_SESSION['user_id']) {
                 $user_id = (int) $_SESSION['user_id'];
@@ -162,7 +190,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && isset($e
                 $message = 'Vous êtes déjà inscrit à cet événement.';
                 $alertType = 'warning';
             } else {
-                $created = $participationModel->create($event_id, $user_id, date('Y-m-d'), 'en attente');
+                $created = $participationModel->create($event_id, $user_id, date('Y-m-d'), 'en attente', 1, null, "Tél: $phone | In-game: $ingameName | Âge: $age | Équipe: " . ($team ?: 'N/A'));
                 if ($created) {
                     $message = 'Votre demande a été enregistrée et est en attente de validation.';
                     $alertType = 'success';
@@ -1266,15 +1294,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_feedback'])) {
                         <input type="hidden" name="action" value="guest_participate">
                         <div class="form-group">
                             <label for="modal_prenom">Prénom <span class="text-danger">*</span></label>
-                            <input type="text" name="prenom" id="modal_prenom" class="form-control" placeholder="Votre prénom">
+                            <input type="text" name="prenom" id="modal_prenom" class="form-control" placeholder="Votre prénom" required>
                         </div>
                         <div class="form-group">
                             <label for="modal_nom">Nom <span class="text-danger">*</span></label>
-                            <input type="text" name="nom" id="modal_nom" class="form-control" placeholder="Votre nom">
+                            <input type="text" name="nom" id="modal_nom" class="form-control" placeholder="Votre nom" required>
                         </div>
                         <div class="form-group">
                             <label for="modal_email">Email <span class="text-danger">*</span></label>
-                            <input type="email" name="email" id="modal_email" class="form-control" placeholder="votremail@example.com">
+                            <input type="email" name="email" id="modal_email" class="form-control" placeholder="votremail@example.com" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="modal_phone">Téléphone <span class="text-danger">*</span></label>
+                            <input type="tel" name="phone" id="modal_phone" class="form-control" placeholder="+216 12 345 678" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="modal_ingame_name">Nom in-game <span class="text-danger">*</span></label>
+                            <input type="text" name="ingame_name" id="modal_ingame_name" class="form-control" placeholder="Votre pseudo de jeu" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="modal_age">Âge <span class="text-danger">*</span></label>
+                            <input type="number" name="age" id="modal_age" class="form-control" placeholder="Votre âge" min="10" max="100" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="modal_team">Nom d'équipe (si applicable)</label>
+                            <input type="text" name="team" id="modal_team" class="form-control" placeholder="Nom de votre équipe">
                         </div>
                         <div class="text-right" style="margin-top: 20px;">
                             <button type="submit" class="btn-buy-now">Envoyer</button>
@@ -1361,11 +1405,17 @@ document.addEventListener('DOMContentLoaded', function () {
         const prenom = (participantForm.prenom.value || '').trim();
         const nom = (participantForm.nom.value || '').trim();
         const email = (participantForm.email.value || '').trim();
+        const phone = (participantForm.phone.value || '').trim();
+        const ingameName = (participantForm.ingame_name.value || '').trim();
+        const age = parseInt(participantForm.age.value || '0', 10);
         const errors = [];
 
         if (prenom.length < 2) errors.push('Le prénom doit contenir au moins 2 caractères.');
         if (nom.length < 2) errors.push('Le nom doit contenir au moins 2 caractères.');
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.push('Adresse email invalide.');
+        if (phone.length < 8) errors.push('Le numéro de téléphone doit contenir au moins 8 chiffres.');
+        if (ingameName.length < 2) errors.push('Le nom in-game doit contenir au moins 2 caractères.');
+        if (age < 10 || age > 100) errors.push('L\'âge doit être entre 10 et 100 ans.');
 
         if (errors.length) {
             e.preventDefault();
