@@ -107,7 +107,7 @@ if (isset($event)) {
     $totalFeedbacks = 0;
     $feedbacks = [];
     $userFeedback = null;
-    $isLiked = false;
+        $isLiked = false;
     $likeCount = 0;
 }
 
@@ -119,9 +119,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && isset($e
     $action = $_POST['action'];
 
     if ($action === 'guest_participate') {
-        $prenom = secure_data($_POST['prenom'] ?? '');
-        $nom = secure_data($_POST['nom'] ?? '');
+        $prenom = trim(htmlspecialchars($_POST['prenom'] ?? '', ENT_QUOTES, 'UTF-8'));
+        $nom = trim(htmlspecialchars($_POST['nom'] ?? '', ENT_QUOTES, 'UTF-8'));
         $email = isset($_POST['email']) ? filter_var($_POST['email'], FILTER_SANITIZE_EMAIL) : '';
+        $phone = trim(htmlspecialchars($_POST['phone'] ?? '', ENT_QUOTES, 'UTF-8'));
+        $ingameName = trim(htmlspecialchars($_POST['ingame_name'] ?? '', ENT_QUOTES, 'UTF-8'));
+        $age = isset($_POST['age']) ? (int)$_POST['age'] : 0;
+        $team = trim(htmlspecialchars($_POST['team'] ?? '', ENT_QUOTES, 'UTF-8'));
 
         // Validation du prénom
         if (empty($prenom) || strlen($prenom) < 2) {
@@ -137,9 +141,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && isset($e
         elseif (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $message = 'Veuillez fournir un email valide.';
             $alertType = 'danger';
-        } else {
+        }
+        // Validation du téléphone
+        elseif (empty($phone) || strlen($phone) < 8) {
+            $message = 'Le numéro de téléphone doit contenir au moins 8 chiffres.';
+            $alertType = 'danger';
+        }
+        // Validation du nom in-game
+        elseif (empty($ingameName) || strlen($ingameName) < 2) {
+            $message = 'Le nom in-game doit contenir au moins 2 caractères.';
+            $alertType = 'danger';
+        }
+        // Validation de l'âge
+        elseif ($age < 10 || $age > 100) {
+            $message = 'L\'âge doit être entre 10 et 100 ans.';
+            $alertType = 'danger';
+        }
+        else {
         $db = config::getConnexion();
         try {
+            // Store additional info in session or database comment field
+            $additionalInfo = json_encode([
+                'phone' => $phone,
+                'ingame_name' => $ingameName,
+                'age' => $age,
+                'team' => $team
+            ]);
+            
             // If user is already logged in, use their session id and skip lookup/creation
             if (isset($_SESSION['user_id']) && $_SESSION['user_id']) {
                 $user_id = (int) $_SESSION['user_id'];
@@ -162,7 +190,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && isset($e
                 $message = 'Vous êtes déjà inscrit à cet événement.';
                 $alertType = 'warning';
             } else {
-                $created = $participationModel->create($event_id, $user_id, date('Y-m-d'), 'en attente');
+                $created = $participationModel->create($event_id, $user_id, date('Y-m-d'), 'en attente', 1, null, "Tél: $phone | In-game: $ingameName | Âge: $age | Équipe: " . ($team ?: 'N/A'));
                 if ($created) {
                     $message = 'Votre demande a été enregistrée et est en attente de validation.';
                     $alertType = 'success';
@@ -181,8 +209,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && isset($e
             $message = 'Cet événement ne nécessite pas de paiement.';
             $alertType = 'warning';
         } else {
-            $prenom = secure_data($_POST['prenom'] ?? '');
-            $nom = secure_data($_POST['nom'] ?? '');
+            $prenom = trim(htmlspecialchars($_POST['prenom'] ?? '', ENT_QUOTES, 'UTF-8'));
+            $nom = trim(htmlspecialchars($_POST['nom'] ?? '', ENT_QUOTES, 'UTF-8'));
             $email = isset($_POST['email']) ? filter_var($_POST['email'], FILTER_SANITIZE_EMAIL) : '';
             $quantite = isset($_POST['quantite']) ? (int) $_POST['quantite'] : 1;
             $cardNumber = preg_replace('/\D+/', '', $_POST['card_number'] ?? '');
@@ -576,6 +604,165 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_feedback'])) {
             25% { transform: scale(1.2); }
             50% { transform: scale(1.1); }
         }
+
+        /* ========== MODAL DARK THEME STYLING ========== */
+        .modal.fade .modal-dialog {
+            transition: transform 0.3s ease !important;
+        }
+
+        .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.6) !important;
+        }
+
+        .modal-content {
+            background-color: #2d3142 !important;
+            border: 2px solid #ff4a57 !important;
+            border-radius: 12px !important;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.7) !important;
+        }
+        
+        .modal-header {
+            background-color: #1f2235 !important;
+            border-bottom: 2px solid #ff4a57 !important;
+            padding: 25px !important;
+        }
+        
+        .modal-title {
+            color: #ffffff !important;
+            font-weight: 700 !important;
+            font-size: 1.4rem !important;
+        }
+        
+        .modal-header .close {
+            color: #ff4a57 !important;
+            opacity: 1 !important;
+            font-size: 1.8rem !important;
+            text-shadow: none !important;
+            line-height: 1 !important;
+        }
+        
+        .modal-header .close:hover,
+        .modal-header .close:focus {
+            color: #ff6b7a !important;
+            opacity: 1 !important;
+        }
+        
+        .modal-body {
+            padding: 35px !important;
+            background-color: #2d3142 !important;
+        }
+        
+        .modal-body form {
+            margin: 0 !important;
+        }
+        
+        .modal-body .form-group {
+            margin-bottom: 22px !important;
+        }
+        
+        .modal-body .form-group label {
+            color: #ffffff !important;
+            font-weight: 600 !important;
+            margin-bottom: 10px !important;
+            display: block !important;
+            font-size: 0.95rem !important;
+            letter-spacing: 0.3px !important;
+        }
+        
+        .modal-body .text-danger {
+            color: #ff4a57 !important;
+        }
+        
+        .modal-body .form-control,
+        .modal-body input[type="text"],
+        .modal-body input[type="email"],
+        .modal-body input[type="number"],
+        .modal-body textarea,
+        .modal-body select {
+            background-color: #1f2235 !important;
+            border: 2px solid #ff4a57 !important;
+            color: #ffffff !important;
+            padding: 14px 16px !important;
+            font-size: 0.95rem !important;
+            border-radius: 6px !important;
+            transition: all 0.3s ease !important;
+            height: auto !important;
+            box-shadow: none !important;
+        }
+        
+        .modal-body .form-control:focus,
+        .modal-body input[type="text"]:focus,
+        .modal-body input[type="email"]:focus,
+        .modal-body input[type="number"]:focus,
+        .modal-body textarea:focus,
+        .modal-body select:focus {
+            background-color: #1f2235 !important;
+            border-color: #ff6b7a !important;
+            color: #ffffff !important;
+            box-shadow: 0 0 10px rgba(255, 74, 87, 0.5) !important;
+            outline: none !important;
+        }
+        
+        .modal-body .form-control::placeholder {
+            color: #b0b3c1 !important;
+            opacity: 0.7 !important;
+        }
+        
+        .modal-body .alert {
+            border-radius: 8px !important;
+            margin-bottom: 20px !important;
+        }
+        
+        .modal-body .alert-danger {
+            background-color: rgba(255, 74, 87, 0.2) !important;
+            border: 1.5px solid #ff4a57 !important;
+            color: #ffb3b8 !important;
+        }
+        
+        .modal-body .alert-secondary {
+            background-color: #1f2235 !important;
+            border: 2px solid #ff4a57 !important;
+            color: #ffffff !important;
+            padding: 18px !important;
+            font-size: 1rem !important;
+        }
+        
+        .modal-body .alert-secondary strong {
+            color: #ff4a57 !important;
+            font-size: 1.15rem !important;
+        }
+
+        .modal-body .row {
+            margin: 0 -5px !important;
+        }
+
+        .modal-body .col-md-6 {
+            padding: 0 5px !important;
+        }
+
+        .modal-body .text-right {
+            text-align: right !important;
+            margin-top: 25px !important;
+        }
+
+        .modal-body .btn-buy-now {
+            background-color: #ff4a57 !important;
+            color: #ffffff !important;
+            border: none !important;
+            padding: 14px 35px !important;
+            font-weight: 600 !important;
+            border-radius: 6px !important;
+            transition: all 0.3s ease !important;
+            font-size: 0.95rem !important;
+            cursor: pointer !important;
+            min-width: 150px !important;
+        }
+
+        .modal-body .btn-buy-now:hover {
+            background-color: #ff6b7a !important;
+            transform: translateY(-2px) !important;
+            box-shadow: 0 5px 15px rgba(255, 74, 87, 0.4) !important;
+        }
     </style>
 </head>
 
@@ -845,7 +1032,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_feedback'])) {
                                             <div class="star-rating">
                                                 <?php for ($i = 5; $i >= 1; $i--): ?>
                                                     <input type="radio" id="star<?= $i ?>" name="rating" value="<?= $i ?>" 
-                                                           <?= $userFeedback && $userFeedback['rating'] == $i ? 'checked' : '' ?> required>
+                                                           <?= $userFeedback && $userFeedback['rating'] == $i ? 'checked' : '' ?> >
                                                     <label for="star<?= $i ?>" title="<?= $i ?> étoiles">
                                                         <i class="fas fa-star"></i>
                                                     </label>
@@ -1107,17 +1294,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_feedback'])) {
                         <input type="hidden" name="action" value="guest_participate">
                         <div class="form-group">
                             <label for="modal_prenom">Prénom <span class="text-danger">*</span></label>
-                            <input type="text" name="prenom" id="modal_prenom" class="form-control" placeholder="Prénom" required>
+                            <input type="text" name="prenom" id="modal_prenom" class="form-control" placeholder="Votre prénom" required>
                         </div>
                         <div class="form-group">
                             <label for="modal_nom">Nom <span class="text-danger">*</span></label>
-                            <input type="text" name="nom" id="modal_nom" class="form-control" placeholder="Nom" required>
+                            <input type="text" name="nom" id="modal_nom" class="form-control" placeholder="Votre nom" required>
                         </div>
                         <div class="form-group">
                             <label for="modal_email">Email <span class="text-danger">*</span></label>
-                            <input type="email" name="email" id="modal_email" class="form-control" placeholder="email@example.com" required>
+                            <input type="email" name="email" id="modal_email" class="form-control" placeholder="votremail@example.com" required>
                         </div>
-                        <div class="text-right">
+                        <div class="form-group">
+                            <label for="modal_phone">Téléphone <span class="text-danger">*</span></label>
+                            <input type="tel" name="phone" id="modal_phone" class="form-control" placeholder="+216 12 345 678" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="modal_ingame_name">Nom in-game <span class="text-danger">*</span></label>
+                            <input type="text" name="ingame_name" id="modal_ingame_name" class="form-control" placeholder="Votre pseudo de jeu" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="modal_age">Âge <span class="text-danger">*</span></label>
+                            <input type="number" name="age" id="modal_age" class="form-control" placeholder="Votre âge" min="10" max="100" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="modal_team">Nom d'équipe (si applicable)</label>
+                            <input type="text" name="team" id="modal_team" class="form-control" placeholder="Nom de votre équipe">
+                        </div>
+                        <div class="text-right" style="margin-top: 20px;">
                             <button type="submit" class="btn-buy-now">Envoyer</button>
                         </div>
                     </form>
@@ -1143,38 +1346,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_feedback'])) {
                         <div id="payment-errors" class="alert alert-danger d-none"></div>
                         <div class="form-group">
                             <label for="pay_prenom">Prénom</label>
-                            <input type="text" name="prenom" id="pay_prenom" class="form-control" required>
+                            <input type="text" name="prenom" id="pay_prenom" class="form-control" placeholder="Votre prénom">
                         </div>
                         <div class="form-group">
                             <label for="pay_nom">Nom</label>
-                            <input type="text" name="nom" id="pay_nom" class="form-control" required>
+                            <input type="text" name="nom" id="pay_nom" class="form-control" placeholder="Votre nom">
                         </div>
                         <div class="form-group">
                             <label for="pay_email">Email</label>
-                            <input type="email" name="email" id="pay_email" class="form-control" required>
+                            <input type="email" name="email" id="pay_email" class="form-control" placeholder="votremail@example.com">
+                        </div>
+                        <div class="form-group">
+                            <label for="card_number">Numéro de carte</label>
+                            <input type="text" name="card_number" id="card_number" class="form-control" placeholder="1234 5678 9012 3456">
                         </div>
                         <div class="row">
-                            <div class="col-md-8">
-                                <div class="form-group">
-                                    <label for="card_number">Numéro de carte</label>
-                                    <input type="text" name="card_number" id="card_number" class="form-control" placeholder="1234 5678 9012 3456" required>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
+                            <div class="col-md-6">
                                 <div class="form-group">
                                     <label for="card_exp">Expiration</label>
-                                    <input type="text" name="card_exp" id="card_exp" class="form-control" placeholder="MM/AA" required>
+                                    <input type="text" name="card_exp" id="card_exp" class="form-control" placeholder="MM/AA">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="card_cvv">CVV</label>
+                                    <input type="text" name="card_cvv" id="card_cvv" class="form-control" placeholder="123">
                                 </div>
                             </div>
                         </div>
                         <div class="form-group">
                             <label for="card_cvv">CVV</label>
-                            <input type="text" name="card_cvv" id="card_cvv" class="form-control" placeholder="123" required>
+                            <input type="text" name="card_cvv" id="card_cvv" class="form-control" placeholder="123">
                         </div>
-                        <div class="alert alert-secondary" id="paymentSummary">
+                        <div class="alert alert-secondary" id="paymentSummary" style="margin-top: 20px;">
                             Total: <strong><?= number_format(max(1, $price), 2) ?> TND</strong>
                         </div>
-                        <div class="text-right">
+                        <div class="text-right" style="margin-top: 20px;">
                             <button type="submit" class="btn-buy-now">Confirmer le paiement</button>
                         </div>
                     </form>
@@ -1198,11 +1405,17 @@ document.addEventListener('DOMContentLoaded', function () {
         const prenom = (participantForm.prenom.value || '').trim();
         const nom = (participantForm.nom.value || '').trim();
         const email = (participantForm.email.value || '').trim();
+        const phone = (participantForm.phone.value || '').trim();
+        const ingameName = (participantForm.ingame_name.value || '').trim();
+        const age = parseInt(participantForm.age.value || '0', 10);
         const errors = [];
 
         if (prenom.length < 2) errors.push('Le prénom doit contenir au moins 2 caractères.');
         if (nom.length < 2) errors.push('Le nom doit contenir au moins 2 caractères.');
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.push('Adresse email invalide.');
+        if (phone.length < 8) errors.push('Le numéro de téléphone doit contenir au moins 8 chiffres.');
+        if (ingameName.length < 2) errors.push('Le nom in-game doit contenir au moins 2 caractères.');
+        if (age < 10 || age > 100) errors.push('L\'âge doit être entre 10 et 100 ans.');
 
         if (errors.length) {
             e.preventDefault();

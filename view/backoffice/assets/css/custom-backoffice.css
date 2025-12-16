@@ -821,3 +821,32 @@ body {
 .text-success { color: var(--success) !important; }
 .text-warning { color: var(--warning) !important; }
 .text-danger { color: var(--danger) !important; }
+
+/* ============ GLOBAL SELECT FIX ============ */
+select, select.form-control, .form-group select, .filter-select,
+.form-edit-engage select, .edit-form select, .form-group-modern select {
+    appearance: menulist !important;
+    -webkit-appearance: menulist !important;
+    -moz-appearance: menulist !important;
+    background-image: none !important;
+    background-color: var(--secondary-color) !important;
+    color: var(--text-color) !important;
+    border: 2px solid var(--border-color) !important;
+    padding: 12px 15px !important;
+}
+
+select:focus, select.form-control:focus {
+    border-color: var(--primary-color) !important;
+    box-shadow: 0 0 0 0.2rem rgba(255, 74, 87, 0.25) !important;
+}
+
+option {
+    background-color: var(--secondary-color) !important;
+    color: var(--text-color) !important;
+    padding: 10px;
+}
+
+option:checked {
+    background-color: var(--primary-color) !important;
+    color: white !important;
+}

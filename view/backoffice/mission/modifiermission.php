@@ -71,23 +71,23 @@ if (!empty($mission['date_fin'])) {
 
         <div class="form-group">
             <label>Titre</label>
-            <input type="text" name="titre" value="<?= htmlspecialchars($mission['titre']) ?>" required>
+            <input type="text" name="titre" value="<?= htmlspecialchars($mission['titre']) ?>">
         </div>
 
         <div class="form-group">
             <label>Thème</label>
-            <input type="text" name="theme" value="<?= htmlspecialchars($mission['theme']) ?>" required>
+            <input type="text" name="theme" value="<?= htmlspecialchars($mission['theme']) ?>">
         </div>
 
         <div class="form-group">
             <label>Jeu</label>
-            <input type="text" name="jeu" value="<?= htmlspecialchars($mission['jeu']) ?>" required>
+            <input type="text" name="jeu" value="<?= htmlspecialchars($mission['jeu']) ?>">
         </div>
 
         <div class="form-row-2">
             <div class="form-group">
                 <label>Difficulté</label>
-                <select name="niveau_difficulte" required>
+                <select name="niveau_difficulte">
                     <option value="facile"    <?= $mission['niveau_difficulte']=="facile"?"selected":"" ?>>Facile</option>
                     <option value="moyen"     <?= $mission['niveau_difficulte']=="moyen"?"selected":"" ?>>Moyen</option>
                     <option value="difficile" <?= $mission['niveau_difficulte']=="difficile"?"selected":"" ?>>Difficile</option>
@@ -96,18 +96,18 @@ if (!empty($mission['date_fin'])) {
 
             <div class="form-group">
                 <label>Date de début</label>
-                <input type="date" name="date_debut" value="<?= htmlspecialchars($dateDebut) ?>" required>
+                <input type="date" name="date_debut" value="<?= htmlspecialchars($dateDebut) ?>">
             </div>
 
             <div class="form-group">
                 <label>Date de fin</label>
-                <input type="date" name="date_fin" value="<?= htmlspecialchars($dateFin) ?>" required>
+                <input type="date" name="date_fin" value="<?= htmlspecialchars($dateFin) ?>">
             </div>
         </div>
 
         <div class="form-group">
             <label>Description</label>
-            <textarea name="description" rows="5" required><?= htmlspecialchars($mission['description']) ?></textarea>
+            <textarea name="description" rows="5"><?= htmlspecialchars($mission['description']) ?></textarea>
         </div>
 
         <button type="submit" class="btn-save-pro">💾 Mettre à jour</button>

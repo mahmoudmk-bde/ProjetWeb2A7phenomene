@@ -52,7 +52,7 @@ a:hover {
 }
 
 .main_menu .navbar-brand img {
-    height: 45px;
+    height: 22px;
     filter: brightness(1.1);
 }
 
@@ -561,12 +561,25 @@ a:hover {
 }
 
 select.form-control {
-    appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ff4a57'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 15px center;
-    background-size: 16px;
-    padding-right: 50px;
+    appearance: menulist !important;
+    -webkit-appearance: menulist !important;
+    -moz-appearance: menulist !important;
+    background-image: none !important;
+    background-color: #2d3142 !important;
+    color: white !important;
+    border: 2px solid #ff4a57 !important;
+    padding: 12px 15px !important;
+}
+
+select.form-control option {
+    background-color: #2d3142 !important;
+    color: white !important;
+    padding: 10px;
+}
+
+select.form-control option:checked {
+    background-color: #ff4a57 !important;
+    color: white !important;
 }
 
 textarea.form-control {

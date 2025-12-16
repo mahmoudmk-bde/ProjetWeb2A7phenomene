@@ -396,18 +396,18 @@ function displayAnswer($answer, $show_answers) {
                             <div class="form-group">
                                 <label class="form-label">Mot de passe actuel *</label>
                                 <input type="password" class="form-control" name="current_password" 
-                                       placeholder="Entrez votre mot de passe actuel" required>
+                                       placeholder="Entrez votre mot de passe actuel">
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Nouveau mot de passe *</label>
                                 <input type="password" class="form-control" name="new_password" 
-                                       placeholder="Entrez votre nouveau mot de passe" required>
+                                       placeholder="Entrez votre nouveau mot de passe">
                                 <small class="text-muted">Le mot de passe doit contenir au moins 6 caractères</small>
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Confirmer le nouveau mot de passe *</label>
                                 <input type="password" class="form-control" name="confirm_password" 
-                                       placeholder="Confirmez votre nouveau mot de passe" required>
+                                       placeholder="Confirmez votre nouveau mot de passe">
                             </div>
                             <button type="submit" name="change_password" class="btn btn-save">
                                 <i class="fas fa-save me-2"></i>Changer le mot de passe
@@ -466,7 +466,7 @@ function displayAnswer($answer, $show_answers) {
                             <div class="form-group">
                                 <label class="form-label">Mot de passe de confirmation *</label>
                                 <input type="password" class="form-control" name="security_password" 
-                                       placeholder="Entrez votre mot de passe pour confirmer" required>
+                                       placeholder="Entrez votre mot de passe pour confirmer">
                                 <small class="text-muted">Veuillez entrer votre mot de passe pour confirmer les modifications</small>
                             </div>
 
@@ -491,7 +491,7 @@ function displayAnswer($answer, $show_answers) {
                                 <div class="col-md-6">
                                     <label class="form-label">Mot de passe de confirmation *</label>
                                     <input type="password" class="form-control" name="verify_password" 
-                                           placeholder="Entrez votre mot de passe" required>
+                                           placeholder="Entrez votre mot de passe">
                                 </div>
                                 <div class="col-md-6">
                                     <button type="submit" name="verify_identity" class="btn btn-primary">
@@ -512,7 +512,7 @@ function displayAnswer($answer, $show_answers) {
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label class="form-label">Question de sécurité 1 *</label>
-                                        <select class="form-select <?php echo (!isset($_SESSION['answers_verified']) || !$_SESSION['answers_verified']) ? 'field-disabled' : ''; ?>" name="security_question1" id="question1" required onchange="updateQuestion2Options()" <?php echo (!isset($_SESSION['answers_verified']) || !$_SESSION['answers_verified']) ? 'disabled' : ''; ?>>
+                                        <select class="form-select <?php echo (!isset($_SESSION['answers_verified']) || !$_SESSION['answers_verified']) ? 'field-disabled' : ''; ?>" name="security_question1" id="question1" onchange="updateQuestion2Options()" <?php echo (!isset($_SESSION['answers_verified']) || !$_SESSION['answers_verified']) ? 'disabled' : ''; ?>>
                                             <?php echo generateQuestionOptions($security_questions, $current_user['q1'] ?? '', $current_user['q2'] ?? ''); ?>
                                         </select>
                                     </div>
@@ -523,7 +523,7 @@ function displayAnswer($answer, $show_answers) {
                                                name="security_answer1" 
                                                value="<?php echo displayAnswer($current_user['rp1'] ?? '', (isset($_SESSION['answers_verified']) && $_SESSION['answers_verified'])); ?>"
                                                placeholder="Votre réponse" 
-                                               required 
+                                                
                                                <?php echo (!isset($_SESSION['answers_verified']) || !$_SESSION['answers_verified']) ? 'disabled' : ''; ?>>
                                         <?php if ((!isset($_SESSION['answers_verified']) || !$_SESSION['answers_verified']) && !empty($current_user['rp1'])): ?>
                                         <small class="text-muted">Réponse actuelle masquée pour votre sécurité</small>
@@ -533,7 +533,7 @@ function displayAnswer($answer, $show_answers) {
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label class="form-label">Question de sécurité 2 *</label>
-                                        <select class="form-select <?php echo (!isset($_SESSION['answers_verified']) || !$_SESSION['answers_verified']) ? 'field-disabled' : ''; ?>" name="security_question2" id="question2" required onchange="updateQuestion1Options()" <?php echo (!isset($_SESSION['answers_verified']) || !$_SESSION['answers_verified']) ? 'disabled' : ''; ?>>
+                                        <select class="form-select <?php echo (!isset($_SESSION['answers_verified']) || !$_SESSION['answers_verified']) ? 'field-disabled' : ''; ?>" name="security_question2" id="question2" onchange="updateQuestion1Options()" <?php echo (!isset($_SESSION['answers_verified']) || !$_SESSION['answers_verified']) ? 'disabled' : ''; ?>>
                                             <?php echo generateQuestionOptions($security_questions, $current_user['q2'] ?? '', $current_user['q1'] ?? ''); ?>
                                         </select>
                                     </div>
@@ -544,7 +544,7 @@ function displayAnswer($answer, $show_answers) {
                                                name="security_answer2" 
                                                value="<?php echo displayAnswer($current_user['rp2'] ?? '', (isset($_SESSION['answers_verified']) && $_SESSION['answers_verified'])); ?>"
                                                placeholder="Votre réponse" 
-                                               required 
+                                                
                                                <?php echo (!isset($_SESSION['answers_verified']) || !$_SESSION['answers_verified']) ? 'disabled' : ''; ?>>
                                         <?php if ((!isset($_SESSION['answers_verified']) || !$_SESSION['answers_verified']) && !empty($current_user['rp2'])): ?>
                                         <small class="text-muted">Réponse actuelle masquée pour votre sécurité</small>
@@ -558,7 +558,7 @@ function displayAnswer($answer, $show_answers) {
                             <div class="form-group">
                                 <label class="form-label">Mot de passe de confirmation *</label>
                                 <input type="password" class="form-control" name="security_password" 
-                                       placeholder="Entrez votre mot de passe pour confirmer" required>
+                                       placeholder="Entrez votre mot de passe pour confirmer">
                                 <small class="text-muted">Veuillez entrer votre mot de passe pour confirmer les modifications</small>
                             </div>
                             

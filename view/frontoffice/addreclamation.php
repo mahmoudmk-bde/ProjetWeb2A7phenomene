@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once "../../controller/ReclamationController.php";
+require_once "../../controller/ReclamationClassifier.php";
 require_once "../../controller/missioncontroller.php";
 
 $success_message = '';
@@ -81,6 +82,14 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
         $descriptionWithContext = $contextString . "\n\n" . trim($description);
         $sujetDecorated = '[' . ucfirst($type) . '] ' . $sujet;
 
+        // 🤖 AI CLASSIFICATION - Smart Auto-Detection
+        $classification = ReclamationClassifier::classify($sujetDecorated, $descriptionWithContext);
+        
+        // Allow manual override if provided
+        $finalPriority = !empty($_POST['priority_override']) ? $_POST['priority_override'] : $classification['priority_label'];
+        $finalCategory = $classification['category'];
+        $finalDepartment = $classification['department'];
+
         $utilisateur_id = $_SESSION['user_id'];
         $product_id = null;
 
@@ -91,12 +100,16 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
             "Non traite",
             $utilisateur_id,
             $product_id,
-            "Moyenne"
+            $finalPriority,
+            $finalCategory,
+            $finalDepartment
         );
 
         $ctrl = new ReclamationController();
         $ctrl->addReclamation($rec);
-        $success_message = "Réclamation ajoutée avec succès !";
+        $_SESSION['reclamation_success'] = true;
+        header('Location: ' . $_SERVER['PHP_SELF']);
+        exit();
     } catch (Exception $e) {
         $error_message = "Erreur : " . $e->getMessage();
     }
@@ -275,12 +288,24 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
             padding: 12px 15px;
             font-size: 15px;
             transition: all 0.3s ease;
+            background: rgba(255,255,255,0.06);
+            color: #fff;
         }
         .form-group input:focus,
         .form-group textarea:focus {
             border-color: #ff4a57;
             box-shadow: 0 0 0 0.2rem rgba(255, 74, 87, 0.1);
             outline: none;
+            background: rgba(255,255,255,0.12);
+        }
+        /* All select styling removed - using inline styles instead */
+        option {
+            background-color: #2d3142 !important;
+            color: white !important;
+        }
+        .form-group input::placeholder,
+        .form-group textarea::placeholder {
+            color: rgba(255,255,255,0.7);
         }
         .form-group textarea {
             resize: vertical;
@@ -331,6 +356,28 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
             color: #ff6b7a;
         }
     </style>
+    <style>
+        /* NUCLEAR OVERRIDE - After all CSS files */
+        select, select.form-control, .form-group select {
+            background-color: #2d3142 !important;
+            color: white !important;
+            border: 2px solid #ff4a57 !important;
+            appearance: auto !important;
+            background-image: none !important;
+            -webkit-appearance: none !important;
+            -moz-appearance: none !important;
+        }
+        
+        option {
+            background-color: #2d3142 !important;
+            color: white !important;
+        }
+        
+        option:checked {
+            background-color: #ff4a57 !important;
+            color: white !important;
+        }
+    </style>
 </head>
 
 <body>
@@ -343,10 +390,17 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
                     <p>Veuillez remplir le formulaire ci-dessous pour soumettre votre réclamation</p>
                 </div>
 
-                <?php if ($success_message): ?>
-                    <div class="alert alert-success" role="alert">
-                        <i class="fas fa-check-circle"></i> <?= htmlspecialchars($success_message) ?>
+                <?php if (isset($_SESSION['reclamation_success']) && $_SESSION['reclamation_success']): ?>
+                    <div id="successAlert" class="alert" style="background-color: #d4edda; border: 2px solid #28a745; border-radius: 8px; padding: 15px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px;">
+                        <i class="fas fa-check-circle" style="color: #28a745; font-size: 1.5rem;"></i>
+                        <div style="color: #155724; font-weight: 600;">Réclamation envoyée avec succès!</div>
                     </div>
+                    <script>
+                        setTimeout(function() {
+                            document.getElementById('successAlert').style.display = 'none';
+                        }, 5000);
+                    </script>
+                    <?php unset($_SESSION['reclamation_success']); ?>
                 <?php endif; ?>
 
                 <?php if ($error_message): ?>
@@ -357,22 +411,30 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
 
                 <!-- Formulaire direct de réclamation -->
                 <form id="reclamationForm" method="POST" action="" novalidate>
+                    <!-- Description first so AI can auto-suggest the rest -->
+                    <div class="form-group">
+                        <label for="description">Description de la réclamation</label>
+                        <textarea class="form-control" id="description" name="description" 
+                                  placeholder="Décrivez en détail votre réclamation..." aria-describedby="descriptionHelp"><?= htmlspecialchars($_POST['description'] ?? '') ?></textarea>
+                        <div class="invalid-feedback" id="descriptionHelp"></div>
+                    </div>
+
                     <div class="form-group">
                         <label for="type_reclamation">Type de réclamation</label>
-                        <select class="form-control" id="type_reclamation" name="type_reclamation" required>
-                            <option value="">Choisissez le type</option>
-                            <option value="mission" <?= (($_POST['type_reclamation'] ?? '') === 'mission') ? 'selected' : '' ?>>Mission</option>
-                            <option value="evenement" <?= (($_POST['type_reclamation'] ?? '') === 'evenement') ? 'selected' : '' ?>>Événement</option>
-                            <option value="partenaire" <?= (($_POST['type_reclamation'] ?? '') === 'partenaire') ? 'selected' : '' ?>>Partenaire</option>
-                            <option value="utilisateur" <?= (($_POST['type_reclamation'] ?? '') === 'utilisateur') ? 'selected' : '' ?>>Utilisateur</option>
-                            <option value="technique" <?= (($_POST['type_reclamation'] ?? '') === 'technique') ? 'selected' : '' ?>>Technique</option>
-                            <option value="autre" <?= (($_POST['type_reclamation'] ?? '') === 'autre') ? 'selected' : '' ?>>Autre</option>
+                        <select id="type_reclamation" name="type_reclamation" required style="width: 100%; border: 2px solid #ff4a57; border-radius: 8px; padding: 12px 15px; font-size: 16px; font-family: Arial, sans-serif; font-weight: normal; color: #ffffff; background-color: #2d3142; cursor: pointer; line-height: normal;">
+                            <option value="" style="background-color: #2d3142; color: #ffffff; font-size: 16px;">Choisissez le type</option>
+                            <option value="mission" style="background-color: #2d3142; color: #ffffff; font-size: 16px;" <?= (($_POST['type_reclamation'] ?? '') === 'mission') ? 'selected' : '' ?>>Mission</option>
+                            <option value="evenement" style="background-color: #2d3142; color: #ffffff; font-size: 16px;" <?= (($_POST['type_reclamation'] ?? '') === 'evenement') ? 'selected' : '' ?>>Événement</option>
+                            <option value="partenaire" style="background-color: #2d3142; color: #ffffff; font-size: 16px;" <?= (($_POST['type_reclamation'] ?? '') === 'partenaire') ? 'selected' : '' ?>>Partenaire</option>
+                            <option value="utilisateur" style="background-color: #2d3142; color: #ffffff; font-size: 16px;" <?= (($_POST['type_reclamation'] ?? '') === 'utilisateur') ? 'selected' : '' ?>>Utilisateur</option>
+                            <option value="technique" style="background-color: #2d3142; color: #ffffff; font-size: 16px;" <?= (($_POST['type_reclamation'] ?? '') === 'technique') ? 'selected' : '' ?>>Technique</option>
+                            <option value="autre" style="background-color: #2d3142; color: #ffffff; font-size: 16px;" <?= (($_POST['type_reclamation'] ?? '') === 'autre') ? 'selected' : '' ?>>Autre</option>
                         </select>
                     </div>
 
                     <div class="form-group conditional-field d-none" data-block="mission">
                         <label for="mission_id">Mission concernée</label>
-                        <select class="form-control" id="mission_id" name="mission_id">
+                        <select id="mission_id" name="mission_id" style="width: 100%; border: 2px solid #ff4a57; border-radius: 8px; padding: 12px 15px; font-size: 16px; font-family: Arial, sans-serif; font-weight: normal; color: #ffffff; background-color: #2d3142; cursor: pointer; line-height: normal;">
                             <option value="">Sélectionnez une mission</option>
                             <?php foreach ($missions as $mission): ?>
                                 <option value="<?= htmlspecialchars($mission['id']) ?>" <?= (($_POST['mission_id'] ?? '') == $mission['id']) ? 'selected' : '' ?>>
@@ -384,7 +446,7 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
 
                     <div class="form-group conditional-field d-none" data-block="evenement">
                         <label for="evenement_id">Événement concerné</label>
-                        <select class="form-control" id="evenement_id" name="evenement_id">
+                        <select id="evenement_id" name="evenement_id" style="width: 100%; border: 2px solid #ff4a57; border-radius: 8px; padding: 12px 15px; font-size: 16px; font-family: Arial, sans-serif; font-weight: normal; color: #ffffff; background-color: #2d3142; cursor: pointer; line-height: normal;">
                             <option value="">Sélectionnez un événement</option>
                             <?php foreach ($evenements as $event): ?>
                                 <option value="<?= htmlspecialchars($event['id_evenement']) ?>" <?= (($_POST['evenement_id'] ?? '') == $event['id_evenement']) ? 'selected' : '' ?>>
@@ -396,7 +458,7 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
 
                     <div class="form-group conditional-field d-none" data-block="partenaire">
                         <label for="partenaire_id">Partenaire concerné</label>
-                        <select class="form-control" id="partenaire_id" name="partenaire_id">
+                        <select id="partenaire_id" name="partenaire_id" style="width: 100%; border: 2px solid #ff4a57; border-radius: 8px; padding: 12px 15px; font-size: 16px; font-family: Arial, sans-serif; font-weight: normal; color: #ffffff; background-color: #2d3142; cursor: pointer; line-height: normal;">
                             <option value="">Sélectionnez un partenaire</option>
                             <?php foreach ($partenaires as $p): ?>
                                 <option value="<?= htmlspecialchars($p['id']) ?>" <?= (($_POST['partenaire_id'] ?? '') == $p['id']) ? 'selected' : '' ?>>
@@ -408,7 +470,7 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
 
                     <div class="form-group conditional-field d-none" data-block="utilisateur">
                         <label for="utilisateur_cible_id">Utilisateur concerné</label>
-                        <select class="form-control" id="utilisateur_cible_id" name="utilisateur_cible_id">
+                        <select id="utilisateur_cible_id" name="utilisateur_cible_id" style="width: 100%; border: 2px solid #ff4a57; border-radius: 8px; padding: 12px 15px; font-size: 16px; font-family: Arial, sans-serif; font-weight: normal; color: #ffffff; background-color: #2d3142; cursor: pointer; line-height: normal;">
                             <option value="">Sélectionnez un utilisateur</option>
                             <?php foreach ($utilisateurs as $u): ?>
                                 <option value="<?= htmlspecialchars($u['id_util']) ?>" <?= (($_POST['utilisateur_cible_id'] ?? '') == $u['id_util']) ? 'selected' : '' ?>>
@@ -438,11 +500,32 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
                         <div class="invalid-feedback" id="emailHelp"></div>
                     </div>
 
-                    <div class="form-group">
-                        <label for="description">Description de la réclamation</label>
-                        <textarea class="form-control" id="description" name="description" 
-                                  placeholder="Décrivez en détail votre réclamation..." aria-describedby="descriptionHelp"><?= htmlspecialchars($_POST['description'] ?? '') ?></textarea>
-                        <div class="invalid-feedback" id="descriptionHelp"></div>
+                    <!-- 🤖 AI Classification Preview -->
+                    <div id="ai-classification-preview" style="display: none; background: linear-gradient(135deg, rgba(255, 74, 87, 0.08) 0%, rgba(45, 49, 66, 0.18) 100%); border: 2px solid rgba(255, 74, 87, 0.3); border-radius: 12px; padding: 20px; margin-bottom: 25px;">
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+                            <i class="fas fa-robot" style="font-size: 24px; color: var(--primary);"></i>
+                            <h5 style="margin: 0; color: #fff; font-weight: 600;">Classification Automatique</h5>
+                        </div>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
+                            <div style="background: rgba(255,255,255,0.05); padding: 12px; border-radius: 8px;">
+                                <div style="color: rgba(255,255,255,0.7); font-size: 12px; margin-bottom: 5px;">Catégorie</div>
+                                <div id="ai-category" style="color: var(--primary); font-weight: 600; font-size: 15px;">-</div>
+                            </div>
+                            <div style="background: rgba(255,255,255,0.05); padding: 12px; border-radius: 8px;">
+                                <div style="color: rgba(255,255,255,0.7); font-size: 12px; margin-bottom: 5px;">Priorité</div>
+                                <div id="ai-priority" style="color: var(--primary-light); font-weight: 600; font-size: 15px;">-</div>
+                            </div>
+                            <div style="background: rgba(255,255,255,0.05); padding: 12px; border-radius: 8px;">
+                                <div style="color: rgba(255,255,255,0.7); font-size: 12px; margin-bottom: 5px;">Département</div>
+                                <div id="ai-department" style="color: var(--primary); font-weight: 600; font-size: 15px;">-</div>
+                            </div>
+                        </div>
+                        <div style="margin-top: 12px; display: flex; align-items: center; gap: 8px;">
+                            <div style="flex: 1; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden;">
+                                <div id="ai-confidence-bar" style="height: 100%; background: linear-gradient(90deg, var(--primary) 0%, var(--primary-light) 100%); width: 0%; transition: width 0.5s ease;"></div>
+                            </div>
+                            <small id="ai-confidence-text" style="color: rgba(255,255,255,0.7); font-size: 12px;">Confiance: 0%</small>
+                        </div>
                     </div>
 
                     <button type="submit" class="btn_submit">
@@ -476,6 +559,232 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
     <script src="assets/js/slick.min.js"></script>
     <script src="assets/js/custom.js"></script>
     <script>
+                // 🤖 Live AI Classification
+                (function() {
+                    const sujetInput = document.getElementById('sujet');
+                    const descriptionInput = document.getElementById('description');
+                    const previewBox = document.getElementById('ai-classification-preview');
+                    const categoryEl = document.getElementById('ai-category');
+                    const priorityEl = document.getElementById('ai-priority');
+                    const departmentEl = document.getElementById('ai-department');
+                    const confidenceBar = document.getElementById('ai-confidence-bar');
+                    const confidenceText = document.getElementById('ai-confidence-text');
+                    const typeSelect = document.getElementById('type_reclamation');
+                    const missionSelect = document.getElementById('mission_id');
+                    const eventSelect = document.getElementById('evenement_id');
+                    const partnerSelect = document.getElementById('partenaire_id');
+                    const userSelect = document.getElementById('utilisateur_cible_id');
+                    const techniqueInput = document.getElementById('technique_detail');
+
+                    // Track if user changed type to avoid overwriting
+                    const locks = {
+                        type: false,
+                        mission: false,
+                        event: false,
+                        partner: false,
+                        user: false
+                    };
+                    if (typeSelect) typeSelect.addEventListener('change', () => { locks.type = true; });
+                    if (missionSelect) missionSelect.addEventListener('change', () => { locks.mission = true; });
+                    if (eventSelect) eventSelect.addEventListener('change', () => { locks.event = true; });
+                    if (partnerSelect) partnerSelect.addEventListener('change', () => { locks.partner = true; });
+                    if (userSelect) userSelect.addEventListener('change', () => { locks.user = true; });
+                    if (techniqueInput) techniqueInput.addEventListener('input', () => { locks.technique = true; });
+
+                    function normalize(str) {
+                        return (str || '').toString().toLowerCase();
+                    }
+
+                    function getTokens(text) {
+                        return normalize(text).split(/[^a-z0-9éèêàùûôç]+/i).filter(w => w.length >= 3);
+                    }
+
+                    function autoSelectByMatch(selectEl, lockKey, text) {
+                        if (!selectEl || locks[lockKey] || selectEl.value) return;
+                        const tokens = getTokens(text);
+                        if (!tokens.length) {
+                            autoSelectFirst(selectEl, lockKey);
+                            return;
+                        }
+                        const options = Array.from(selectEl.options).slice(1); // skip placeholder
+                        let best = null;
+                        let bestScore = 0;
+                        options.forEach(opt => {
+                            const label = normalize(opt.text);
+                            let score = 0;
+                            tokens.forEach(t => { if (label.includes(t)) score += t.length; });
+                            if (score > bestScore) { bestScore = score; best = opt; }
+                        });
+                        if (best) {
+                            selectEl.value = best.value;
+                            selectEl.dispatchEvent(new Event('change'));
+                            locks[lockKey] = true;
+                        } else {
+                            autoSelectFirst(selectEl, lockKey);
+                        }
+                    }
+
+                    function bestEntityMatch(text) {
+                        const buckets = [];
+                        const tokens = getTokens(text);
+                        if (!tokens.length) return null;
+
+                        function scoreSelect(selectEl, typeKey) {
+                            if (!selectEl) return;
+                            const options = Array.from(selectEl.options).slice(1);
+                            let best = null, bestScore = 0;
+                            options.forEach(opt => {
+                                const label = normalize(opt.text);
+                                let score = 0;
+                                tokens.forEach(t => { if (label.includes(t)) score += t.length; });
+                                if (score > bestScore) { bestScore = score; best = opt; }
+                            });
+                            if (bestScore > 0 && best) {
+                                buckets.push({ type: typeKey, option: best, score: bestScore });
+                            }
+                        }
+
+                        scoreSelect(missionSelect, 'mission');
+                        scoreSelect(eventSelect, 'evenement');
+                        scoreSelect(partnerSelect, 'partenaire');
+                        scoreSelect(userSelect, 'utilisateur');
+
+                        if (!buckets.length) return null;
+                        buckets.sort((a, b) => b.score - a.score);
+                        return buckets[0];
+                    }
+
+                    function fillTechnique(text) {
+                        if (!techniqueInput || locks.technique) return;
+                        const snippet = text.trim();
+                        if (!snippet) return;
+                        techniqueInput.value = snippet.slice(0, 180);
+                        locks.technique = true;
+                    }
+
+                    function mapCategoryToType(category) {
+                        switch (category) {
+                            case 'mission': return 'mission';
+                            case 'event': return 'evenement';
+                            case 'technical': return 'technique';
+                            case 'payment': return 'technique';
+                            case 'delivery': return 'technique';
+                            case 'partner': return 'partenaire';
+                            case 'hr': return 'utilisateur';
+                            case 'store': return 'partenaire';
+                            default: return 'autre';
+                        }
+                    }
+
+                    function autoSelectFirst(selectEl, lockKey) {
+                        if (!selectEl || locks[lockKey]) return;
+                        if (selectEl.value) return;
+                        if (selectEl.options.length > 1) {
+                            selectEl.selectedIndex = 1; // first real option
+                            selectEl.dispatchEvent(new Event('change'));
+                        }
+                    }
+            
+                    let classifyTimeout;
+            
+                    function classifyText() {
+                        const subject = sujetInput.value.trim();
+                        const description = descriptionInput.value.trim();
+                
+                        if (!subject && !description) {
+                            previewBox.style.display = 'none';
+                            return;
+                        }
+                
+                        clearTimeout(classifyTimeout);
+                        classifyTimeout = setTimeout(() => {
+                            fetch('ajax_classify_reclamation.php', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/x-www-form-urlencoded',
+                                },
+                                body: new URLSearchParams({
+                                    subject: subject,
+                                    description: description
+                                })
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.error) {
+                                    console.error('Classification error:', data.error);
+                                    return;
+                                }
+                        
+                                // Show preview
+                                previewBox.style.display = 'block';
+                        
+                                // Update values with animation
+                                categoryEl.textContent = data.category_label || '-';
+                                priorityEl.textContent = data.priority_label || '-';
+                                departmentEl.textContent = data.department || '-';
+                        
+                                // Update confidence
+                                const confidence = Math.round(data.confidence || 0);
+                                confidenceBar.style.width = confidence + '%';
+                                confidenceText.textContent = 'Confiance: ' + confidence + '%';
+                        
+                                // Color priority based on level
+                                const priorityColors = {
+                                    'Urgent': 'var(--primary)',
+                                    'Élevée': 'var(--primary-light)',
+                                    'Moyenne': 'rgba(255,255,255,0.85)',
+                                    'Basse': 'rgba(255,255,255,0.6)'
+                                };
+                                priorityEl.style.color = priorityColors[data.priority_label] || 'var(--primary-light)';
+
+                                // Auto-fill subject if empty
+                                if (!subject && sujetInput) {
+                                    sujetInput.value = 'Réclamation - ' + (data.category_label || 'Automatique');
+                                }
+
+                                // Auto-select type - always re-run on content change
+                                if (typeSelect) {
+                                    const textForMatch = subject + ' ' + description;
+                                    const mapped = mapCategoryToType(data.category || '');
+                                    const best = bestEntityMatch(textForMatch);
+                                    const chosenType = best ? best.type : mapped;
+                                    typeSelect.value = chosenType;
+                                    typeSelect.dispatchEvent(new Event('change'));
+
+                                    // Auto-pick relevant entity - always update on content change
+                                    if (chosenType === 'mission') {
+                                        missionSelect.value = '';
+                                        autoSelectByMatch(missionSelect, 'mission', textForMatch);
+                                    }
+                                    if (chosenType === 'evenement') {
+                                        eventSelect.value = '';
+                                        autoSelectByMatch(eventSelect, 'event', textForMatch);
+                                    }
+                                    if (chosenType === 'partenaire') {
+                                        partnerSelect.value = '';
+                                        autoSelectByMatch(partnerSelect, 'partner', textForMatch);
+                                    }
+                                    if (chosenType === 'utilisateur') {
+                                        userSelect.value = '';
+                                        autoSelectByMatch(userSelect, 'user', textForMatch);
+                                    }
+                                    if (chosenType === 'technique') {
+                                        techniqueInput.value = '';
+                                        fillTechnique(description);
+                                    }
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Fetch error:', error);
+                            });
+                        }, 500); // Debounce 500ms
+                    }
+            
+                    // Attach listeners
+                    if (sujetInput) sujetInput.addEventListener('input', classifyText);
+                    if (descriptionInput) descriptionInput.addEventListener('input', classifyText);
+                })();
+
         (function() {
             const typeSelect = document.getElementById('type_reclamation');
             const blocks = document.querySelectorAll('.conditional-field');
@@ -498,7 +807,7 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
                     requiredByType[type].forEach(id => {
                         const field = document.getElementById(id);
                         if (field) {
-                            field.required = (type === current);
+                            // field.required = (type === current);
                         }
                     });
                 });
@@ -509,6 +818,26 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
                 updateBlocks();
             }
         })();
+
+        // Clear form after successful submission
+        if (document.location.href.includes('addreclamation.php')) {
+            const urlParams = new URLSearchParams(window.location.search);
+            // Form will auto-reset due to page reload, just ensure all fields are empty
+            window.addEventListener('load', function() {
+                const form = document.getElementById('reclamationForm');
+                if (form) {
+                    // Give slight delay to ensure page is fully loaded
+                    setTimeout(function() {
+                        const inputs = form.querySelectorAll('input[type="text"], input[type="email"], textarea, select');
+                        inputs.forEach(input => {
+                            if (input.id !== 'email' || !input.value) { // Keep email if it has a value
+                                input.value = '';
+                            }
+                        });
+                    }, 100);
+                }
+            });
+        }
     </script>
     <!-- Validation spécifique du formulaire de réclamation -->
     <script src="js/form-validation.js"></script>

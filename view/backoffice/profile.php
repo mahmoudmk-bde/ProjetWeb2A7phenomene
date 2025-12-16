@@ -79,6 +79,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['profile_picture'])) 
         $upload_message = "Type de fichier non autorisé (autorisés: jpg, jpeg, png, gif).";
     }
 }
+
+// Traitement de la reconnaissance faciale (Activation / Désactivation)
+$face_message = '';
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (isset($_POST['register_face']) && isset($_POST['descriptor'])) {
+        $descriptor = $_POST['descriptor'];
+        if ($utilisateurController->updateFace($user_id, $descriptor)) {
+            header("Location: profile.php?face_action=registered");
+            exit();
+        } else {
+            $face_message = "Erreur lors de l'enregistrement du visage.";
+        }
+    } elseif (isset($_POST['delete_face'])) {
+        if ($utilisateurController->updateFace($user_id, null)) {
+            header("Location: profile.php?face_action=deleted");
+            exit();
+        } else {
+            $face_message = "Erreur lors de la désactivation.";
+        }
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -173,6 +194,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['profile_picture'])) 
             font-size: 0.9rem;
             border-radius: 5px;
         }
+        
     </style></head>
 <body>
     <div class="body_bg" style="background: #1f2235;">
@@ -182,9 +204,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['profile_picture'])) 
                 <div class="row align-items-center">
                     <div class="col-lg-12">
                         <nav class="navbar navbar-expand-lg navbar-light">
-                            <a class="navbar-brand" href="index1.php">
-                                <img src="assets/img/logo.png" alt="logo" style="height: 135px; width: auto;" />
-                            </a>
+                            
                             <div class="collapse navbar-collapse main-menu-item">
                                 <ul class="navbar-nav">
                                     <li class="nav-item">
@@ -305,6 +325,72 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['profile_picture'])) 
                             <i class="fas fa-arrow-left me-2"></i>Retour à l'accueil
                         </a>
                     </div>
+
+                    <!-- Facial Recognition Section -->
+                    <div class="profile-header mt-5">
+                         <h3 style="color: #fff; margin-bottom: 20px; font-size: 1.5rem;">Sécurité : Reconnaissance Faciale</h3>
+                         
+                         <?php 
+                            if(isset($_GET['face_action'])) {
+                                if ($_GET['face_action'] == 'registered') echo '<div class="alert alert-success">Reconnaissance faciale activée !</div>';
+                                if ($_GET['face_action'] == 'deleted') echo '<div class="alert alert-warning">Reconnaissance faciale désactivée.</div>';
+                            }
+                            if(!empty($face_message)) echo '<div class="alert alert-danger">'.$face_message.'</div>';
+                            
+                            $has_face = !empty($current_user['face']);
+                         ?>
+
+                         <div style="background: var(--accent-color); padding: 20px; border-radius: 12px; border: 1px solid var(--border-color); text-align: center;">
+                             <div class="mb-3">
+                                 <span style="color: #b0b3c1;">Statut : </span>
+                                 <?php if ($has_face): ?>
+                                     <span class="badge bg-success" style="font-size: 1rem;"><i class="fas fa-check-circle"></i> Activé</span>
+                                 <?php else: ?>
+                                     <span class="badge bg-secondary" style="font-size: 1rem;">Non configuré</span>
+                                 <?php endif; ?>
+                             </div>
+                             
+                             <?php if ($has_face): ?>
+                                 <!-- Mode Désactivation -->
+                                 <p style="color: #b0b3c1; margin-bottom: 20px;">
+                                     Vous pouvez vous connecter avec votre visage.
+                                 </p>
+                                 <form method="POST" onsubmit="return confirm('Êtes-vous sûr de vouloir désactiver la reconnaissance faciale ?');">
+                                     <input type="hidden" name="delete_face" value="1">
+                                     <button type="submit" class="btn btn-danger">
+                                         <i class="fas fa-trash-alt"></i> Désactiver la reconnaissance faciale
+                                     </button>
+                                 </form>
+                             <?php else: ?>
+                                 <!-- Mode Activation -->
+                                 <p style="color: #b0b3c1; margin-bottom: 20px;">
+                                     Activez la reconnaissance faciale pour une connexion plus rapide.
+                                 </p>
+                                 
+                                 <div id="face-register-container" style="display: none; justify-content: center; flex-direction: column; align-items: center;">
+                                    <div style="position: relative; width: 480px; height: 360px; background: #000; margin-bottom: 15px; border-radius: 8px; overflow: hidden;">
+                                        <video id="video" width="480" height="360" autoplay muted style="position: absolute; left: 0; top: 0;"></video>
+                                        <canvas id="overlay" style="position: absolute; left: 0; top: 0;"></canvas>
+                                    </div>
+                                    <p id="status-msg" style="color: #666; margin-bottom: 10px;">Chargement...</p>
+                                    <form method="POST" id="face-form">
+                                        <input type="hidden" name="register_face" value="1">
+                                        <input type="hidden" name="descriptor" id="descriptor_input">
+                                        <button type="button" id="capture-btn" class="btn btn-save" disabled>
+                                            <i class="fas fa-check"></i> Enregistrer mon visage
+                                        </button>
+                                        <button type="button" id="cancel-face-btn" class="btn btn-secondary">Annuler</button>
+                                    </form>
+                                 </div>
+
+                                 <div id="face-intro">
+                                    <button type="button" id="start-face-btn" class="btn-upload" style="font-size: 1rem; padding: 10px 20px;">
+                                        <i class="fas fa-camera"></i> Configurer
+                                    </button>
+                                 </div>
+                             <?php endif; ?>
+                         </div>
+                    </div>
                     
                     <!-- Formulaire d'upload de photo -->
                     <!-- Old Upload Form Location (Deleted) -->
@@ -379,6 +465,119 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['profile_picture'])) 
             
             if (!userMenu.contains(event.target)) {
                 dropdown.classList.remove('show');
+            }
+        });
+    </script>
+    <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const startBtn = document.getElementById('start-face-btn');
+            const cancelBtn = document.getElementById('cancel-face-btn');
+            const captureBtn = document.getElementById('capture-btn');
+            const container = document.getElementById('face-register-container');
+            const intro = document.getElementById('face-intro');
+            const video = document.getElementById('video');
+            const statusMsg = document.getElementById('status-msg');
+            const descriptorInput = document.getElementById('descriptor_input');
+            const form = document.getElementById('face-form');
+            
+            let stream = null;
+            let isModelLoaded = false;
+            
+            if (startBtn) {
+                const MODEL_URL = 'https://justadudewhohacks.github.io/face-api.js/models';
+
+                async function loadModels() {
+                    try {
+                        statusMsg.innerText = "Chargement des modèles AI...";
+                        await faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL);
+                        await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
+                        await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
+                        isModelLoaded = true;
+                        statusMsg.innerText = "Modèles chargés. Veuillez centrer votre visage.";
+                        startVideo();
+                    } catch (err) {
+                        console.error("Erreur chargement modèles:", err);
+                        statusMsg.innerText = "Erreur de chargement des modèles.";
+                    }
+                }
+
+                function startVideo() {
+                    navigator.mediaDevices.getUserMedia({ video: {} })
+                        .then(s => {
+                            stream = s;
+                            video.srcObject = stream;
+                        })
+                        .catch(err => {
+                            console.error("Erreur caméra:", err);
+                            statusMsg.innerText = "Impossible d'accéder à la caméra.";
+                        });
+                }
+
+                function stopVideo() {
+                    if (stream) {
+                        stream.getTracks().forEach(track => track.stop());
+                    }
+                    if(video) video.srcObject = null;
+                }
+
+                startBtn.addEventListener('click', () => {
+                    intro.style.display = 'none';
+                    container.style.display = 'flex';
+                    if (!isModelLoaded) {
+                        loadModels();
+                    } else {
+                        startVideo();
+                    }
+                });
+
+                cancelBtn.addEventListener('click', () => {
+                    container.style.display = 'none';
+                    intro.style.display = 'block';
+                    stopVideo();
+                });
+
+                video.addEventListener('play', () => {
+                    const canvas = document.getElementById('overlay');
+                    const displaySize = { width: 480, height: 360 };
+                    faceapi.matchDimensions(canvas, displaySize);
+
+                    const interval = setInterval(async () => {
+                        if (container.style.display === 'none') {
+                            clearInterval(interval);
+                            return;
+                        }
+
+                        const detections = await faceapi.detectAllFaces(video).withFaceLandmarks().withFaceDescriptors();
+                        
+                        if (detections.length > 0) {
+                            const resizedDetections = faceapi.resizeResults(detections, displaySize);
+                            canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+                            faceapi.draw.drawDetections(canvas, resizedDetections);
+
+                            if (detections[0].descriptor) {
+                                statusMsg.innerText = "Visage détecté ! Vous pouvez enregistrer.";
+                                statusMsg.style.color = "#2ecc71"; // Green
+                                captureBtn.disabled = false;
+                            }
+                        } else {
+                             statusMsg.innerText = "Recherche de visage...";
+                             statusMsg.style.color = "#666";
+                             captureBtn.disabled = true;
+                        }
+                    }, 200);
+
+                    captureBtn.addEventListener('click', async () => {
+                        const detections = await faceapi.detectAllFaces(video).withFaceLandmarks().withFaceDescriptors();
+                        if (detections.length > 0) {
+                            const descriptorArray = Array.from(detections[0].descriptor);
+                            descriptorInput.value = JSON.stringify(descriptorArray);
+                            form.submit();
+                        } else {
+                            alert("Visage perdu. Veuillez réessayer.");
+                        }
+                    });
+                });
             }
         });
     </script>

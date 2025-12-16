@@ -11,13 +11,26 @@ if (!isset($_SESSION['user_id']) || !isset($_SESSION['user_type']) || strtolower
     header('Location: login.php');
     exit();
 }
-
+include_once __DIR__ . '/../../Controller/QuizController.php';
 $base_dir = __DIR__ . '/../../';
 require_once $base_dir . 'controller/missioncontroller.php';
 require_once $base_dir . 'controller/condidaturecontroller.php';
 require_once $base_dir . 'controller/utilisateurcontroller.php';
+
 require_once $base_dir . 'model/evenementModel.php';
 require_once $base_dir . 'model/participationModel.php';
+require_once $base_dir . 'controller/NotificationController.php';
+
+// Initialize notifications
+$notificationController = new NotificationController();
+$notifications = $notificationController->getBackofficeNotifications(20);
+$notificationCount = count($notifications);
+
+// Debug: Log if no notifications found
+if (empty($notifications)) {
+    error_log('DEBUG: No notifications found in backoffice dashboard');
+}
+
 
 // Récupération des infos utilisateur pour le header
 $utilisateurC = new UtilisateurController();
@@ -25,6 +38,10 @@ $currentUser = $utilisateurC->showUtilisateur($_SESSION['user_id']);
 $userImg = $currentUser['img'] ?? null;
 $userName = $currentUser['prenom'] . ' ' . $currentUser['nom'];
 
+$quizController = new QuizController();
+$count_articles = $quizController->getArticlesCount();
+$count_quiz = $quizController->getQuizCount();
+$count_historique = $quizController->getHistoriqueCount(); // Nouveau
 // Chemin de l'image (attention aux chemins relatifs depuis backoffice vers frontoffice)
 $imgPath = '../frontoffice/assets/uploads/profiles/' . $userImg;
 $defaultImg = '../frontoffice/assets/img/user_default.png'; // Image par défaut si besoin
@@ -172,6 +189,13 @@ for ($i = 1; $i <= 5; $i++) {
     }
 }
 ksort($feedbackRatings);
+// Récupérer les derniers articles, quiz et historique
+$articlesResult = $quizController->listArticle();
+$articles = [];
+if ($articlesResult) {
+    $articles = array_slice($articlesResult->fetchAll(), 0, 5);
+}
+
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -449,6 +473,463 @@ ksort($feedbackRatings);
         }
         /* Global bell icon sizing */
         .fas.fa-bell { font-size: 1.9rem !important; }
+        /* User Menu Styles */
+        .user-menu {
+            position: relative;
+            display: inline-block;
+            margin-right: 20px;
+        }
+        
+        .user-dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            min-width: 200px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            border-radius: 8px;
+            z-index: 1000;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+        
+        .user-dropdown.show {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .user-dropdown a {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            text-decoration: none;
+            color: #333;
+            border-bottom: 1px solid #f0f0f0;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+        
+        .user-dropdown a:hover {
+            background: #f8f9fa;
+            color: var(--primary-color);
+            padding-left: 25px;
+        }
+        
+        .user-dropdown a:last-child {
+            border-bottom: none;
+            color: #dc3545;
+        }
+        
+        .user-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: white;
+            cursor: pointer;
+            padding: 5px 10px;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+        }
+
+        /* Navbar Specifics to force right alignment */
+        .navbar.topbar {
+            width: 100%;
+            display: flex;
+            justify-content: space-between !important; /* Force toggle left, menu right */
+            align-items: center;
+            padding: 10px 20px;
+        }
+        
+        .user-wrapper:hover {
+            background: rgba(255,255,255,0.1);
+        }
+        
+        .user-name {
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid rgba(255,255,255,0.2);
+        }
+        
+        .user-avatar i {
+            color: white;
+            font-size: 18px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        /* Section Statistiques Aperçu Global - Version Améliorée */
+.stats-section {
+    margin: 50px 0;
+    padding: 35px 30px;
+    background: linear-gradient(135deg, rgba(26, 28, 43, 0.95), rgba(35, 37, 54, 0.95));
+    border-radius: 20px;
+    border: 1px solid rgba(255, 74, 87, 0.15);
+    box-shadow: 
+        0 10px 30px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    position: relative;
+    overflow: hidden;
+}
+
+.stats-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, 
+        var(--primary-color), 
+        #ff8a9e, 
+        var(--primary-color));
+    border-radius: 20px 20px 0 0;
+}
+
+.stats-section .section-title {
+    color: #fff;
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 40px;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    position: relative;
+    padding-bottom: 20px;
+}
+
+.stats-section .section-title::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 3px;
+    background: linear-gradient(90deg, 
+        transparent, 
+        var(--primary-color), 
+        transparent);
+}
+
+.stats-section .section-title i {
+    font-size: 2rem;
+    background: linear-gradient(45deg, var(--primary-color), #ff8a9e);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 30px;
+    margin-top: 20px;
+}
+
+.stat-card {
+    background: linear-gradient(145deg, 
+        rgba(40, 42, 60, 0.8), 
+        rgba(30, 32, 48, 0.8));
+    border-radius: 18px;
+    padding: 30px 25px;
+    border: 1px solid rgba(255, 74, 87, 0.2);
+    display: flex;
+    align-items: center;
+    gap: 25px;
+    transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    min-height: 140px;
+    position: relative;
+    overflow: hidden;
+    backdrop-filter: blur(10px);
+}
+
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, 
+        transparent, 
+        rgba(255, 74, 87, 0.05), 
+        transparent);
+    opacity: 0;
+    transition: opacity 0.5s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-10px) scale(1.02);
+    box-shadow: 
+        0 15px 35px rgba(255, 74, 87, 0.25),
+        0 5px 15px rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 74, 87, 0.4);
+}
+
+.stat-card:hover::before {
+    opacity: 1;
+}
+
+.stat-card:nth-child(1) {
+    border-top: 4px solid #ff4a57;
+}
+
+.stat-card:nth-child(2) {
+    border-top: 4px solid #36d1dc;
+}
+
+.stat-card:nth-child(3) {
+    border-top: 4px solid #5dff87;
+}
+
+.stat-icon {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.05);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.2rem;
+    flex-shrink: 0;
+    position: relative;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+    transition: all 0.4s ease;
+}
+
+.stat-card:nth-child(1) .stat-icon {
+    background: linear-gradient(135deg, rgba(255, 74, 87, 0.15), rgba(255, 138, 158, 0.1));
+    color: #ff4a57;
+    border-color: rgba(255, 74, 87, 0.3);
+}
+
+.stat-card:nth-child(2) .stat-icon {
+    background: linear-gradient(135deg, rgba(54, 209, 220, 0.15), rgba(86, 240, 255, 0.1));
+    color: #36d1dc;
+    border-color: rgba(54, 209, 220, 0.3);
+}
+
+.stat-card:nth-child(3) .stat-icon {
+    background: linear-gradient(135deg, rgba(93, 255, 135, 0.15), rgba(147, 255, 183, 0.1));
+    color: #5dff87;
+    border-color: rgba(93, 255, 135, 0.3);
+}
+
+.stat-card:hover .stat-icon {
+    transform: rotate(10deg) scale(1.1);
+    box-shadow: 0 0 20px currentColor;
+}
+
+.stat-info {
+    flex: 1;
+}
+
+.stat-info h3 {
+    color: #fff;
+    font-size: 3rem;
+    font-weight: 900;
+    margin-bottom: 8px;
+    line-height: 1;
+    letter-spacing: 1px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    position: relative;
+    display: inline-block;
+}
+
+.stat-info h3::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 0;
+    width: 40px;
+    height: 3px;
+    background: currentColor;
+    opacity: 0.5;
+    transition: width 0.3s ease;
+}
+
+.stat-card:hover .stat-info h3::after {
+    width: 60px;
+}
+
+.stat-card:nth-child(1) .stat-info h3 {
+    color: #ff4a57;
+}
+
+.stat-card:nth-child(2) .stat-info h3 {
+    color: #36d1dc;
+}
+
+.stat-card:nth-child(3) .stat-info h3 {
+    color: #5dff87;
+}
+
+.stat-info p {
+    color: #b0b3c1;
+    font-size: 1.1rem;
+    font-weight: 500;
+    margin: 15px 0 0 0;
+    letter-spacing: 0.5px;
+}
+
+/* Badge indicateur */
+.stat-card::after {
+    content: '';
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #4caf50;
+    box-shadow: 0 0 10px #4caf50;
+    animation: blink 2s infinite;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .stats-grid {
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 25px;
+    }
+}
+
+@media (max-width: 992px) {
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 25px;
+    }
+    
+    .stat-card {
+        padding: 25px 20px;
+        min-height: 130px;
+    }
+    
+    .stat-icon {
+        width: 70px;
+        height: 70px;
+        font-size: 2rem;
+    }
+    
+    .stat-info h3 {
+        font-size: 2.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .stats-section {
+        padding: 30px 20px;
+        margin: 40px 0;
+    }
+    
+    .stats-section .section-title {
+        font-size: 1.6rem;
+        gap: 12px;
+        margin-bottom: 35px;
+    }
+    
+    .stats-section .section-title i {
+        font-size: 1.8rem;
+    }
+    
+    .stat-info h3 {
+        font-size: 2.2rem;
+    }
+    
+    .stat-info p {
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .stats-section {
+        padding: 25px 15px;
+        margin: 35px 0;
+        border-radius: 16px;
+    }
+    
+    .stats-section .section-title {
+        font-size: 1.4rem;
+        flex-direction: column;
+        gap: 8px;
+        padding-bottom: 15px;
+    }
+    
+    .stat-card {
+        padding: 22px 18px;
+        min-height: 120px;
+        gap: 20px;
+    }
+    
+    .stat-icon {
+        width: 65px;
+        height: 65px;
+        font-size: 1.8rem;
+    }
+    
+    .stat-info h3 {
+        font-size: 2rem;
+    }
+    
+    .stat-info p {
+        font-size: 0.95rem;
+    }
+}
+
+/* Animation d'apparition */
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.stat-card {
+    animation: slideUp 0.6s ease forwards;
+    opacity: 0;
+}
+
+.stat-card:nth-child(1) { animation-delay: 0.1s; }
+.stat-card:nth-child(2) { animation-delay: 0.2s; }
+.stat-card:nth-child(3) { animation-delay: 0.3s; }
+
     </style>
 </head>
 
@@ -486,6 +967,19 @@ ksort($feedbackRatings);
                 <li><a href="#" onclick="showDashboard(); document.getElementById('stats').scrollIntoView({behavior: 'smooth'});">📊 Statistiques</a></li>
             </ul>
         </li>
+        
+        <li>
+        <a href="#gestionQuiz" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
+            <i class="fas fa-question-circle"></i> Gestion des quizs
+        </a>
+        <ul class="collapse list-unstyled" id="gestionQuiz">
+            <li><a href="#" onclick="openPage('quiz/addarticle.php')">📝 Ajouter article</a></li>
+            <li><a href="#" onclick="openPage('quiz/addquiz.php')">➕ Ajouter quiz</a></li>
+            <li><a href="#" onclick="openPage('quiz/listeArticle.php')">📚 Articles</a></li>
+            <li><a href="#" onclick="openPage('quiz/listeQuiz.php')">❓ Quiz</a></li>
+            <li><a href="#" onclick="openPage('quiz/listeHistorique.php')">📊 Historique</a></li>
+        </ul>
+    </li>
 
         <li>
             <a href="#gestionReclamationMenu" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
@@ -497,6 +991,7 @@ ksort($feedbackRatings);
                 <li><a href="#" onclick="openPage('reclamation/statistiques.php')">📊 Statistiques</a></li>
             </ul>
         </li>
+        
 
         <!-- Gestion des événements -->
         <li>
@@ -507,6 +1002,7 @@ ksort($feedbackRatings);
                 <li><a href="#" onclick="openPage('events/evenement.php?embed=1')">🎟️ Événements</a></li>
                 <li><a href="#" onclick="openPage('events/createevent.php?embed=1')">➕ Créer événement</a></li>
                 <li><a href="#" onclick="openPage('events/participation_history.php?embed=1')">👥 Participations</a></li>
+                <li><a href="#" onclick="openPage('events/list_event_feedback.php')">💬 Avis Événements</a></li>
             </ul>
         </li>
 
@@ -532,8 +1028,19 @@ ksort($feedbackRatings);
             <i class="fas fa-bars"></i>
         </button>
 
+        <!-- Notifications Center -->
+        <div style="margin-left: auto; margin-right: 20px;">
+            <?php 
+            if (file_exists(__DIR__ . '/assets/notifications_partial.php')) {
+                include __DIR__ . '/assets/notifications_partial.php';
+            } else {
+                echo '<div style="color: #999;">Notifications unavailable</div>';
+            }
+            ?>
+        </div>
+
         <!-- User Menu -->
-        <div class="user-menu ml-auto">
+        <div class="user-menu">
             <div class="user-wrapper">
                 <span class="user-name"><?= htmlspecialchars($userName) ?></span>
                 <div class="user-avatar">
@@ -727,6 +1234,9 @@ ksort($feedbackRatings);
                                     <button class="btn btn-sm btn-secondary" onclick="openPage('events/participation.php?event_id=<?= $ev['id_evenement'] ?>')">
                                         <i class="fas fa-users mr-1"></i>Participations
                                     </button>
+                                    <button class="btn btn-sm btn-warning" onclick="openPage('events/event_feedback.php?event_id=<?= $ev['id_evenement'] ?>')">
+                                        <i class="fas fa-comments mr-1"></i>Avis
+                                    </button>
                                     <button class="btn btn-sm btn-danger" onclick="if(confirm('Supprimer cet événement ?')) { openPage('events/evenement.php?action=delete&id=<?= $ev['id_evenement'] ?>'); }">
                                         <i class="fas fa-trash mr-1"></i>Supprimer
                                     </button>
@@ -782,8 +1292,45 @@ ksort($feedbackRatings);
                 </div>
                 <?php endif; ?>
             </div>
-
+            <!-- Section Statistiques -->
+            <section class="stats-section">
+                <h2 class="section-title">
+                    <i class="fas fa-chart-line"></i> Aperçu Global du quizs
+                </h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-newspaper"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3><?php echo $count_articles; ?></h3>
+                            <p>Articles Publiés</p>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-question-circle"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3><?php echo $count_quiz; ?></h3>
+                            <p>Quiz Créés</p>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-layer-group"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3><?php echo ($count_articles + $count_quiz + $count_historique); ?></h3>
+                            <p>Total Données</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
         </div>
+        
 
         <!-- IFRAME pour chargement des pages -->
         <div id="contentFrame">

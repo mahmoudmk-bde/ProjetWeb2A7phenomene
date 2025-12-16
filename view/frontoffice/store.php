@@ -44,7 +44,8 @@ switch ($controllerName) {
             'toggleLike',
             'addComment',
             'clearCart',
-            'checkout'
+            'checkout',
+            'wishlist'
         ];
         break;
 }

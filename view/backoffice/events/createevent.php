@@ -105,12 +105,12 @@ if ($_POST) {
     <form method="POST" enctype="multipart/form-data">
 
         <div class="form-group-modern">
-            <input type="text" name="titre" placeholder=" " required>
+            <input type="text" name="titre" placeholder=" ">
             <label>Titre de l'événement</label>
         </div>
 
         <div class="form-group-modern">
-            <input type="text" name="lieu" placeholder=" " required>
+            <input type="text" name="lieu" placeholder=" ">
             <label>Lieu de l'événement</label>
         </div>
         
@@ -118,7 +118,7 @@ if ($_POST) {
             <label style="position:static; display:block; margin-bottom:5px; color:#ccc; font-size:14px;">
                 Dates de l'événement
             </label>
-            <input type="date" name="date_evenement" required style="padding:10px 15px; border-radius:12px; width:100%; background:#111; color:#fff; border:1px solid #333; margin-bottom:10px;">
+            <input type="date" name="date_evenement" style="padding:10px 15px; border-radius:12px; width:100%; background:#111; color:#fff; border:1px solid #333; margin-bottom:10px;">
             <input type="time" name="heure_evenement" style="padding:10px 15px; border-radius:12px; width:100%; background:#111; color:#fff; border:1px solid #333;">
         </div>
 
@@ -136,7 +136,7 @@ if ($_POST) {
             <label style="position:static; display:block; margin-bottom:5px; color:#ccc; font-size:14px;">
                 Thème de l'événement
             </label>
-            <select name="id_organisation" style="padding:10px 15px; border-radius:12px; width:100%; background:#111; color:#fff; border:1px solid #333;" required>
+            <select name="id_organisation" style="padding:10px 15px; border-radius:12px; width:100%; background:#111; color:#fff; border:1px solid #333;">
                 <option value="">Sélectionnez un thème</option>
                 <option value="1">Sport</option>
                 <option value="2">Éducation</option>
@@ -152,7 +152,7 @@ if ($_POST) {
             <label style="position:static; display:block; margin-bottom:5px; color:#ccc; font-size:14px;">
                 Type d'événement
             </label>
-            <select name="type_evenement" style="padding:10px 15px; border-radius:12px; width:100%; background:#111; color:#fff; border:1px solid #333;" required onchange="document.getElementById('prix_wrapper').style.display = this.value === 'payant' ? 'block' : 'none';">
+            <select name="type_evenement" style="padding:10px 15px; border-radius:12px; width:100%; background:#111; color:#fff; border:1px solid #333;" onchange="document.getElementById('prix_wrapper').style.display = this.value === 'payant' ? 'block' : 'none';">
                 <option value="gratuit">Gratuit</option>
                 <option value="payant">Payant</option>
             </select>
