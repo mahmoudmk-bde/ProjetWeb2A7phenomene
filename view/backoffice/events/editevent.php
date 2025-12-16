@@ -115,7 +115,7 @@ if (!$eventData) {
         <div class="form-row-2">
             <div class="form-group">
                 <label>Date de l'événement</label>
-                <input type="date" name="date_evenement" value="<?= htmlspecialchars($eventData['date_evenement']) ?>">
+                <input type="date" name="date_evenement" value="<?= htmlspecialchars($eventData['date_evenement']) ?>" onclick="this.showPicker()" onkeydown="return false">
             </div>
 
             <div class="form-group">

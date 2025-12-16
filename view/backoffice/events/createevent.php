@@ -46,7 +46,11 @@ if ($_POST) {
         $prix = (float) $_POST['prix'];
     }
     $image = null;
-    
+
+    // Check date validity
+    if ($date_evenement < date('Y-m-d')) {
+        $_SESSION['error'] = "⚠️ La date de l'événement ne peut pas être dans le passé !";
+    } else {
     if (isset($_FILES['image']) && $_FILES['image']['error'] == 0) {
         $uploadDir = __DIR__ . '/../../../view/frontoffice/assets/img/events/';
         if (!is_dir($uploadDir)) {
@@ -68,6 +72,7 @@ if ($_POST) {
         exit;
     } else {
         $_SESSION['error'] = "Erreur lors de la création de l'événement";
+    }
     }
 }
 ?>
@@ -100,6 +105,15 @@ if ($_POST) {
 
 <div class="form-card">
 
+
+        
+        <?php if (isset($_SESSION['error'])): ?>
+            <div class="alert alert-danger" style="background: rgba(220,53,69,0.2); border: 1px solid #dc3545; color: #ffb3b8; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                <i class="fas fa-exclamation-circle"></i> <?= htmlspecialchars($_SESSION['error']) ?>
+            </div>
+            <?php unset($_SESSION['error']); ?>
+        <?php endif; ?>
+
     <h2>Créer un nouvel événement</h2>
 
     <form method="POST" enctype="multipart/form-data">
@@ -118,7 +132,7 @@ if ($_POST) {
             <label style="position:static; display:block; margin-bottom:5px; color:#ccc; font-size:14px;">
                 Dates de l'événement
             </label>
-            <input type="date" name="date_evenement" style="padding:10px 15px; border-radius:12px; width:100%; background:#111; color:#fff; border:1px solid #333; margin-bottom:10px;">
+            <input type="date" name="date_evenement" min="<?= date('Y-m-d') ?>" style="padding:10px 15px; border-radius:12px; width:100%; background:#111; color:#fff; border:1px solid #333; margin-bottom:10px;" onclick="this.showPicker()" onkeydown="return false">
             <input type="time" name="heure_evenement" style="padding:10px 15px; border-radius:12px; width:100%; background:#111; color:#fff; border:1px solid #333;">
         </div>
 
